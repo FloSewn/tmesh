@@ -118,15 +118,6 @@ tmBool tmQtree_addObj(tmQtree *qtree, void *obj);
 tmBool tmQtree_remObj(tmQtree *qtree, void *obj);
 
 /**********************************************************
-* Function: tmQtree_split()
-*----------------------------------------------------------
-* Split a tmQtree into four smaller tmQtrees
-*----------------------------------------------------------
-* @param qtree: tmQtree structure
-**********************************************************/
-void tmQtree_split(tmQtree *qtree);
-
-/**********************************************************
 * Function: tmQtree_getObjNo()
 *----------------------------------------------------------
 * Return the number of objects contained in this qtree
@@ -134,15 +125,6 @@ void tmQtree_split(tmQtree *qtree);
 * @param qtree: tmQtree structure
 **********************************************************/
 int tmQtree_getObjNo(tmQtree *qtree);
-
-/**********************************************************
-* Function: tmQtree_getObjNo()
-*----------------------------------------------------------
-* Merge a tmQtree from its four smaller tmQtrees
-*----------------------------------------------------------
-* @param qtree: tmQtree structure
-**********************************************************/
-tmBool tmQtree_merge(tmQtree *qtree);
 
 /**********************************************************
 * Function: tmQtree_containsObj()

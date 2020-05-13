@@ -6,6 +6,227 @@
 #include "trimesh/tmQtree.h"
 
 /**********************************************************
+* Function: tmQtree_split()
+*----------------------------------------------------------
+* Split a tmQtree into four smaller tmQtrees
+*----------------------------------------------------------
+* @param qtree: tmQtree structure
+**********************************************************/
+static void tmQtree_split(tmQtree *qtree);
+
+/**********************************************************
+* Function: tmQtree_getObjNo()
+*----------------------------------------------------------
+* Merge a tmQtree from its four smaller tmQtrees
+*----------------------------------------------------------
+* @param qtree: tmQtree structure
+**********************************************************/
+static tmBool tmQtree_merge(tmQtree *qtree);
+
+
+/**********************************************************
+* Function: tmQtree_split()
+*----------------------------------------------------------
+* Split a tmQtree into four smaller tmQtrees
+*----------------------------------------------------------
+* @param qtree: tmQtree structure
+**********************************************************/
+static void tmQtree_split(tmQtree *qtree)
+{
+  /*-------------------------------------------------------
+  | Create new children structures
+  -------------------------------------------------------*/
+  tmDouble xy_min[2] = { 0.0, 0.0 };
+  tmDouble xy_max[2] = { 0.0, 0.0 };
+
+  qtree->child_NE = tmQtree_create(qtree->mesh, 
+                                   qtree->obj_type);
+  xy_min[0] = qtree->xy[0];
+  xy_min[1] = qtree->xy[1];
+  xy_max[0] = qtree->xy_max[0];
+  xy_max[1] = qtree->xy_max[1];
+
+  tmQtree_init(qtree->child_NE, qtree, 
+               qtree->layer + 1,
+               xy_min, xy_max);
+
+
+  qtree->child_NW = tmQtree_create(qtree->mesh,
+                                   qtree->obj_type);
+  xy_min[0] = qtree->xy_min[0];
+  xy_min[1] = qtree->xy[1];
+  xy_max[0] = qtree->xy[0];
+  xy_max[1] = qtree->xy_max[1];
+  tmQtree_init(qtree->child_NW, qtree, 
+               qtree->layer + 1,
+               xy_min, xy_max);
+
+
+  qtree->child_SW = tmQtree_create(qtree->mesh,
+                                   qtree->obj_type);
+  xy_min[0] = qtree->xy_min[0];
+  xy_min[1] = qtree->xy_min[1];
+  xy_max[0] = qtree->xy[0];
+  xy_max[1] = qtree->xy[1];
+  tmQtree_init(qtree->child_SW, qtree, 
+               qtree->layer + 1,
+               xy_min, xy_max);
+
+
+  qtree->child_SE = tmQtree_create(qtree->mesh,
+                                   qtree->obj_type);
+  xy_min[0] = qtree->xy[0];
+  xy_min[1] = qtree->xy_min[1];
+  xy_max[0] = qtree->xy_max[0];
+  xy_max[1] = qtree->xy[1];
+  tmQtree_init(qtree->child_SE, qtree, 
+               qtree->layer + 1,
+               xy_min, xy_max);
+
+  /*-------------------------------------------------------
+  | Distribute objects to children
+  -------------------------------------------------------*/
+  ListNode *cur, *nxt;
+  tmDouble *cur_xy;
+
+  for (cur = qtree->obj->first; 
+       cur != NULL; cur = cur->next)
+  {
+    if ( qtree->obj_type == TM_NODE)
+      cur_xy = ((tmNode*)cur->value)->xy;
+    else if ( qtree->obj_type == TM_EDGE)
+      cur_xy = ((tmEdge*)cur->value)->xy;
+    else if ( qtree->obj_type == TM_TRI)
+      cur_xy = ((tmTri*)cur->value)->xy;
+    else
+      log_err("Wrong type provied for tmQtree_split()");
+
+    if ( cur_xy[0] >= qtree->xy[0] )
+    {
+      if ( cur_xy[1] >= qtree->xy[1] )
+        tmQtree_addObj(qtree->child_NE, cur->value);
+      else
+        tmQtree_addObj(qtree->child_SE, cur->value);
+    }
+    else
+    {
+      if ( cur_xy[1] >= qtree->xy[1] )
+        tmQtree_addObj(qtree->child_NW, cur->value);
+      else
+        tmQtree_addObj(qtree->child_SW, cur->value);
+    }
+  }
+
+  /*-------------------------------------------------------
+  | Clear own object list
+  -------------------------------------------------------*/
+  cur = qtree->obj->first;
+  nxt = cur;
+  while (nxt != NULL)
+  {
+    nxt = cur->next;
+    tmQtree_remObj(qtree, cur->value);
+    cur = nxt;
+  }
+
+  /*-------------------------------------------------------
+  | Qtree is now splitted
+  -------------------------------------------------------*/
+  qtree->is_splitted = TRUE;
+
+} /* tmQtree_split() */
+
+/**********************************************************
+* Function: tmQtree_getObjNo()
+*----------------------------------------------------------
+* Merge a tmQtree from its four smaller tmQtrees
+*----------------------------------------------------------
+* @param qtree: tmQtree structure
+**********************************************************/
+tmBool tmQtree_merge(tmQtree *qtree)
+{
+  ListNode *cur;
+  
+  /*-------------------------------------------------------
+  | Get sure, that children are not splitted too
+  -------------------------------------------------------*/
+  check(qtree->child_NE->is_splitted == FALSE,
+      "Can not merge qtree -> child_NE is still splitted.");
+  check(qtree->child_NW->is_splitted == FALSE,
+      "Can not merge qtree -> child_NW is still splitted.");
+  check(qtree->child_SW->is_splitted == FALSE,
+      "Can not merge qtree -> child_SW is still splitted.");
+  check(qtree->child_SE->is_splitted == FALSE,
+      "Can not merge qtree -> child_SE is still splitted.");
+
+  /*-------------------------------------------------------
+  | Set qtree to not splitted
+  -------------------------------------------------------*/
+  qtree->is_splitted = FALSE;
+
+  /*-------------------------------------------------------
+  | Get objects from all children
+  -------------------------------------------------------*/
+  /*                    NORTH EAST                       */
+  for(cur = qtree->child_NE->obj->first;
+      cur != NULL; cur = cur->next)
+    tmQtree_addObj(qtree, cur->value);
+  /*                    NORTH WEST                       */
+  for(cur = qtree->child_NW->obj->first;
+      cur != NULL; cur = cur->next)
+    tmQtree_addObj(qtree, cur->value);
+  /*                    SOUTH WEST                       */
+  for(cur = qtree->child_SW->obj->first;
+      cur != NULL; cur = cur->next)
+    tmQtree_addObj(qtree, cur->value);
+  /*                    SOUTH EAST                       */
+  for(cur = qtree->child_SE->obj->first;
+      cur != NULL; cur = cur->next)
+    tmQtree_addObj(qtree, cur->value);
+
+  /*-------------------------------------------------------
+  | Destroy all children
+  -------------------------------------------------------*/
+  if (qtree->child_NE != NULL)
+  {
+    tmQtree_destroy(qtree->child_NE);
+    qtree->child_NE = NULL;
+  }
+  if (qtree->child_NW != NULL)
+  {
+    tmQtree_destroy(qtree->child_NW);
+    qtree->child_NW = NULL;
+  }
+  if (qtree->child_SW != NULL)
+  {
+    tmQtree_destroy(qtree->child_SW);
+    qtree->child_SW = NULL;
+  }
+  if (qtree->child_SE != NULL)
+  {
+    tmQtree_destroy(qtree->child_SE);
+    qtree->child_SE = NULL;
+  }
+
+  /*-------------------------------------------------------
+  | some final checks
+  -------------------------------------------------------*/
+  check(qtree->n_obj <= qtree->max_obj,
+      "Something went wrong while merging qtree.");
+  check(qtree->is_splitted == FALSE,
+      "Something went wrong while merging qtree.");
+
+  return TRUE;
+
+error:
+  return FALSE;
+
+} /* tmQtree_merge() */
+
+
+
+
+/**********************************************************
 * Function: tmQtree_create()
 *----------------------------------------------------------
 * Create a new tmQtree structure and return a pointer
@@ -288,118 +509,6 @@ tmBool tmQtree_remObj(tmQtree *qtree, void *obj)
 } /* tmQtree_remObj() */
 
 /**********************************************************
-* Function: tmQtree_split()
-*----------------------------------------------------------
-* Split a tmQtree into four smaller tmQtrees
-*----------------------------------------------------------
-* @param qtree: tmQtree structure
-**********************************************************/
-void tmQtree_split(tmQtree *qtree)
-{
-  /*-------------------------------------------------------
-  | Create new children structures
-  -------------------------------------------------------*/
-  tmDouble xy_min[2] = { 0.0, 0.0 };
-  tmDouble xy_max[2] = { 0.0, 0.0 };
-
-  qtree->child_NE = tmQtree_create(qtree->mesh, 
-                                   qtree->obj_type);
-  xy_min[0] = qtree->xy[0];
-  xy_min[1] = qtree->xy[1];
-  xy_max[0] = qtree->xy_max[0];
-  xy_max[1] = qtree->xy_max[1];
-
-  tmQtree_init(qtree->child_NE, qtree, 
-               qtree->layer + 1,
-               xy_min, xy_max);
-
-
-  qtree->child_NW = tmQtree_create(qtree->mesh,
-                                   qtree->obj_type);
-  xy_min[0] = qtree->xy_min[0];
-  xy_min[1] = qtree->xy[1];
-  xy_max[0] = qtree->xy[0];
-  xy_max[1] = qtree->xy_max[1];
-  tmQtree_init(qtree->child_NW, qtree, 
-               qtree->layer + 1,
-               xy_min, xy_max);
-
-
-  qtree->child_SW = tmQtree_create(qtree->mesh,
-                                   qtree->obj_type);
-  xy_min[0] = qtree->xy_min[0];
-  xy_min[1] = qtree->xy_min[1];
-  xy_max[0] = qtree->xy[0];
-  xy_max[1] = qtree->xy[1];
-  tmQtree_init(qtree->child_SW, qtree, 
-               qtree->layer + 1,
-               xy_min, xy_max);
-
-
-  qtree->child_SE = tmQtree_create(qtree->mesh,
-                                   qtree->obj_type);
-  xy_min[0] = qtree->xy[0];
-  xy_min[1] = qtree->xy_min[1];
-  xy_max[0] = qtree->xy_max[0];
-  xy_max[1] = qtree->xy[1];
-  tmQtree_init(qtree->child_SE, qtree, 
-               qtree->layer + 1,
-               xy_min, xy_max);
-
-  /*-------------------------------------------------------
-  | Distribute objects to children
-  -------------------------------------------------------*/
-  ListNode *cur, *nxt;
-  tmDouble *cur_xy;
-
-  for (cur = qtree->obj->first; 
-       cur != NULL; cur = cur->next)
-  {
-    if ( qtree->obj_type == TM_NODE)
-      cur_xy = ((tmNode*)cur->value)->xy;
-    else if ( qtree->obj_type == TM_EDGE)
-      cur_xy = ((tmEdge*)cur->value)->xy;
-    else if ( qtree->obj_type == TM_TRI)
-      cur_xy = ((tmTri*)cur->value)->xy;
-    else
-      log_err("Wrong type provied for tmQtree_split()");
-
-    if ( cur_xy[0] >= qtree->xy[0] )
-    {
-      if ( cur_xy[1] >= qtree->xy[1] )
-        tmQtree_addObj(qtree->child_NE, cur->value);
-      else
-        tmQtree_addObj(qtree->child_SE, cur->value);
-    }
-    else
-    {
-      if ( cur_xy[1] >= qtree->xy[1] )
-        tmQtree_addObj(qtree->child_NW, cur->value);
-      else
-        tmQtree_addObj(qtree->child_SW, cur->value);
-    }
-  }
-
-  /*-------------------------------------------------------
-  | Clear own object list
-  -------------------------------------------------------*/
-  cur = qtree->obj->first;
-  nxt = cur;
-  while (nxt != NULL)
-  {
-    nxt = cur->next;
-    tmQtree_remObj(qtree, cur->value);
-    cur = nxt;
-  }
-
-  /*-------------------------------------------------------
-  | Qtree is now splitted
-  -------------------------------------------------------*/
-  qtree->is_splitted = TRUE;
-
-} /* tmQtree_split() */
-
-/**********************************************************
 * Function: tmQtree_getObjNo()
 *----------------------------------------------------------
 * Return the number of objects contained in this qtree
@@ -425,93 +534,6 @@ int tmQtree_getObjNo(tmQtree *qtree)
   return n_obj;
 
 } /* tmQtree_getObjNo() */
-
-/**********************************************************
-* Function: tmQtree_getObjNo()
-*----------------------------------------------------------
-* Merge a tmQtree from its four smaller tmQtrees
-*----------------------------------------------------------
-* @param qtree: tmQtree structure
-**********************************************************/
-tmBool tmQtree_merge(tmQtree *qtree)
-{
-  ListNode *cur;
-  
-  /*-------------------------------------------------------
-  | Get sure, that children are not splitted too
-  -------------------------------------------------------*/
-  check(qtree->child_NE->is_splitted == FALSE,
-      "Can not merge qtree -> child_NE is still splitted.");
-  check(qtree->child_NW->is_splitted == FALSE,
-      "Can not merge qtree -> child_NW is still splitted.");
-  check(qtree->child_SW->is_splitted == FALSE,
-      "Can not merge qtree -> child_SW is still splitted.");
-  check(qtree->child_SE->is_splitted == FALSE,
-      "Can not merge qtree -> child_SE is still splitted.");
-
-  /*-------------------------------------------------------
-  | Set qtree to not splitted
-  -------------------------------------------------------*/
-  qtree->is_splitted = FALSE;
-
-  /*-------------------------------------------------------
-  | Get objects from all children
-  -------------------------------------------------------*/
-  /*                    NORTH EAST                       */
-  for(cur = qtree->child_NE->obj->first;
-      cur != NULL; cur = cur->next)
-    tmQtree_addObj(qtree, cur->value);
-  /*                    NORTH WEST                       */
-  for(cur = qtree->child_NW->obj->first;
-      cur != NULL; cur = cur->next)
-    tmQtree_addObj(qtree, cur->value);
-  /*                    SOUTH WEST                       */
-  for(cur = qtree->child_SW->obj->first;
-      cur != NULL; cur = cur->next)
-    tmQtree_addObj(qtree, cur->value);
-  /*                    SOUTH EAST                       */
-  for(cur = qtree->child_SE->obj->first;
-      cur != NULL; cur = cur->next)
-    tmQtree_addObj(qtree, cur->value);
-
-  /*-------------------------------------------------------
-  | Destroy all children
-  -------------------------------------------------------*/
-  if (qtree->child_NE != NULL)
-  {
-    tmQtree_destroy(qtree->child_NE);
-    qtree->child_NE = NULL;
-  }
-  if (qtree->child_NW != NULL)
-  {
-    tmQtree_destroy(qtree->child_NW);
-    qtree->child_NW = NULL;
-  }
-  if (qtree->child_SW != NULL)
-  {
-    tmQtree_destroy(qtree->child_SW);
-    qtree->child_SW = NULL;
-  }
-  if (qtree->child_SE != NULL)
-  {
-    tmQtree_destroy(qtree->child_SE);
-    qtree->child_SE = NULL;
-  }
-
-  /*-------------------------------------------------------
-  | some final checks
-  -------------------------------------------------------*/
-  check(qtree->n_obj <= qtree->max_obj,
-      "Something went wrong while merging qtree.");
-  check(qtree->is_splitted == FALSE,
-      "Something went wrong while merging qtree.");
-
-  return TRUE;
-
-error:
-  return FALSE;
-
-} /* tmQtree_merge() */
 
 /**********************************************************
 * Function: tmQtree_containsObj()

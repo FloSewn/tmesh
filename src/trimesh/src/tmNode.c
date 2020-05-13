@@ -48,7 +48,6 @@ tmNode *tmNode_create(tmMesh *mesh, tmDouble xy[2])
   -------------------------------------------------------*/
   node->index = tmMesh_addNode(mesh, node);
 
-
   return node;
 error:
   return NULL;
@@ -67,7 +66,7 @@ void tmNode_destroy(tmNode *node)
   /*-------------------------------------------------------
   | Remove node from the mesh structure 
   -------------------------------------------------------*/
-  //tmMesh_remNode(node->mesh, node);
+  tmMesh_remNode(node->mesh, node);
 
   /*-------------------------------------------------------
   | Free all list structures

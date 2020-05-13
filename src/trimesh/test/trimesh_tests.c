@@ -223,7 +223,6 @@ char *test_tmQtree()
   /*--------------------------------------------------------
   | Remove node 1 -> child_SW must merge
   --------------------------------------------------------*/
-  tmMesh_remNode(mesh, n_1);
   tmNode_destroy(n_1);
   mu_assert( mesh->nodes_qtree->is_splitted == TRUE,
       "Qtree is not splitted anymore.");
@@ -233,7 +232,6 @@ char *test_tmQtree()
   /*--------------------------------------------------------
   | Remove node 6 -> child_NE must merge
   --------------------------------------------------------*/
-  tmMesh_remNode(mesh, n_6);
   tmNode_destroy(n_6);
   mu_assert( mesh->nodes_qtree->is_splitted == TRUE,
       "Qtree is not splitted anymore.");

@@ -197,11 +197,13 @@ tmIndex tmMesh_remNode(tmMesh *mesh, tmNode *node)
       break;
     }
   }
+
   if ( in_stack == FALSE )
   {
     log_warn("Can not remove node %d from mesh. Node not found.", node_index);
     return -1;
   }
+
 
   /*-------------------------------------------------------
   | Adjust indices of all following nodes

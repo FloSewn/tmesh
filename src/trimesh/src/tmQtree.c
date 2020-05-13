@@ -143,7 +143,7 @@ static void tmQtree_split(tmQtree *qtree)
 *----------------------------------------------------------
 * @param qtree: tmQtree structure
 **********************************************************/
-tmBool tmQtree_merge(tmQtree *qtree)
+static tmBool tmQtree_merge(tmQtree *qtree)
 {
   ListNode *cur;
   

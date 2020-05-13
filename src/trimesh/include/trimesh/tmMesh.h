@@ -94,4 +94,24 @@ tmIndex tmMesh_addTri(tmMesh *mesh, tmTri *tri);
 **********************************************************/
 tmIndex tmMesh_remNode(tmMesh *mesh, tmNode *node);
 
+/**********************************************************
+* Function: tmMesh_remEdge()
+*----------------------------------------------------------
+* Function to remove a tmEdge from a tmMesh
+*----------------------------------------------------------
+* @return: tmEdge index on the mesh's node stack
+*          returns -1 if edge was not found
+**********************************************************/
+tmIndex tmMesh_remEdge(tmMesh *mesh, tmEdge *edge);
+
+/**********************************************************
+* Function: tmMesh_remTri()
+*----------------------------------------------------------
+* Function to remove a tmTri from a tmMesh
+*----------------------------------------------------------
+* @return: tmTri index on the mesh's node stack
+*          returns -1 if tri was not found
+**********************************************************/
+tmIndex tmMesh_remTri(tmMesh *mesh, tmTri *tri);
+
 #endif

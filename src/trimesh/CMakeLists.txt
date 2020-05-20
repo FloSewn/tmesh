@@ -32,6 +32,7 @@ target_include_directories( ${TRIMESH_LIB} PUBLIC
 
 target_link_libraries( ${TRIMESH_LIB}
   lcthw
+  m
 )
 
 install( TARGETS trimesh DESTINATION ${LIB} )
@@ -45,6 +46,7 @@ set( TESTDIR_TRIMESH ${TRIMESH_DIR}/test )
 
 add_executable( ${TESTEXE_TRIMESH}
   ${TESTDIR_TRIMESH}/trimesh_tests.c
+  ${TESTDIR_TRIMESH}/geom_tests.c
   ${TESTDIR_TRIMESH}/unit_tests.c
 )
 

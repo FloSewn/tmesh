@@ -9,6 +9,11 @@
 typedef struct tmMesh {
 
   /*-------------------------------------------------------
+  | Mesh properties 
+  -------------------------------------------------------*/
+  int      qtree_max_obj;
+
+  /*-------------------------------------------------------
   | Mesh nodes 
   -------------------------------------------------------*/
   tmNode  *nodes_head;
@@ -43,7 +48,9 @@ typedef struct tmMesh {
 *----------------------------------------------------------
 * @return: Pointer to a new tmMesh structure
 **********************************************************/
-tmMesh *tmMesh_create(tmDouble xy_min[2], tmDouble xy_max[2]);
+tmMesh *tmMesh_create(tmDouble xy_min[2], 
+                      tmDouble xy_max[2],
+                      int      qtree_max_obj);
 
 /**********************************************************
 * Function: tmMesh_destroy()

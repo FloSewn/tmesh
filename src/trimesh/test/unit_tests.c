@@ -2,6 +2,7 @@
 #include "lcthw/minunit.h"
 #include "lcthw/dbg.h"
 #include "trimesh_tests.h"
+#include "geom_tests.h"
 
 /************************************************************
 * Run all unit test functions
@@ -13,8 +14,11 @@ char *all_tests()
   /**********************************************************
   * Unit tests for trimesh library
   **********************************************************/
+  mu_run_test(test_geometric_functions);
   mu_run_test(test_mesh_create_destroy);
+
   mu_run_test(test_tmQtree);
+  mu_run_test(test_tmQtree_performance);
 
   return NULL;
 }

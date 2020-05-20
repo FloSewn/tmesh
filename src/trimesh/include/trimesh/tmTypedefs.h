@@ -3,6 +3,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 
 #include "lcthw/dbg.h"
 #include "lcthw/list.h"
@@ -42,8 +43,6 @@ typedef struct tmMesh tmMesh;
 /***********************************************************
 * Constants used in code
 ***********************************************************/
-#define TM_QTREE_MAX_OBJ 3
-
 #define TM_DEBUG 1
 
 /***********************************************************
@@ -84,7 +83,7 @@ typedef struct tmMesh tmMesh;
 #endif
 
 #ifndef EQ
-#define EQ(a, b) ( ABS(a) - ABS(b) < SMALL ? 1 : 0 )
+#define EQ(a, b) ( ABS((a)- (b)) < SMALL ? 1 : 0 )
 #endif
 
 
@@ -104,10 +103,16 @@ typedef struct tmMesh tmMesh;
   && ( (n)[1] < (max)[1] )   )
 
 #define ON_BBOX(n, min, max) \
-  (  EQ( (n)[0], (min)[0] )  \
-  && EQ( (n)[1], (min)[1] )  \
-  && EQ( (n)[0], (max)[0] )  \
-  && EQ( (n)[1], (max)[1] )  )
+  (  ( EQ( (n)[0], (min)[0] ) && ( (n)[1] >= (min)[1] ) && ( (n)[1] <= (max)[1] ) ) \
+  || ( EQ( (n)[0], (max)[0] ) && ( (n)[1] >= (min)[1] ) && ( (n)[1] <= (max)[1] ) ) \
+  || ( EQ( (n)[1], (min)[1] ) && ( (n)[0] >= (min)[0] ) && ( (n)[0] <= (max)[0] ) ) \
+  || ( EQ( (n)[1], (max)[1] ) && ( (n)[0] >= (min)[0] ) && ( (n)[0] <= (max)[0] ) ) )
+
+#define BBOX_OVERLAP(pqmin, pqmax, rsmin, rsmax) \
+  (  ( (pqmin)[0] <= (rsmax)[0] )                 \
+  && ( (rsmin)[0] <= (pqmax)[0] )                 \
+  && ( (pqmin)[1] <= (rsmax)[1] )                 \
+  && ( (rsmin)[1] <= (pqmax)[1] ) )                
 
 
 #endif /* TRIMESH_TMTYPEDEFS_H */

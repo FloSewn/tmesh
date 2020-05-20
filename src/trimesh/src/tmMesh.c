@@ -15,23 +15,39 @@
 *----------------------------------------------------------
 * @return: Pointer to a new tmMesh structure
 **********************************************************/
-tmMesh *tmMesh_create(tmDouble xy_min[2], tmDouble xy_max[2])
+tmMesh *tmMesh_create(tmDouble xy_min[2], 
+                      tmDouble xy_max[2], 
+                      int      qtree_max_obj)
 {
   tmMesh *mesh = (tmMesh*) calloc( 1, sizeof(tmMesh) );
   check_mem(mesh);
 
+  /*-------------------------------------------------------
+  | Mesh properties 
+  -------------------------------------------------------*/
+  mesh->qtree_max_obj = qtree_max_obj;
+
+  /*-------------------------------------------------------
+  | Mesh nodes 
+  -------------------------------------------------------*/
   mesh->nodes_head = NULL;
   mesh->nodes_stack = List_create();
   mesh->nodes_index = 0;
   mesh->nodes_qtree = tmQtree_create(mesh, TM_NODE);
   tmQtree_init(mesh->nodes_qtree, NULL, 0, xy_min, xy_max); 
 
+  /*-------------------------------------------------------
+  | Mesh edges 
+  -------------------------------------------------------*/
   mesh->edges_head = NULL;
   mesh->edges_stack = List_create();
   mesh->edges_index = 0;
   mesh->edges_qtree = tmQtree_create(mesh, TM_EDGE);
   tmQtree_init(mesh->edges_qtree, NULL, 0, xy_min, xy_max);
   
+  /*-------------------------------------------------------
+  | Mesh triangles 
+  -------------------------------------------------------*/
   mesh->tris_head = NULL;
   mesh->tris_stack = List_create();
   mesh->tris_index = 0;

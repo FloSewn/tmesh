@@ -138,4 +138,18 @@ tmBool tmQtree_containsObj(tmQtree *qtree,
                            void    *obj, 
                            int      mode);
 
+/**********************************************************
+* Function: tmQtree_getObjBbox()
+*----------------------------------------------------------
+* Return a list of objects that are contained within
+* a specified bounding box
+*----------------------------------------------------------
+* @param qtree: tmQtree structure to initialize
+* @param xy_min, xy_max: bounding box
+*
+**********************************************************/
+List *tmQtree_getObjBbox(tmQtree *qtree, 
+                         tmDouble xy_min[2], 
+                         tmDouble xy_max[2]);
+
 #endif

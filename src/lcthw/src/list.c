@@ -165,7 +165,9 @@ void *List_join(List *list1, List *list2)
 
   if (list1->first == NULL) {
     list1->first = list2->first;
+    list1->last  = list2->last;
     list1->count = list2->count;
+
   }
   else {
     list1->last->next = list2->first;
@@ -173,10 +175,11 @@ void *List_join(List *list1, List *list2)
     list1->last = list2->last;
     list1->count += list2->count;
 
-    list2->count = 0;
-    list2->first = NULL;
-    list2->last  = NULL;
   }
+
+  list2->count = 0;
+  list2->first = NULL;
+  list2->last  = NULL;
 
 error:
   return NULL;

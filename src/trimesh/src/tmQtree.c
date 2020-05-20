@@ -336,7 +336,7 @@ void tmQtree_init(tmQtree *qtree,
   qtree->layer  = layer;
   qtree->parent = parent;
 
-  qtree->max_obj = TM_QTREE_MAX_OBJ;
+  qtree->max_obj = qtree->mesh->qtree_max_obj;
 
   qtree->xy_min[0] = xy_min[0];
   qtree->xy_min[1] = xy_min[1];
@@ -604,4 +604,109 @@ tmBool tmQtree_containsObj(tmQtree *qtree,
     return obj_in_qtree;
   }
 
-} /* tmQtree_hasObj() */
+} /* tmQtree_containsObj() */
+
+
+/**********************************************************
+* Function: tmQtree_getObjBbox()
+*----------------------------------------------------------
+* Return a list of objects that are contained within
+* a specified bounding box
+*----------------------------------------------------------
+* @param qtree: tmQtree structure to initialize
+* @param xy_min, xy_max: bounding box
+*
+**********************************************************/
+List *tmQtree_getObjBbox(tmQtree *qtree, 
+                         tmDouble xy_min[2], 
+                         tmDouble xy_max[2])
+{
+  /*-------------------------------------------------------
+  | Check if bbox overlaps with this qtree
+  -------------------------------------------------------*/
+  tmBool overlap = BBOX_OVERLAP(xy_min, 
+                                xy_max,
+                                qtree->xy_min,
+                                qtree->xy_max);
+
+  if (overlap == FALSE)
+    return NULL;
+
+  List *obj_found = List_create();
+
+  /*-------------------------------------------------------
+  | If bbox is splitted, search in children
+  -------------------------------------------------------*/
+  if (qtree->is_splitted == TRUE)
+  {
+    List *obj_NE = tmQtree_getObjBbox(qtree->child_NE,
+                                      xy_min, xy_max);
+    if (obj_NE != NULL)
+    {
+      List_join(obj_found, obj_NE);
+      List_destroy(obj_NE);
+    }
+
+    List *obj_NW = tmQtree_getObjBbox(qtree->child_NW,
+                                      xy_min, xy_max);
+    if (obj_NW != NULL)
+    {
+      List_join(obj_found, obj_NW);
+      List_destroy(obj_NW);
+    }
+
+    List *obj_SW = tmQtree_getObjBbox(qtree->child_SW,
+                                      xy_min, xy_max);
+    if (obj_SW != NULL)
+    {
+      List_join(obj_found, obj_SW);
+      List_destroy(obj_SW);
+    }
+
+    List *obj_SE = tmQtree_getObjBbox(qtree->child_SE,
+                                      xy_min, xy_max);
+    if (obj_SE != NULL)
+    {
+      List_join(obj_found, obj_SE);
+      List_destroy(obj_SE);
+    }
+    
+  }
+  /*-------------------------------------------------------
+  | Else return all objects of this qtree that are 
+  | within bbox
+  -------------------------------------------------------*/
+  else
+  {
+    tmBool    in_bbox;
+    tmDouble *cur_xy;
+    ListNode *cur;
+
+    for (cur = qtree->obj->first; 
+         cur != NULL; cur = cur->next)
+    {
+      if ( qtree->obj_type == TM_NODE)
+        cur_xy = ((tmNode*)cur->value)->xy;
+      else if ( qtree->obj_type == TM_EDGE)
+        cur_xy = ((tmEdge*)cur->value)->xy;
+      else if ( qtree->obj_type == TM_TRI)
+        cur_xy = ((tmTri*)cur->value)->xy;
+      else
+        log_err("Wrong type provied for tmQtree_getObjBbox()");
+
+      in_bbox = IN_ON_BBOX(cur_xy, xy_min, xy_max);
+
+      if (in_bbox == TRUE)
+        List_push(obj_found, cur->value);
+    }
+  }
+
+  if (obj_found->count == 0)
+  {
+    List_destroy(obj_found);
+    return NULL;
+  }
+  else
+    return obj_found;
+
+} /* tmQtree_getObjBbox() */

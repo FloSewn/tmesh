@@ -3,6 +3,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#define _USE_MATH_DEFINES
 #include <math.h>
 
 #include "lcthw/dbg.h"
@@ -41,9 +42,14 @@ typedef struct tmMesh tmMesh;
 #define FALSE    0
 
 /***********************************************************
-* Constants used in code
+* Debugging
 ***********************************************************/
 #define TM_DEBUG 1
+
+/***********************************************************
+* Constants used in code
+***********************************************************/
+#define PI_D 3.1415926535897932384626433832795
 
 /***********************************************************
 * Minimum and maximum allowed coordinates

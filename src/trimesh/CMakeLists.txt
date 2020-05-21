@@ -57,6 +57,7 @@ target_include_directories( ${TESTEXE_TRIMESH} PUBLIC
 target_link_libraries( ${TESTEXE_TRIMESH}
   lcthw
   trimesh
+  m
 )
 
 # Install executables

@@ -12,6 +12,8 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#define _USE_MATH_DEFINES
+#include <math.h>
 
 
 /*************************************************************
@@ -351,7 +353,7 @@ char *test_tmQtree_performance()
   tmDouble b =-3.4;
   tmDouble c = 6.5;
   tmDouble t_0 = 0.0;
-  tmDouble t_1 = 5.0 * M_PI;
+  tmDouble t_1 = 5.0 * PI_D; 
   tmDouble dt  = (t_1 - t_0) / (tmDouble)n_nodes;
 
   int i;

@@ -43,6 +43,7 @@ typedef struct tmQtree {
   /*-------------------------------------------------------
   | Objects contained in this Qtree
   -------------------------------------------------------*/
+  int   n_obj_tot;
   int   n_obj;
   List *obj;
 

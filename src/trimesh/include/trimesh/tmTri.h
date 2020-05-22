@@ -17,6 +17,8 @@ typedef struct tmTri {
   | Triangle index
   -------------------------------------------------------*/
   ListNode *stack_pos;
+  ListNode *qtree_pos;
+  tmQtree  *qtree;
 
   /*-------------------------------------------------------
   | Triangle nodes

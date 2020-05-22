@@ -23,6 +23,8 @@ typedef struct tmNode {
   | Index of this node and its state
   -------------------------------------------------------*/
   ListNode *stack_pos;
+  ListNode *qtree_pos;
+  tmQtree  *qtree;
   tmBool    is_active;
 
   /*-------------------------------------------------------

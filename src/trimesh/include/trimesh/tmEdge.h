@@ -24,6 +24,8 @@ typedef struct tmEdge {
   tmBool    is_active;
   tmBool    is_on_front;
   ListNode *stack_pos;
+  ListNode *qtree_pos;
+  tmQtree  *qtree;
 
   /*-------------------------------------------------------
   | Edge length  

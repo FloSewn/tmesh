@@ -32,7 +32,7 @@ tmMesh *tmMesh_create(tmDouble xy_min[2],
   -------------------------------------------------------*/
   mesh->nodes_head = NULL;
   mesh->nodes_stack = List_create();
-  mesh->nodes_index = 0;
+  mesh->no_nodes = 0;
   mesh->nodes_qtree = tmQtree_create(mesh, TM_NODE);
   tmQtree_init(mesh->nodes_qtree, NULL, 0, xy_min, xy_max); 
 
@@ -41,7 +41,7 @@ tmMesh *tmMesh_create(tmDouble xy_min[2],
   -------------------------------------------------------*/
   mesh->edges_head = NULL;
   mesh->edges_stack = List_create();
-  mesh->edges_index = 0;
+  mesh->no_edges = 0;
   mesh->edges_qtree = tmQtree_create(mesh, TM_EDGE);
   tmQtree_init(mesh->edges_qtree, NULL, 0, xy_min, xy_max);
   
@@ -50,7 +50,7 @@ tmMesh *tmMesh_create(tmDouble xy_min[2],
   -------------------------------------------------------*/
   mesh->tris_head = NULL;
   mesh->tris_stack = List_create();
-  mesh->tris_index = 0;
+  mesh->no_tris = 0;
   mesh->tris_qtree = tmQtree_create(mesh, TM_TRI);
   tmQtree_init(mesh->tris_qtree, NULL, 0, xy_min, xy_max);
 
@@ -139,11 +139,11 @@ void tmMesh_destroy(tmMesh *mesh)
 **********************************************************/
 ListNode *tmMesh_addNode(tmMesh *mesh, tmNode *node)
 {
-  mesh->nodes_index += 1;
+  ListNode *node_pos;
+  mesh->no_nodes += 1;
   List_push(mesh->nodes_stack, node);
   tmQtree_addObj(mesh->nodes_qtree, node);
-
-  ListNode *node_pos = List_last_node(mesh->nodes_stack);
+  node_pos = List_last_node(mesh->nodes_stack);
   
   return node_pos;
 
@@ -158,11 +158,11 @@ ListNode *tmMesh_addNode(tmMesh *mesh, tmNode *node)
 **********************************************************/
 ListNode *tmMesh_addEdge(tmMesh *mesh, tmEdge *edge)
 {
-  mesh->edges_index += 1;
+  ListNode *edge_pos;
+  mesh->no_edges += 1;
   List_push(mesh->edges_stack, edge);
   tmQtree_addObj(mesh->edges_qtree, edge);
-
-  ListNode *edge_pos = List_last_node(mesh->edges_stack);
+  edge_pos = List_last_node(mesh->edges_stack);
   
   return edge_pos;
 
@@ -177,11 +177,11 @@ ListNode *tmMesh_addEdge(tmMesh *mesh, tmEdge *edge)
 **********************************************************/
 ListNode *tmMesh_addTri(tmMesh *mesh, tmTri *tri)
 {
-  mesh->tris_index += 1;
+  ListNode *tri_pos;
+  mesh->no_tris += 1;
   List_push(mesh->tris_stack, tri);
   tmQtree_addObj(mesh->tris_qtree, tri);
-
-  ListNode *tri_pos = List_last_node(mesh->tris_stack);
+  tri_pos = List_last_node(mesh->tris_stack);
   
   return tri_pos;
 
@@ -201,16 +201,13 @@ void tmMesh_remNode(tmMesh *mesh, tmNode *node)
   tmBool    qtree_rem;
 
   if ( node->mesh != mesh )
-  {
     log_warn("Can not remove node from mesh. Node not found.");
-    return -1;
-  }
 
   /*-------------------------------------------------------
   | Remove node from qtree
   -------------------------------------------------------*/
   qtree_rem = tmQtree_remObj(mesh->nodes_qtree, node);
-  mesh->nodes_index -= 1;
+  mesh->no_nodes -= 1;
 
   /*-------------------------------------------------------
   | Remove node from stack
@@ -234,16 +231,13 @@ void tmMesh_remEdge(tmMesh *mesh, tmEdge *edge)
   | Check if object is in the mesh
   -------------------------------------------------------*/
   if ( edge->mesh != mesh )
-  {
     log_warn("Can not remove edge from mesh. Edge not found.");
-    return -1;
-  }
 
   /*-------------------------------------------------------
   | Remove node from qtree
   -------------------------------------------------------*/
   qtree_rem = tmQtree_remObj(mesh->edges_qtree, edge);
-  mesh->edges_index -= 1;
+  mesh->no_edges -= 1;
 
   /*-------------------------------------------------------
   | Remove node from stack
@@ -267,16 +261,13 @@ void tmMesh_remTri(tmMesh *mesh, tmTri *tri)
   | Check if object is in the nodestack
   -------------------------------------------------------*/
   if ( tri->mesh != mesh )
-  {
     log_warn("Can not remove tri from mesh. Tri not found.");
-    return -1;
-  }
 
   /*-------------------------------------------------------
   | Remove node from qtree
   -------------------------------------------------------*/
   qtree_rem = tmQtree_remObj(mesh->tris_qtree, tri);
-  mesh->tris_index -= 1;
+  mesh->no_tris -= 1;
 
   /*-------------------------------------------------------
   | Remove node from stack

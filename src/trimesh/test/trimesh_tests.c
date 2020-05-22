@@ -14,6 +14,7 @@
 #include <stdlib.h>
 #define _USE_MATH_DEFINES
 #include <math.h>
+#include <time.h>
 
 
 /*************************************************************
@@ -41,20 +42,14 @@ char *test_mesh_create_destroy()
       "Failed to add node to mesh->nodes_stack.");
   mu_assert( List_last(mesh->nodes_stack) == n_3,
       "Failed to add node to mesh->nodes_stack.");
-  /*
-  mu_assert( n_1->index == 0,
-      "Failed to add node to mesh->nodes_stack.");
-  mu_assert( n_2->index == 1,
-      "Failed to add node to mesh->nodes_stack.");
-  mu_assert( mesh->nodes_index == 3,
-      "Failed to add node to mesh->nodes_stack.");
-  */
 
   mu_assert(List_first(mesh->nodes_qtree->obj) == n_1,
       "Failed to add node to mesh->nodes_qtree.");
   mu_assert(List_last(mesh->nodes_qtree->obj) == n_3,
       "Failed to add node to mesh->nodes_qtree.");
   mu_assert(mesh->nodes_qtree->n_obj == 3,
+      "Failed to add node to mesh->nodes_qtree.");
+  mu_assert(mesh->nodes_qtree->n_obj_tot == 3,
       "Failed to add node to mesh->nodes_qtree.");
 
   /*--------------------------------------------------------
@@ -67,14 +62,6 @@ char *test_mesh_create_destroy()
       "Failed to add edge to mesh->edges_stack.");
   mu_assert( List_last(mesh->edges_stack) == e_2,
       "Failed to add edge to mesh->edges_stack.");
-  /*
-  mu_assert( e_1->index == 0,
-      "Failed to add edge to mesh->edges_stack.");
-  mu_assert( e_2->index == 1,
-      "Failed to add edge to mesh->edges_stack.");
-  mu_assert( mesh->edges_index == 2,
-      "Failed to add edge to mesh->edges_stack.");
-  */
 
   /*--------------------------------------------------------
   | Add new triangle 
@@ -82,12 +69,6 @@ char *test_mesh_create_destroy()
   tmTri *t_1 = tmTri_create(mesh, n_1, n_2, n_3);
   mu_assert( List_first(mesh->tris_stack) == t_1,
       "Failed to add tri to mesh->tris_stack.");
-  /*
-  mu_assert( t_1->index == 0,
-      "Failed to add tri to mesh->tris_stack.");
-  mu_assert( mesh->tris_index == 1,
-      "Failed to add tri to mesh->tris_stack.");
-  */
 
   tmMesh_destroy(mesh);
 
@@ -134,6 +115,8 @@ char *test_tmQtree()
       "Node n_3 has not been added to mesh qtree.");
   mu_assert( tmQtree_getObjNo(mesh->nodes_qtree) == 3,
       "tmQtree_getObjNo returned wrong number of elements.");
+  mu_assert(mesh->nodes_qtree->n_obj_tot == 3,
+      "Failed to add node to mesh->nodes_qtree.");
 
   /*--------------------------------------------------------
   | Qtree should split when next node is added
@@ -143,6 +126,11 @@ char *test_tmQtree()
       "Qtree has not been splitted.");
   mu_assert( tmQtree_getObjNo(mesh->nodes_qtree) == 4,
       "tmQtree_getObjNo returned wrong number of elements.");
+
+  mu_assert(mesh->nodes_qtree->n_obj_tot == 4,
+      "Failed to split mesh->nodes_qtree.");
+  mu_assert(mesh->nodes_qtree->n_obj == 0,
+      "Failed to split mesh->nodes_qtree.");
 
   /*--------------------------------------------------------
   | Check if nodes are distributed correctly
@@ -157,6 +145,8 @@ char *test_tmQtree()
       "Node n_1 has been distributed to a wrong child.");
   mu_assert( tmQtree_getObjNo(mesh->nodes_qtree->child_SW) == 1,
       "tmQtree_getObjNo returned wrong number of elements.");
+  mu_assert(mesh->nodes_qtree->child_SW->n_obj_tot == 1,
+      "Failed to add node to mesh->nodes_qtree.");
 
   mu_assert( tmQtree_containsObj(mesh->nodes_qtree->child_SE, n_2, 0) == TRUE,
       "Node n_2 has been distributed to a wrong child.");
@@ -168,6 +158,8 @@ char *test_tmQtree()
       "Node n_2 has been distributed to a wrong child.");
   mu_assert( tmQtree_getObjNo(mesh->nodes_qtree->child_SE) == 1,
       "tmQtree_getObjNo returned wrong number of elements.");
+  mu_assert(mesh->nodes_qtree->child_SE->n_obj_tot == 1,
+      "Failed to add node to mesh->nodes_qtree.");
 
   mu_assert( tmQtree_containsObj(mesh->nodes_qtree->child_NE, n_3, 0) == TRUE,
       "Node n_3 has been distributed to a wrong child.");
@@ -185,25 +177,13 @@ char *test_tmQtree()
        cur != NULL; cur = cur->next)
   {
     if (cur->value == n_1)
-    {
-      //printf("n_1 in mesh->nodes_qtree:  INDEX: %d\n", ((tmNode*)cur->value)->index);
       obj_in_qtree = TRUE;
-    }
     if (cur->value == n_2)
-    {
-      //printf("n_2 in mesh->nodes_qtree:  INDEX: %d\n", ((tmNode*)cur->value)->index);
       obj_in_qtree = TRUE;
-    }
     if (cur->value == n_3)
-    {
-      //printf("n_3 in mesh->nodes_qtree:  INDEX: %d\n", ((tmNode*)cur->value)->index);
       obj_in_qtree = TRUE;
-    }
     if (cur->value == n_4)
-    {
-      //printf("n_4 in mesh->nodes_qtree:  INDEX: %d\n", ((tmNode*)cur->value)->index);
       obj_in_qtree = TRUE;
-    }
   }
 
   mu_assert( obj_in_qtree == FALSE,
@@ -280,7 +260,8 @@ char *test_tmQtree()
   tmNode *n_10= tmNode_create(mesh, xy_10); 
   mu_assert( tmQtree_getObjNo(mesh->nodes_qtree) == 10,
       "tmQtree_getObjNo returned wrong number of elements.");
-
+  mu_assert( tmQtree_getObjNo(mesh->nodes_qtree) == mesh->nodes_qtree->n_obj_tot,
+      "Failed to distribute number of nodes.");
 
   /*--------------------------------------------------------
   | Check function for finding objects in qree
@@ -321,6 +302,9 @@ char *test_tmQtree()
   mu_assert( tmQtree_getObjNo(mesh->nodes_qtree->child_SW) == 3,
       "tmQtree_getObjNo returned wrong number of elements.");
 
+  mu_assert( tmQtree_getObjNo(mesh->nodes_qtree) == mesh->nodes_qtree->n_obj_tot,
+      "Failed to distribute number of nodes.");
+
   /*--------------------------------------------------------
   | Remove node 6 -> child_NE must merge
   --------------------------------------------------------*/
@@ -338,6 +322,9 @@ char *test_tmQtree()
   mu_assert( tmQtree_getObjNo(mesh->nodes_qtree->child_NE) == 3,
       "tmQtree_getObjNo returned wrong number of elements.");
 
+  mu_assert( tmQtree_getObjNo(mesh->nodes_qtree) == mesh->nodes_qtree->n_obj_tot,
+      "Failed to distribute number of nodes.");
+
   tmMesh_destroy(mesh);
 
   return NULL;
@@ -354,7 +341,7 @@ char *test_tmQtree_performance()
   tmDouble xy_max[2] = {  55.0,  50.0 };
   tmMesh *mesh = tmMesh_create(xy_min, xy_max, 10);
 
-  int n_nodes = 50000;
+  int n_nodes = 100;
 
   tmDouble a = 2.5;
   tmDouble b =-3.4;
@@ -365,9 +352,16 @@ char *test_tmQtree_performance()
 
   int i;
   tmNode *n;
-  tmDouble n_xy[2] = { 0.0, 0.0 };
+  tmDouble n_xy[2]     = { 0.0, 0.0 };
+  tmDouble bbox_min[2] = { 0.0, 0.0 };
+  tmDouble bbox_max[2] = { 0.0, 0.0 };
   tmDouble t;
 
+  int n_obj_qt = 0;
+  int n_obj_bf = 0;
+  int n_total  = 0;
+
+  clock_t tic_0 = clock();
   /*--------------------------------------------------------
   | Create nodes in domain
   --------------------------------------------------------*/
@@ -379,48 +373,78 @@ char *test_tmQtree_performance()
     n = tmNode_create(mesh, n_xy); 
   }
 
+  clock_t tic_1 = clock();
+
   /*--------------------------------------------------------
-  | Find objects within bbox with qtree
+  | Find objects within bbox of every node with qtree
   --------------------------------------------------------*/
-  tmDouble bbox_min[2] = { -10.0, -10.0 };
-  tmDouble bbox_max[2] = {  10.0,  10.0 };
+  for (i = 0; i < n_nodes; i++)
+  {
+    t = t_0 + dt * (tmDouble)i;
+    n_xy[0] = (a + b * t) * cos(t) + c * sin(40. * t);
+    n_xy[1] = (a + b * t) * sin(t) + c * cos(40. * t);
 
-  List *obj_bbox = tmQtree_getObjBbox(mesh->nodes_qtree, 
-                                      bbox_min, bbox_max);
+    tmDouble bbox_min[2] = { n_xy[0]-2.0, n_xy[1]-2.0 };
+    tmDouble bbox_max[2] = { n_xy[0]+2.0, n_xy[1]+2.0 };
 
+    List *obj_bbox = tmQtree_getObjBbox(mesh->nodes_qtree, 
+                                        bbox_min, bbox_max);
+
+
+    if (obj_bbox != NULL)
+    {
+      n_obj_qt += obj_bbox->count;
+      List_destroy(obj_bbox);
+    }
+    
+  }
+
+  clock_t tic_2 = clock();
   /*--------------------------------------------------------
   | Brute force search for objects in bbox
   --------------------------------------------------------*/
-  ListNode  *cur;
+  ListNode *cur;
   tmDouble *cur_xy;
   tmBool    in_bbox;
-  int       n_in_bbox = 0;
-  int       n_total = 0;
 
-  for (cur = mesh->nodes_stack->first;
-      cur != NULL; cur = cur->next)
+  for (i = 0; i < n_nodes; i++)
   {
-    n_total += 1;
-    cur_xy = ((tmNode*)cur->value)->xy;
-    in_bbox = IN_ON_BBOX(cur_xy, bbox_min, bbox_max);
+    t = t_0 + dt * (tmDouble)i;
+    n_xy[0] = (a + b * t) * cos(t) + c * sin(40. * t);
+    n_xy[1] = (a + b * t) * sin(t) + c * cos(40. * t);
 
-    if (in_bbox == TRUE)
-      n_in_bbox += 1;
+    tmDouble bbox_min[2] = { n_xy[0]-2.0, n_xy[1]-2.0 };
+    tmDouble bbox_max[2] = { n_xy[0]+2.0, n_xy[1]+2.0 };
+
+    for (cur = mesh->nodes_stack->first;
+        cur != NULL; cur = cur->next)
+    {
+      n_total += 1;
+      cur_xy  = ((tmNode*)cur->value)->xy;
+      in_bbox = IN_ON_BBOX(cur_xy, bbox_min, bbox_max);
+
+      if (in_bbox == TRUE)
+        n_obj_bf += 1;
+    }
   }
 
-  printf("Total nodes: %d\n", n_total);
-  printf("Found %d/%d nodes in bbox.\n", obj_bbox->count, n_in_bbox);
-
-
-  printf("Destroying obj_bbox...");
-  if (obj_bbox != NULL)
-    List_destroy(obj_bbox);
-  printf(" Done!\n");
-
-
-  printf("Destroying mesh...");
+  clock_t tic_3 = clock();
   tmMesh_destroy(mesh);
-  printf(" Done!\n");
+
+  clock_t tic_4 = clock();
+
+  printf("-------------------------------------------------------------------\n");
+  printf(" tmQtree Performance test                \n");
+  printf("-------------------------------------------------------------------\n");
+  printf(" > Number of brute-force calls: %d\n", n_total);
+  printf(" > Found nodes in bbox: %d/%d\n", n_obj_qt, n_obj_bf);
+  printf("-------------------------------------------------------------------\n");
+  printf(" > Total time                    : %e sec\n", (double) (tic_4 - tic_0) / CLOCKS_PER_SEC );
+  printf(" > Time for initilization        : %e sec\n", (double) (tic_1 - tic_0) / CLOCKS_PER_SEC );
+  printf(" > Time for qtree search         : %e sec\n", (double) (tic_2 - tic_1) / CLOCKS_PER_SEC );
+  printf(" > Time for brute force search   : %e sec\n", (double) (tic_3 - tic_2) / CLOCKS_PER_SEC );
+  printf(" > Time to clear everything      : %e sec\n", (double) (tic_4 - tic_3) / CLOCKS_PER_SEC );
+  printf("-------------------------------------------------------------------\n");
 
   return NULL;
 

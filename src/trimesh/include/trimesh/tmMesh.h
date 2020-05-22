@@ -18,7 +18,7 @@ typedef struct tmMesh {
   -------------------------------------------------------*/
   tmNode  *nodes_head;
   List    *nodes_stack;
-  int      nodes_index;
+  int      no_nodes;
   tmQtree *nodes_qtree;
 
   /*-------------------------------------------------------
@@ -26,7 +26,7 @@ typedef struct tmMesh {
   -------------------------------------------------------*/
   tmEdge  *edges_head;
   List    *edges_stack;
-  int      edges_index;
+  int      no_edges;
   tmQtree *edges_qtree;
 
   /*-------------------------------------------------------
@@ -34,7 +34,7 @@ typedef struct tmMesh {
   -------------------------------------------------------*/
   tmTri   *tris_head;
   List    *tris_stack;
-  int      tris_index;
+  int      no_tris;
   tmQtree *tris_qtree;
 
 } tmMesh;

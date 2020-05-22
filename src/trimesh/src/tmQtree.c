@@ -85,13 +85,21 @@ static void tmQtree_split(tmQtree *qtree)
 
   /*-------------------------------------------------------
   | Distribute objects to children
+  | and remove from own list
   -------------------------------------------------------*/
   ListNode *cur, *nxt;
   tmDouble *cur_xy;
+  tmQtree  *p;
 
-  for (cur = qtree->obj->first; 
-       cur != NULL; cur = cur->next)
+  cur = qtree->obj->first;
+  nxt = cur;
+  while (nxt != NULL)
   {
+    nxt = cur->next;
+
+    /*-----------------------------------------------------
+    | Check object type
+    -----------------------------------------------------*/
     if ( qtree->obj_type == TM_NODE)
       cur_xy = ((tmNode*)cur->value)->xy;
     else if ( qtree->obj_type == TM_EDGE)
@@ -101,6 +109,9 @@ static void tmQtree_split(tmQtree *qtree)
     else
       log_err("Wrong type provied for tmQtree_split()");
 
+    /*-----------------------------------------------------
+    | Distribute to children
+    -----------------------------------------------------*/
     if ( cur_xy[0] >= qtree->xy[0] )
     {
       if ( cur_xy[1] >= qtree->xy[1] )
@@ -115,17 +126,22 @@ static void tmQtree_split(tmQtree *qtree)
       else
         tmQtree_addObj(qtree->child_SW, cur->value);
     }
-  }
 
-  /*-------------------------------------------------------
-  | Clear own object list
-  -------------------------------------------------------*/
-  cur = qtree->obj->first;
-  nxt = cur;
-  while (nxt != NULL)
-  {
-    nxt = cur->next;
-    tmQtree_remObj(qtree, cur->value);
+    /*-----------------------------------------------------
+    | Remove from own list
+    -----------------------------------------------------*/
+    List_remove(qtree->obj, cur);
+
+    qtree->n_obj     -= 1;
+    qtree->n_obj_tot -= 1;
+
+    p = qtree->parent;
+    while (p != NULL)
+    {
+      p->n_obj_tot -= 1;
+      p = p->parent;
+    }
+
     cur = nxt;
   }
 
@@ -167,22 +183,66 @@ static tmBool tmQtree_merge(tmQtree *qtree)
   /*-------------------------------------------------------
   | Get objects from all children
   -------------------------------------------------------*/
-  /*                    NORTH EAST                       */
+  /* ****************** NORTH EAST ********************* */
   for(cur = qtree->child_NE->obj->first;
       cur != NULL; cur = cur->next)
+  {
     tmQtree_addObj(qtree, cur->value);
-  /*                    NORTH WEST                       */
+
+    /* n_obj_tot was increased in addObj but stays const */
+    qtree->n_obj_tot -= 1;
+    tmQtree *p = qtree->parent;
+    while (p != NULL)
+    {
+      p->n_obj_tot -= 1;
+      p = p->parent;
+    }
+  }
+  /* ****************** NORTH WEST ********************* */
   for(cur = qtree->child_NW->obj->first;
       cur != NULL; cur = cur->next)
+  {
     tmQtree_addObj(qtree, cur->value);
-  /*                    SOUTH WEST                       */
+
+    /* n_obj_tot was increased in addObj but stays const */
+    qtree->n_obj_tot -= 1;
+    tmQtree *p = qtree->parent;
+    while (p != NULL)
+    {
+      p->n_obj_tot -= 1;
+      p = p->parent;
+    }
+  }
+  /* ****************** SOUTH WEST ********************* */
   for(cur = qtree->child_SW->obj->first;
       cur != NULL; cur = cur->next)
+  {
     tmQtree_addObj(qtree, cur->value);
-  /*                    SOUTH EAST                       */
+
+    /* n_obj_tot was increased in addObj but stays const */
+    qtree->n_obj_tot -= 1;
+    tmQtree *p = qtree->parent;
+    while (p != NULL)
+    {
+      p->n_obj_tot -= 1;
+      p = p->parent;
+    }
+  }
+  /* ****************** SOUTH EAST ********************* */
   for(cur = qtree->child_SE->obj->first;
       cur != NULL; cur = cur->next)
+  {
     tmQtree_addObj(qtree, cur->value);
+
+    /* n_obj_tot was increased in addObj but stays const */
+    qtree->n_obj_tot -= 1;
+    tmQtree *p = qtree->parent;
+    while (p != NULL)
+    {
+      p->n_obj_tot -= 1;
+      p = p->parent;
+    }
+  }
 
   /*-------------------------------------------------------
   | Destroy all children
@@ -278,9 +338,10 @@ tmQtree *tmQtree_create(tmMesh *mesh, int obj_type)
   /*-------------------------------------------------------
   | Qtree objects
   -------------------------------------------------------*/
-  qtree->n_obj    = 0;
-  qtree->obj      = List_create();
-  qtree->obj_type = obj_type;
+  qtree->n_obj     = 0;
+  qtree->n_obj_tot = 0;
+  qtree->obj       = List_create();
+  qtree->obj_type  = obj_type;
 
   return qtree;
 error:
@@ -407,7 +468,36 @@ tmBool tmQtree_addObj(tmQtree *qtree, void *obj)
   else
   {
     List_push(qtree->obj, obj);
-    qtree->n_obj += 1;
+    qtree->n_obj     += 1;
+    qtree->n_obj_tot += 1;
+
+    if ( qtree->obj_type == TM_NODE)
+    {
+      ((tmNode*)obj)->qtree_pos = List_last_node(qtree->obj);
+      ((tmNode*)obj)->qtree     = qtree;
+    }
+    else if ( qtree->obj_type == TM_EDGE)
+    {
+      ((tmEdge*)obj)->qtree_pos = List_last_node(qtree->obj);
+      ((tmEdge*)obj)->qtree     = qtree;
+    }
+    else if ( qtree->obj_type == TM_TRI)
+    {
+      ((tmTri*)obj)->qtree_pos = List_last_node(qtree->obj);
+      ((tmTri*)obj)->qtree     = qtree;
+    }
+    else
+      log_err("Wrong type provied for tmQtree_addObj()");
+
+    /*-----------------------------------------------------
+    | Increase number of nodes of all parent qtrees
+    -----------------------------------------------------*/
+    tmQtree *p = qtree->parent;
+    while (p != NULL)
+    {
+      p->n_obj_tot += 1;
+      p = p->parent;
+    }
 
     if (qtree->n_obj > qtree->max_obj)
       tmQtree_split(qtree);
@@ -441,7 +531,7 @@ tmBool tmQtree_remObj(tmQtree *qtree, void *obj)
   else if ( qtree->obj_type == TM_TRI)
     xy = ((tmTri*)obj)->xy;
   else
-    log_err("Wrong type provied for tmQtree_addObj()");
+    log_err("Wrong type provied for tmQtree_remObj()");
 
   in_bbox = IN_ON_BBOX(xy, qtree->xy_min, qtree->xy_max);
 
@@ -467,7 +557,7 @@ tmBool tmQtree_remObj(tmQtree *qtree, void *obj)
     | Get number of objects contained in all children
     | and decide if parent can be merged 
     -----------------------------------------------------*/
-    int n_obj = tmQtree_getObjNo(qtree);
+    int n_obj = qtree->n_obj_tot; 
     if (n_obj <= qtree->max_obj)
       tmQtree_merge(qtree);
 
@@ -480,28 +570,47 @@ tmBool tmQtree_remObj(tmQtree *qtree, void *obj)
   {
     /*-----------------------------------------------------
     | Check if object is in this qtree
-    -----------------------------------------------------*/
-    ListNode *cur;
-    tmBool obj_in_qtree = FALSE;
-
-    for (cur = qtree->obj->first; 
-         cur != NULL; cur = cur->next)
-    {
-      if (cur->value == obj)
-      {
-        obj_in_qtree = TRUE;
-        break;
-      }
-    }
-
-    if (obj_in_qtree == FALSE)
-      return FALSE;
-
-    /*-----------------------------------------------------
     | Remove object
     -----------------------------------------------------*/
-    List_remove(qtree->obj, cur);
-    qtree->n_obj -= 1;
+    if ( qtree->obj_type == TM_NODE)
+    {
+      if ( ((tmNode*)obj)->qtree != qtree )
+        return FALSE;
+
+      List_remove(qtree->obj, ((tmNode*)obj)->qtree_pos);
+      
+    }
+    else if ( qtree->obj_type == TM_EDGE)
+    {
+      if ( ((tmEdge*)obj)->qtree != qtree )
+        return FALSE;
+
+      List_remove(qtree->obj, ((tmEdge*)obj)->qtree_pos);
+
+    }
+    else if ( qtree->obj_type == TM_TRI)
+    {
+      if ( ((tmTri*)obj)->qtree != qtree )
+        return FALSE;
+
+      List_remove(qtree->obj, ((tmTri*)obj)->qtree_pos);
+
+    }
+    else
+      log_err("Wrong type provied for tmQtree_remObj()");
+    
+    qtree->n_obj     -= 1;
+    qtree->n_obj_tot -= 1;
+
+    /*-----------------------------------------------------
+    | Decrease number of nodes of all parent qtrees
+    -----------------------------------------------------*/
+    tmQtree *p = qtree->parent;
+    while (p != NULL)
+    {
+      p->n_obj_tot -= 1;
+      p = p->parent;
+    }
 
     return TRUE;
   }

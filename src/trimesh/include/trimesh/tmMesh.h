@@ -60,7 +60,6 @@ tmMesh *tmMesh_create(tmDouble xy_min[2],
 *----------------------------------------------------------
 * @param *mesh: pointer to a tmMesh to destroy
 *
-* @return: Returns TRUE if method works
 **********************************************************/
 void tmMesh_destroy(tmMesh *mesh);
 

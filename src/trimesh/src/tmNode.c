@@ -29,18 +29,20 @@ tmNode *tmNode_create(tmMesh *mesh, tmDouble xy[2])
   /*-------------------------------------------------------
   | Init node properties
   -------------------------------------------------------*/
-  node->is_active = FALSE;
-  node->on_bdry   = FALSE;
-  node->bdry_succ = NULL;
-  node->bdry_prev = NULL;
+  node->is_active   = FALSE;
+  node->on_bdry     = FALSE;
+  node->bdry_index  = -1;
 
   /*-------------------------------------------------------
   | Init node lists
   -------------------------------------------------------*/
-  node->edges = List_create();
-  node->n_edges = 0;
+  node->bdry_edges   = List_create();
+  node->n_bdry_edges = 0;
 
-  node->tris = List_create();
+  node->front_edges   = List_create();
+  node->n_front_edges = 0;
+
+  node->tris   = List_create();
   node->n_tris = 0;
 
   /*-------------------------------------------------------
@@ -71,7 +73,8 @@ void tmNode_destroy(tmNode *node)
   /*-------------------------------------------------------
   | Free all list structures
   -------------------------------------------------------*/
-  List_destroy(node->edges);
+  List_destroy(node->front_edges);
+  List_destroy(node->bdry_edges);
   List_destroy(node->tris);
 
   /*-------------------------------------------------------

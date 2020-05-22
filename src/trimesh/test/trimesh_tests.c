@@ -1,6 +1,7 @@
 #include "trimesh/tmNode.h"
 #include "trimesh/tmEdge.h"
 #include "trimesh/tmTri.h"
+#include "trimesh/tmBdry.h"
 #include "trimesh/tmMesh.h"
 #include "trimesh/tmQtree.h"
 
@@ -449,3 +450,51 @@ char *test_tmQtree_performance()
   return NULL;
 
 } /* test_tmQtree_performance() */
+
+/*************************************************************
+* Unit test function to test the tmBdry structure
+************************************************************/
+char *test_tmBdry()
+{
+  tmDouble xy_min[2] = { -5.0, -5.0 };
+  tmDouble xy_max[2] = {  5.0,  5.0 };
+  tmMesh *mesh = tmMesh_create(xy_min, xy_max, 3);
+
+  /*--------------------------------------------------------
+  | Add new nodes 
+  --------------------------------------------------------*/
+  tmDouble xy_1[2] = {-2.50,-2.50};
+  tmDouble xy_2[2] = { 2.50,-2.50};
+  tmDouble xy_3[2] = { 2.50, 2.50};
+  tmDouble xy_4[2] = {-2.50, 2.50};
+
+  tmDouble xy_5[2] = {-1.00,-1.00};
+  tmDouble xy_6[2] = {-1.00, 1.00};
+  tmDouble xy_7[2] = { 1.00, 1.00};
+  tmDouble xy_8[2] = { 1.00,-1.00};
+
+  tmNode *n_1 = tmNode_create(mesh, xy_1);
+  tmNode *n_2 = tmNode_create(mesh, xy_2);
+  tmNode *n_3 = tmNode_create(mesh, xy_3);
+  tmNode *n_4 = tmNode_create(mesh, xy_4);
+
+  tmNode *n_5 = tmNode_create(mesh, xy_5);
+  tmNode *n_6 = tmNode_create(mesh, xy_6);
+  tmNode *n_7 = tmNode_create(mesh, xy_7);
+  tmNode *n_8 = tmNode_create(mesh, xy_8);
+
+  tmBdry *b_1 = tmBdry_create(mesh);
+  tmBdry_init( b_1, 0, TRUE );
+
+  tmBdry_addEdge(b_1, n_1, n_2);
+  tmBdry_addEdge(b_1, n_2, n_3);
+  tmBdry_addEdge(b_1, n_3, n_4);
+  tmBdry_addEdge(b_1, n_4, n_1);
+
+  tmBdry_destroy(b_1);
+
+  tmMesh_destroy(mesh);
+
+  return NULL;
+
+} /* test_tmBdry() */

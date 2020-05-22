@@ -20,4 +20,9 @@ char *test_tmQtree();
 ************************************************************/
 char *test_tmQtree_performance();
 
+/*************************************************************
+* Unit test function to test the tmBdry structure
+************************************************************/
+char *test_tmBdry();
+
 #endif

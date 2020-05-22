@@ -20,7 +20,7 @@ typedef struct tmNode {
   tmDouble xy[2];
 
   /*-------------------------------------------------------
-  | Index of this node and its state
+  | Properties of this node and its state
   -------------------------------------------------------*/
   ListNode *stack_pos;
   ListNode *qtree_pos;
@@ -31,14 +31,15 @@ typedef struct tmNode {
   | Boundary properties if node is located on a boundary
   -------------------------------------------------------*/
   tmBool  on_bdry;
-  tmNode *bdry_succ;
-  tmNode *bdry_prev;
+  int     bdry_index;
+  List   *bdry_edges;
+  int     n_bdry_edges;
 
   /*-------------------------------------------------------
-  | All adjacent edges to this node 
+  | All adjacent front edges to this node 
   -------------------------------------------------------*/
-  List *edges;
-  int   n_edges;
+  List *front_edges;
+  int   n_front_edges;
 
   /*-------------------------------------------------------
   | All adjacent triangles to this node 

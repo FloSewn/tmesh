@@ -13,11 +13,12 @@
 /***********************************************************
 * Basic structure typedefs
 ***********************************************************/
-typedef struct tmNode tmNode;
-typedef struct tmEdge tmEdge;
-typedef struct tmTri tmTri;
+typedef struct tmNode  tmNode;
+typedef struct tmEdge  tmEdge;
+typedef struct tmTri   tmTri;
+typedef struct tmBdry  tmBdry;
 typedef struct tmQtree tmQtree;
-typedef struct tmMesh tmMesh;
+typedef struct tmMesh  tmMesh;
 
 /***********************************************************
 * Basic structure labels

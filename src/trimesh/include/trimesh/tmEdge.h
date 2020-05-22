@@ -12,6 +12,7 @@ typedef struct tmEdge {
   | Parent mesh properties
   -------------------------------------------------------*/
   tmMesh *mesh;
+  tmBdry *bdry;
 
   /*-------------------------------------------------------
   | Edge centroid coordinates 
@@ -19,10 +20,14 @@ typedef struct tmEdge {
   tmDouble xy[2];
 
   /*-------------------------------------------------------
-  | Index of this edge
+  | Properties of this edge
   -------------------------------------------------------*/
   tmBool    is_active;
   tmBool    is_on_front;
+  tmBool    is_on_bdry;
+
+  int       bdry_index;
+
   ListNode *stack_pos;
   ListNode *qtree_pos;
   tmQtree  *qtree;
@@ -47,6 +52,12 @@ typedef struct tmEdge {
   -------------------------------------------------------*/
   tmNode *n1;
   tmNode *n2;
+
+  /*-------------------------------------------------------
+  | Reference of edge in nodes edge lists
+  -------------------------------------------------------*/
+  ListNode *n1_pos;
+  ListNode *n2_pos;
 
   /*-------------------------------------------------------
   | Adjacent triangles to this edge
@@ -79,5 +90,15 @@ tmEdge *tmEdge_create(tmMesh *mesh, tmNode *n1, tmNode *n2);
 * @param *mesh: pointer to a tmEdge to destroy
 **********************************************************/
 void tmEdge_destroy(tmEdge *edge);
+
+/**********************************************************
+* Function: tmEdge_init()
+*----------------------------------------------------------
+* Init a new tmEdge structure 
+*----------------------------------------------------------
+* @param edge: tmEdge structure to init
+*
+**********************************************************/
+void tmEdge_init(tmEdge *edge, tmBdry *bdry);
 
 #endif

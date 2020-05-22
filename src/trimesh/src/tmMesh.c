@@ -137,14 +137,15 @@ void tmMesh_destroy(tmMesh *mesh)
 *----------------------------------------------------------
 * @return: tmNode index on the mesh's node stack
 **********************************************************/
-tmIndex tmMesh_addNode(tmMesh *mesh, tmNode *node)
+ListNode *tmMesh_addNode(tmMesh *mesh, tmNode *node)
 {
-  tmIndex node_index = mesh->nodes_index;
   mesh->nodes_index += 1;
   List_push(mesh->nodes_stack, node);
   tmQtree_addObj(mesh->nodes_qtree, node);
+
+  ListNode *node_pos = List_last_node(mesh->nodes_stack);
   
-  return node_index;
+  return node_pos;
 
 } /* tmMesh_addNode() */
 
@@ -155,14 +156,15 @@ tmIndex tmMesh_addNode(tmMesh *mesh, tmNode *node)
 *----------------------------------------------------------
 * @return: tmEdge index on the mesh's edge stack
 **********************************************************/
-tmIndex tmMesh_addEdge(tmMesh *mesh, tmEdge *edge)
+ListNode *tmMesh_addEdge(tmMesh *mesh, tmEdge *edge)
 {
-  tmIndex edge_index = mesh->edges_index;
   mesh->edges_index += 1;
   List_push(mesh->edges_stack, edge);
   tmQtree_addObj(mesh->edges_qtree, edge);
+
+  ListNode *edge_pos = List_last_node(mesh->edges_stack);
   
-  return edge_index;
+  return edge_pos;
 
 } /* tmMesh_addEdge() */
 
@@ -173,14 +175,15 @@ tmIndex tmMesh_addEdge(tmMesh *mesh, tmEdge *edge)
 *----------------------------------------------------------
 * @return: tmTri index on the mesh's tri stack
 **********************************************************/
-tmIndex tmMesh_addTri(tmMesh *mesh, tmTri *tri)
+ListNode *tmMesh_addTri(tmMesh *mesh, tmTri *tri)
 {
-  tmIndex tri_index = mesh->tris_index;
   mesh->tris_index += 1;
   List_push(mesh->tris_stack, tri);
   tmQtree_addObj(mesh->tris_qtree, tri);
+
+  ListNode *tri_pos = List_last_node(mesh->tris_stack);
   
-  return tri_index;
+  return tri_pos;
 
 } /* tmMesh_addTri() */
 
@@ -190,45 +193,17 @@ tmIndex tmMesh_addTri(tmMesh *mesh, tmTri *tri)
 *----------------------------------------------------------
 * Function to remove a tmNode from a tmMesh
 *----------------------------------------------------------
-* @return: tmNode index on the mesh's node stack
-*          returns -1 if node was not found
+*
 **********************************************************/
-tmIndex tmMesh_remNode(tmMesh *mesh, tmNode *node)
+void tmMesh_remNode(tmMesh *mesh, tmNode *node)
 {
-  ListNode *cur, *nxt;
+  ListNode *cur;
   tmBool    qtree_rem;
 
-  tmIndex node_index = node->index;
-  tmBool  in_stack   = FALSE;
-
-  /*-------------------------------------------------------
-  | Check if object is in the nodestack
-  -------------------------------------------------------*/
-  for (cur = mesh->nodes_stack->first; 
-       cur != NULL; cur = cur->next)
+  if ( node->mesh != mesh )
   {
-    if (cur->value == node)
-    {
-      in_stack = TRUE;
-      break;
-    }
-  }
-
-  if ( in_stack == FALSE )
-  {
-    log_warn("Can not remove node %d from mesh. Node not found.", node_index);
+    log_warn("Can not remove node from mesh. Node not found.");
     return -1;
-  }
-
-
-  /*-------------------------------------------------------
-  | Adjust indices of all following nodes
-  -------------------------------------------------------*/
-  nxt = cur->next;
-  while (nxt != NULL)
-  {
-    ((tmNode*)nxt->value)->index -= 1;
-    nxt = nxt->next;
   }
 
   /*-------------------------------------------------------
@@ -240,9 +215,7 @@ tmIndex tmMesh_remNode(tmMesh *mesh, tmNode *node)
   /*-------------------------------------------------------
   | Remove node from stack
   -------------------------------------------------------*/
-  List_remove(mesh->nodes_stack, cur);
-
-  return node_index;
+  List_remove(mesh->nodes_stack, node->stack_pos);
 
 } /* tmMesh_remNode() */
 
@@ -251,59 +224,31 @@ tmIndex tmMesh_remNode(tmMesh *mesh, tmNode *node)
 *----------------------------------------------------------
 * Function to remove a tmEdge from a tmMesh
 *----------------------------------------------------------
-* @return: tmEdge index on the mesh's node stack
-*          returns -1 if edge was not found
+*
 **********************************************************/
-tmIndex tmMesh_remEdge(tmMesh *mesh, tmEdge *edge)
+void tmMesh_remEdge(tmMesh *mesh, tmEdge *edge)
 {
-  ListNode *cur, *nxt;
   tmBool    qtree_rem;
 
-  tmIndex edge_index = edge->index;
-  tmBool  in_stack   = FALSE;
-
   /*-------------------------------------------------------
-  | Check if object is in the nodestack
+  | Check if object is in the mesh
   -------------------------------------------------------*/
-  for (cur = mesh->edges_stack->first; 
-       cur != NULL; cur = cur->next)
+  if ( edge->mesh != mesh )
   {
-    if (cur->value == edge)
-    {
-      in_stack = TRUE;
-      break;
-    }
-  }
-
-  if ( in_stack == FALSE )
-  {
-    log_warn("Can not remove edge %d from mesh. Edge not found.", edge_index);
+    log_warn("Can not remove edge from mesh. Edge not found.");
     return -1;
-  }
-
-
-  /*-------------------------------------------------------
-  | Adjust indices of all following nodes
-  -------------------------------------------------------*/
-  nxt = cur->next;
-  while (nxt != NULL)
-  {
-    ((tmEdge*)nxt->value)->index -= 1;
-    nxt = nxt->next;
   }
 
   /*-------------------------------------------------------
   | Remove node from qtree
   -------------------------------------------------------*/
   qtree_rem = tmQtree_remObj(mesh->edges_qtree, edge);
-  mesh->nodes_index -= 1;
+  mesh->edges_index -= 1;
 
   /*-------------------------------------------------------
   | Remove node from stack
   -------------------------------------------------------*/
-  List_remove(mesh->edges_stack, cur);
-
-  return edge_index;
+  List_remove(mesh->edges_stack, edge->stack_pos);
 
 } /* tmMesh_remEdge() */
 
@@ -312,58 +257,30 @@ tmIndex tmMesh_remEdge(tmMesh *mesh, tmEdge *edge)
 *----------------------------------------------------------
 * Function to remove a tmTri from a tmMesh
 *----------------------------------------------------------
-* @return: tmTri index on the mesh's node stack
-*          returns -1 if tri was not found
+*
 **********************************************************/
-tmIndex tmMesh_remTri(tmMesh *mesh, tmTri *tri)
+void tmMesh_remTri(tmMesh *mesh, tmTri *tri)
 {
-  ListNode *cur, *nxt;
   tmBool    qtree_rem;
-
-  tmIndex tri_index = tri->index;
-  tmBool  in_stack  = FALSE;
 
   /*-------------------------------------------------------
   | Check if object is in the nodestack
   -------------------------------------------------------*/
-  for (cur = mesh->tris_stack->first; 
-       cur != NULL; cur = cur->next)
+  if ( tri->mesh != mesh )
   {
-    if (cur->value == tri)
-    {
-      in_stack = TRUE;
-      break;
-    }
-  }
-
-  if ( in_stack == FALSE )
-  {
-    log_warn("Can not remove tri %d from mesh. Tri not found.", tri_index);
+    log_warn("Can not remove tri from mesh. Tri not found.");
     return -1;
-  }
-
-
-  /*-------------------------------------------------------
-  | Adjust indices of all following nodes
-  -------------------------------------------------------*/
-  nxt = cur->next;
-  while (nxt != NULL)
-  {
-    ((tmTri*)nxt->value)->index -= 1;
-    nxt = nxt->next;
   }
 
   /*-------------------------------------------------------
   | Remove node from qtree
   -------------------------------------------------------*/
   qtree_rem = tmQtree_remObj(mesh->tris_qtree, tri);
-  mesh->nodes_index -= 1;
+  mesh->tris_index -= 1;
 
   /*-------------------------------------------------------
   | Remove node from stack
   -------------------------------------------------------*/
-  List_remove(mesh->tris_stack, cur);
-
-  return tri_index;
+  List_remove(mesh->tris_stack, tri->stack_pos);
 
 } /* tmMesh_remTri() */

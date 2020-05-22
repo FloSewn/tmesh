@@ -22,8 +22,8 @@ typedef struct tmNode {
   /*-------------------------------------------------------
   | Index of this node and its state
   -------------------------------------------------------*/
-  tmIndex  index;
-  tmBool   is_active;
+  ListNode *stack_pos;
+  tmBool    is_active;
 
   /*-------------------------------------------------------
   | Boundary properties if node is located on a boundary

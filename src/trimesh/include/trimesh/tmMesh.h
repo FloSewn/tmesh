@@ -71,7 +71,7 @@ void tmMesh_destroy(tmMesh *mesh);
 *----------------------------------------------------------
 * @return: tmNode index on the mesh's node stack
 **********************************************************/
-tmIndex tmMesh_addNode(tmMesh *mesh, tmNode *node);
+ListNode *tmMesh_addNode(tmMesh *mesh, tmNode *node);
 
 /**********************************************************
 * Function: tmMesh_addEdge()
@@ -80,7 +80,7 @@ tmIndex tmMesh_addNode(tmMesh *mesh, tmNode *node);
 *----------------------------------------------------------
 * @return: tmEdge index on the mesh's edge stack
 **********************************************************/
-tmIndex tmMesh_addEdge(tmMesh *mesh, tmEdge *edge);
+ListNode *tmMesh_addEdge(tmMesh *mesh, tmEdge *edge);
 
 /**********************************************************
 * Function: tmMesh_addTri()
@@ -89,36 +89,33 @@ tmIndex tmMesh_addEdge(tmMesh *mesh, tmEdge *edge);
 *----------------------------------------------------------
 * @return: tmTri index on the mesh's tri stack
 **********************************************************/
-tmIndex tmMesh_addTri(tmMesh *mesh, tmTri *tri);
+ListNode *tmMesh_addTri(tmMesh *mesh, tmTri *tri);
 
 /**********************************************************
 * Function: tmMesh_remNode()
 *----------------------------------------------------------
 * Function to remove a tmNode from a tmMesh
 *----------------------------------------------------------
-* @return: tmNode index on the mesh's node stack
-*          returns -1 if node was not found
+*          
 **********************************************************/
-tmIndex tmMesh_remNode(tmMesh *mesh, tmNode *node);
+void tmMesh_remNode(tmMesh *mesh, tmNode *node);
 
 /**********************************************************
 * Function: tmMesh_remEdge()
 *----------------------------------------------------------
 * Function to remove a tmEdge from a tmMesh
 *----------------------------------------------------------
-* @return: tmEdge index on the mesh's node stack
-*          returns -1 if edge was not found
+*
 **********************************************************/
-tmIndex tmMesh_remEdge(tmMesh *mesh, tmEdge *edge);
+void tmMesh_remEdge(tmMesh *mesh, tmEdge *edge);
 
 /**********************************************************
 * Function: tmMesh_remTri()
 *----------------------------------------------------------
 * Function to remove a tmTri from a tmMesh
 *----------------------------------------------------------
-* @return: tmTri index on the mesh's node stack
-*          returns -1 if tri was not found
+*
 **********************************************************/
-tmIndex tmMesh_remTri(tmMesh *mesh, tmTri *tri);
+void tmMesh_remTri(tmMesh *mesh, tmTri *tri);
 
 #endif

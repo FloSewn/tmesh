@@ -46,7 +46,7 @@ tmNode *tmNode_create(tmMesh *mesh, tmDouble xy[2])
   /*-------------------------------------------------------
   | Add node to qtree
   -------------------------------------------------------*/
-  node->index = tmMesh_addNode(mesh, node);
+  node->stack_pos = tmMesh_addNode(mesh, node);
 
   return node;
 error:

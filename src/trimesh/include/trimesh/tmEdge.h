@@ -21,9 +21,9 @@ typedef struct tmEdge {
   /*-------------------------------------------------------
   | Index of this edge
   -------------------------------------------------------*/
-  tmBool   is_active;
-  tmBool   is_on_front;
-  tmIndex  index;
+  tmBool    is_active;
+  tmBool    is_on_front;
+  ListNode *stack_pos;
 
   /*-------------------------------------------------------
   | Edge length  

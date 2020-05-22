@@ -12,6 +12,10 @@
 #define List_first(A) ((A)->first != NULL ? (A)->first->value : NULL)
 /* Return the value of the last list entry */
 #define List_last(A) ((A)->last != NULL ? (A)->last->value : NULL)
+/* Return the first list entry */
+#define List_first_node(A) ((A)->first != NULL ? (A)->first : NULL)
+/* Return the last list entry */
+#define List_last_node(A) ((A)->last != NULL ? (A)->last : NULL)
 /* Perform a loop over a list structure */
 #define LIST_FOREACH(L, S, M, V) ListNode *_node = NULL;\
                                  ListNode *V = NULL;\

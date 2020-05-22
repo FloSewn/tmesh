@@ -71,7 +71,7 @@ tmTri *tmTri_create(tmMesh *mesh,
   /*-------------------------------------------------------
   | Add tri to qtree
   -------------------------------------------------------*/
-  tri->index = tmMesh_addTri(mesh, tri);
+  tri->stack_pos = tmMesh_addTri(mesh, tri);
 
   return tri;
 error:

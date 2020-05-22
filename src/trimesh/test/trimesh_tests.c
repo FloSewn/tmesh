@@ -41,12 +41,14 @@ char *test_mesh_create_destroy()
       "Failed to add node to mesh->nodes_stack.");
   mu_assert( List_last(mesh->nodes_stack) == n_3,
       "Failed to add node to mesh->nodes_stack.");
+  /*
   mu_assert( n_1->index == 0,
       "Failed to add node to mesh->nodes_stack.");
   mu_assert( n_2->index == 1,
       "Failed to add node to mesh->nodes_stack.");
   mu_assert( mesh->nodes_index == 3,
       "Failed to add node to mesh->nodes_stack.");
+  */
 
   mu_assert(List_first(mesh->nodes_qtree->obj) == n_1,
       "Failed to add node to mesh->nodes_qtree.");
@@ -65,12 +67,14 @@ char *test_mesh_create_destroy()
       "Failed to add edge to mesh->edges_stack.");
   mu_assert( List_last(mesh->edges_stack) == e_2,
       "Failed to add edge to mesh->edges_stack.");
+  /*
   mu_assert( e_1->index == 0,
       "Failed to add edge to mesh->edges_stack.");
   mu_assert( e_2->index == 1,
       "Failed to add edge to mesh->edges_stack.");
   mu_assert( mesh->edges_index == 2,
       "Failed to add edge to mesh->edges_stack.");
+  */
 
   /*--------------------------------------------------------
   | Add new triangle 
@@ -78,10 +82,12 @@ char *test_mesh_create_destroy()
   tmTri *t_1 = tmTri_create(mesh, n_1, n_2, n_3);
   mu_assert( List_first(mesh->tris_stack) == t_1,
       "Failed to add tri to mesh->tris_stack.");
+  /*
   mu_assert( t_1->index == 0,
       "Failed to add tri to mesh->tris_stack.");
   mu_assert( mesh->tris_index == 1,
       "Failed to add tri to mesh->tris_stack.");
+  */
 
   tmMesh_destroy(mesh);
 
@@ -180,25 +186,26 @@ char *test_tmQtree()
   {
     if (cur->value == n_1)
     {
-      printf("n_1 in mesh->nodes_qtree:  INDEX: %d\n", ((tmNode*)cur->value)->index);
+      //printf("n_1 in mesh->nodes_qtree:  INDEX: %d\n", ((tmNode*)cur->value)->index);
       obj_in_qtree = TRUE;
     }
     if (cur->value == n_2)
     {
-      printf("n_2 in mesh->nodes_qtree:  INDEX: %d\n", ((tmNode*)cur->value)->index);
+      //printf("n_2 in mesh->nodes_qtree:  INDEX: %d\n", ((tmNode*)cur->value)->index);
       obj_in_qtree = TRUE;
     }
     if (cur->value == n_3)
     {
-      printf("n_3 in mesh->nodes_qtree:  INDEX: %d\n", ((tmNode*)cur->value)->index);
+      //printf("n_3 in mesh->nodes_qtree:  INDEX: %d\n", ((tmNode*)cur->value)->index);
       obj_in_qtree = TRUE;
     }
     if (cur->value == n_4)
     {
-      printf("n_4 in mesh->nodes_qtree:  INDEX: %d\n", ((tmNode*)cur->value)->index);
+      //printf("n_4 in mesh->nodes_qtree:  INDEX: %d\n", ((tmNode*)cur->value)->index);
       obj_in_qtree = TRUE;
     }
   }
+
   mu_assert( obj_in_qtree == FALSE,
       "Not all objects have been removed from the parent qtree.");
   mu_assert( tmQtree_containsObj(mesh->nodes_qtree, n_1, 0) == FALSE,
@@ -347,7 +354,7 @@ char *test_tmQtree_performance()
   tmDouble xy_max[2] = {  55.0,  50.0 };
   tmMesh *mesh = tmMesh_create(xy_min, xy_max, 10);
 
-  int n_nodes = 10000;
+  int n_nodes = 50000;
 
   tmDouble a = 2.5;
   tmDouble b =-3.4;

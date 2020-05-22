@@ -8,6 +8,7 @@
 
 #include "lcthw/dbg.h"
 #include "lcthw/list.h"
+#include "lcthw/darray.h"
 
 /***********************************************************
 * Basic structure typedefs

@@ -55,7 +55,7 @@ tmEdge *tmEdge_create(tmMesh *mesh, tmNode *n1, tmNode *n2)
   /*-------------------------------------------------------
   | Add edge to qtree
   -------------------------------------------------------*/
-  edge->index = tmMesh_addEdge(mesh, edge);
+  edge->stack_pos = tmMesh_addEdge(mesh, edge);
   
   return edge;
 error:

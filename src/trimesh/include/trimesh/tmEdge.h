@@ -117,4 +117,28 @@ tmBool tmEdge_isLeft(tmEdge *edge, void *obj, int obj_type);
 **********************************************************/
 tmBool tmEdge_isLeftOn(tmEdge *edge, void *obj, int obj_type);
 
+/**********************************************************
+* Function: tmEdge_isRight()
+*----------------------------------------------------------
+* Check if an object is right of the edge
+*----------------------------------------------------------
+* @param *edge: pointer to a tmEdge 
+* @param *obj:  pointer to object to check for
+* @param  obj_type: object type specifier
+* @return boolean if object is located on the left of edge
+**********************************************************/
+tmBool tmEdge_isRight(tmEdge *edge, void *obj, int obj_type);
+
+/**********************************************************
+* Function: tmEdge_isRightOn()
+*----------------------------------------------------------
+* Check if an object is right of or on the edge
+*----------------------------------------------------------
+* @param *edge: pointer to a tmEdge 
+* @param *obj:  pointer to object to check for
+* @param  obj_type: object type specifier
+* @return boolean if object is located on the left of edge
+**********************************************************/
+tmBool tmEdge_isRightOn(tmEdge *edge, void *obj, int obj_type);
+
 #endif

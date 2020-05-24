@@ -166,6 +166,30 @@ static inline tmBool IS_LEFTON(tmDouble p[2],
   return TRUE;
 }
 
+/*----------------------------------------------------------
+| check if node r is located to the right of (p,q) 
+----------------------------------------------------------*/
+static inline tmBool IS_RIGHT(tmDouble p[2], 
+                              tmDouble q[2], 
+                              tmDouble r[2])
+{
+  if ( ORIENTATION(p, q, r) == 2 )
+    return TRUE;
+  return FALSE;
+}
+
+/*----------------------------------------------------------
+| check if node r is located to the right of (p,q) or on it
+----------------------------------------------------------*/
+static inline tmBool IS_RIGHTON(tmDouble p[2], 
+                                tmDouble q[2], 
+                                tmDouble r[2])
+{
+  if ( ORIENTATION(p, q, r) == 1 )
+    return FALSE;
+  return TRUE;
+}
+
 
 
 #endif /* TRIMESH_TMTYPEDEFS_H */

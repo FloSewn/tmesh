@@ -277,3 +277,45 @@ void tmMesh_remBdry(tmMesh *mesh, tmBdry *bdry)
   List_remove(mesh->bdry_stack, bdry->mesh_pos);
 
 } /* tmMesh_remBdry() */
+
+
+/**********************************************************
+* Function: tmMesh_objInside()
+*----------------------------------------------------------
+* Function to check wether an object is contained within
+* the mesh boundary
+*----------------------------------------------------------
+* @param mesh
+* @param obj
+* @param obj_type
+**********************************************************/
+tmBool tmMesh_objInside(tmMesh *mesh, 
+                        void   *obj, 
+                        int     obj_type)
+{
+  ListNode *cur;
+  tmBdry *cur_bdry;
+
+  tmBool is_inside = TRUE;
+
+  for (cur = mesh->bdry_stack->first; 
+       cur != NULL; cur = cur->next)
+  {
+    cur_bdry = (tmBdry*) cur->value;
+
+    if (cur_bdry->is_interior == TRUE)
+    {
+      is_inside &= !(tmBdry_isRight(cur_bdry, 
+                                    obj, obj_type));
+    }
+    else
+    {
+      is_inside &= tmBdry_isLeftOn(cur_bdry, 
+                                   obj, obj_type);
+    }
+  }
+
+  return is_inside;
+
+} /* tmMesh_objInside() */
+

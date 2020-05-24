@@ -124,4 +124,16 @@ tmBdry *tmMesh_addBdry(tmMesh *mesh,
 **********************************************************/
 void tmMesh_remBdry(tmMesh *mesh, tmBdry *bdry);
 
+/**********************************************************
+* Function: tmMesh_objInside()
+*----------------------------------------------------------
+* Function to check wether an object is contained within
+* the mesh boundary
+*----------------------------------------------------------
+* @param mesh
+* @param obj
+* @param obj_type
+**********************************************************/
+tmBool tmMesh_objInside(tmMesh *mesh, void *obj, int obj_type);
+
 #endif

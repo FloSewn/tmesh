@@ -174,6 +174,43 @@ char *test_mesh_create_destroy()
       "tmEdge_isLeft() failed."); 
 
 
+  /*--------------------------------------------------------
+  | Check boundary functions
+  --------------------------------------------------------*/
+  tmDouble xy_t_0[2] = {  6.0,  5.0 };
+  tmDouble xy_t_1[2] = { 13.0,  5.0 };
+  tmDouble xy_t_2[2] = { -2.0, -5.0 };
+  tmNode *n_t_0 = tmNode_create(mesh, xy_t_0);
+  tmNode *n_t_1 = tmNode_create(mesh, xy_t_1);
+  tmNode *n_t_2 = tmNode_create(mesh, xy_t_2);
+
+  mu_assert( tmBdry_isLeft(bdry_ext, n_t_0, TM_NODE) == TRUE,
+      "tmBdry_isLeft() failed.");
+  mu_assert( tmBdry_isLeftOn(bdry_ext, n_7, TM_NODE) == TRUE,
+      "tmBdry_isLeftOn() failed.");
+  mu_assert( tmBdry_isRight(bdry_int, n_t_0, TM_NODE) == FALSE,
+      "tmBdry_isRight() failed.");
+
+  mu_assert( tmBdry_isRight(bdry_int, n_t_1, TM_NODE) == TRUE,
+      "tmBdry_isRight() failed.");
+  mu_assert( tmBdry_isRightOn(bdry_int, n_11, TM_NODE) == TRUE,
+      "tmBdry_isRightOn() failed.");
+  mu_assert( tmBdry_isLeft(bdry_int, n_t_1, TM_NODE) == FALSE,
+      "tmBdry_isLeft() failed.");
+
+
+  mu_assert( tmMesh_objInside(mesh, n_t_0, TM_NODE) == TRUE,
+      "tmMesh_objInside() failed.");
+  mu_assert( tmMesh_objInside(mesh, n_t_1, TM_NODE) == FALSE,
+      "tmMesh_objInside() failed.");
+  mu_assert( tmMesh_objInside(mesh, n_t_2, TM_NODE) == FALSE,
+      "tmMesh_objInside() failed.");
+  mu_assert( tmMesh_objInside(mesh, n_2, TM_NODE) == TRUE,
+      "tmMesh_objInside() failed.");
+  mu_assert( tmMesh_objInside(mesh, n_12, TM_NODE) == TRUE,
+      "tmMesh_objInside() failed.");
+
+
   tmMesh_destroy(mesh);
 
   return NULL;

@@ -162,4 +162,90 @@ void tmBdry_remEdge(tmBdry *bdry, tmEdge *edge)
 **********************************************************/
 tmBool tmBdry_isLeft(tmBdry *bdry, void *obj, int obj_type)
 {
+  ListNode *cur;
+  tmBool is_left = TRUE;
+
+  for (cur = bdry->edges_stack->first; 
+       cur != NULL; cur = cur->next)
+  {
+    is_left &= tmEdge_isLeft( cur->value, obj, obj_type);
+  }
+
+  return is_left;
+
 } /* tmBdry_isLeft() */
+
+/**********************************************************
+* Function: tmBdry_isLeftOn()
+*----------------------------------------------------------
+* Check if an object is left of all boundary edges
+*----------------------------------------------------------
+* @param *edge: pointer to a tmEdge 
+* @param *obj:  pointer to object to check for
+* @param  obj_type: object type specifier
+* @return boolean if object is located on the left of bdry
+**********************************************************/
+tmBool tmBdry_isLeftOn(tmBdry *bdry, void *obj, int obj_type)
+{
+  ListNode *cur;
+  tmBool is_left = TRUE;
+
+  for (cur = bdry->edges_stack->first; 
+       cur != NULL; cur = cur->next)
+  {
+    is_left &= tmEdge_isLeftOn( cur->value, obj, obj_type);
+  }
+
+  return is_left;
+
+} /* tmBdry_isLeftOn() */
+
+/**********************************************************
+* Function: tmBdry_isRight()
+*----------------------------------------------------------
+* Check if an object is right of all boundary edges
+*----------------------------------------------------------
+* @param *edge: pointer to a tmEdge 
+* @param *obj:  pointer to object to check for
+* @param  obj_type: object type specifier
+* @return boolean if object is located on the left of bdry
+**********************************************************/
+tmBool tmBdry_isRight(tmBdry *bdry, void *obj, int obj_type)
+{
+  ListNode *cur;
+  tmBool is_right = TRUE;
+
+  for (cur = bdry->edges_stack->first; 
+       cur != NULL; cur = cur->next)
+  {
+    is_right &= tmEdge_isRight( cur->value, obj, obj_type);
+  }
+
+  return is_right;
+
+} /* tmBdry_isRight() */
+
+/**********************************************************
+* Function: tmBdry_isRightOn()
+*----------------------------------------------------------
+* Check if an object is right of all boundary edges
+*----------------------------------------------------------
+* @param *edge: pointer to a tmEdge 
+* @param *obj:  pointer to object to check for
+* @param  obj_type: object type specifier
+* @return boolean if object is located on the left of bdry
+**********************************************************/
+tmBool tmBdry_isRightOn(tmBdry *bdry, void *obj, int obj_type)
+{
+  ListNode *cur;
+  tmBool is_right = TRUE;
+
+  for (cur = bdry->edges_stack->first; 
+       cur != NULL; cur = cur->next)
+  {
+    is_right &= tmEdge_isRightOn( cur->value, obj, obj_type);
+  }
+
+  return is_right;
+
+} /* tmBdry_isRightOn() */

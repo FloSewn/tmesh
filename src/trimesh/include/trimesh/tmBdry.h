@@ -86,5 +86,40 @@ void tmBdry_remEdge(tmBdry *bdry, tmEdge *edge);
 **********************************************************/
 tmBool tmBdry_isLeft(tmBdry *bdry, void *obj, int obj_type);
 
+/**********************************************************
+* Function: tmBdry_isLeftOn()
+*----------------------------------------------------------
+* Check if an object is left of all boundary edges
+*----------------------------------------------------------
+* @param *edge: pointer to a tmEdge 
+* @param *obj:  pointer to object to check for
+* @param  obj_type: object type specifier
+* @return boolean if object is located on the left of bdry
+**********************************************************/
+tmBool tmBdry_isLeftOn(tmBdry *bdry, void *obj, int obj_type);
+
+/**********************************************************
+* Function: tmBdry_isRight()
+*----------------------------------------------------------
+* Check if an object is right of all boundary edges
+*----------------------------------------------------------
+* @param *edge: pointer to a tmEdge 
+* @param *obj:  pointer to object to check for
+* @param  obj_type: object type specifier
+* @return boolean if object is located on the left of bdry
+**********************************************************/
+tmBool tmBdry_isRight(tmBdry *bdry, void *obj, int obj_type);
+
+/**********************************************************
+* Function: tmBdry_isRightOn()
+*----------------------------------------------------------
+* Check if an object is right of all boundary edges
+*----------------------------------------------------------
+* @param *edge: pointer to a tmEdge 
+* @param *obj:  pointer to object to check for
+* @param  obj_type: object type specifier
+* @return boolean if object is located on the left of bdry
+**********************************************************/
+tmBool tmBdry_isRightOn(tmBdry *bdry, void *obj, int obj_type);
 
 #endif

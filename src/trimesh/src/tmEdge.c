@@ -283,3 +283,59 @@ tmBool tmEdge_isLeftOn(tmEdge *edge, void *obj, int obj_type)
 
 } /* tmEdge_isLeftOn() */
 
+
+/**********************************************************
+* Function: tmEdge_isRight()
+*----------------------------------------------------------
+* Check if an object is right of the edge
+*----------------------------------------------------------
+* @param *edge: pointer to a tmEdge 
+* @param *obj:  pointer to object to check for
+* @param  obj_type: object type specifier
+* @return boolean if object is located on the left of edge
+**********************************************************/
+tmBool tmEdge_isRight(tmEdge *edge, void *obj, int obj_type)
+{
+  tmDouble *xy;
+
+  if ( obj_type == TM_NODE)
+    xy = ((tmNode*)obj)->xy;
+  else if ( obj_type == TM_EDGE)
+    xy = ((tmEdge*)obj)->xy;
+  else if ( obj_type == TM_TRI)
+    xy = ((tmTri*)obj)->xy;
+  else
+    log_err("Wrong type provied for tmEdge_isRight()");
+
+  return IS_RIGHT( edge->n1->xy, edge->n2->xy, xy);
+
+
+} /* tmEdge_isRight() */
+
+/**********************************************************
+* Function: tmEdge_isRightOn()
+*----------------------------------------------------------
+* Check if an object is right of or on the edge
+*----------------------------------------------------------
+* @param *edge: pointer to a tmEdge 
+* @param *obj:  pointer to object to check for
+* @param  obj_type: object type specifier
+* @return boolean if object is located on the left of edge
+**********************************************************/
+tmBool tmEdge_isRightOn(tmEdge *edge, void *obj, int obj_type)
+{
+  tmDouble *xy;
+
+  if ( obj_type == TM_NODE)
+    xy = ((tmNode*)obj)->xy;
+  else if ( obj_type == TM_EDGE)
+    xy = ((tmEdge*)obj)->xy;
+  else if ( obj_type == TM_TRI)
+    xy = ((tmTri*)obj)->xy;
+  else
+    log_err("Wrong type provied for tmEdge_isRightOn()");
+
+  return IS_RIGHTON( edge->n1->xy, edge->n2->xy, xy);
+
+} /* tmEdge_isRightOn() */
+

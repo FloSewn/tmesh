@@ -12,6 +12,7 @@ set( TRIMESH_MAIN
   ${TRIMESH_SRC}/tmEdge.c
   ${TRIMESH_SRC}/tmTri.c
   ${TRIMESH_SRC}/tmBdry.c
+  ${TRIMESH_SRC}/tmFront.c
   ${TRIMESH_SRC}/tmMesh.c
   ${TRIMESH_SRC}/tmQtree.c
   )

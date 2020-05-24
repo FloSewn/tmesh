@@ -24,52 +24,155 @@
 *************************************************************/
 char *test_mesh_create_destroy()
 {
-  tmDouble xy_min[2] = { -2.0, -2.0 };
-  tmDouble xy_max[2] = {  2.0,  2.0 };
+  tmDouble xy_min[2] = {  -2.0, -2.0 };
+  tmDouble xy_max[2] = {  22.0, 12.0 };
   tmMesh *mesh = tmMesh_create(xy_min, xy_max, 3);
 
   /*--------------------------------------------------------
-  | Add new nodes 
+  | exterior nodes
   --------------------------------------------------------*/
-  tmDouble xy_1[2] = {-0.0, 1.0 };
-  tmDouble xy_2[2] = { 1.0, 0.0 };
-  tmDouble xy_3[2] = { 1.0, 1.0 };
+  tmDouble xy_0[2] = {  0.0,  0.0 };
+  tmDouble xy_1[2] = {  7.0,  0.0 };
+  tmDouble xy_2[2] = { 13.0,  0.0 };
+  tmDouble xy_3[2] = { 20.0,  0.0 };
+  tmDouble xy_4[2] = { 20.0,  4.0 };
+  tmDouble xy_5[2] = { 20.0, 10.0 };
+  tmDouble xy_6[2] = { 14.0, 10.0 };
+  tmDouble xy_7[2] = {  7.0, 10.0 };
+  tmDouble xy_8[2] = {  0.0, 10.0 };
+  tmDouble xy_9[2] = {  0.0,  5.0 };
+  /*--------------------------------------------------------
+  | interior nodes
+  --------------------------------------------------------*/
+  tmDouble xy_10[2] = {   9.0,  5.0 };
+  tmDouble xy_11[2] = {  11.0,  7.0 };
+  tmDouble xy_12[2] = {  13.0,  8.0 };
+  tmDouble xy_13[2] = {  16.0,  8.0 };
+  tmDouble xy_14[2] = {  17.0,  5.0 };
+  tmDouble xy_15[2] = {  16.0,  2.0 };
+  tmDouble xy_16[2] = {  13.0,  2.0 };
+  tmDouble xy_17[2] = {  11.0,  3.0 };
 
+  /*--------------------------------------------------------
+  | Add nodes for exterior boundary
+  --------------------------------------------------------*/
+  tmNode *n_0 = tmNode_create(mesh, xy_0);
   tmNode *n_1 = tmNode_create(mesh, xy_1);
   tmNode *n_2 = tmNode_create(mesh, xy_2);
   tmNode *n_3 = tmNode_create(mesh, xy_3);
+  tmNode *n_4 = tmNode_create(mesh, xy_4);
+  tmNode *n_5 = tmNode_create(mesh, xy_5);
+  tmNode *n_6 = tmNode_create(mesh, xy_6);
+  tmNode *n_7 = tmNode_create(mesh, xy_7);
+  tmNode *n_8 = tmNode_create(mesh, xy_8);
+  tmNode *n_9 = tmNode_create(mesh, xy_9);
 
-  mu_assert( List_first(mesh->nodes_stack) == n_1,
+  mu_assert( List_first(mesh->nodes_stack) == n_0,
       "Failed to add node to mesh->nodes_stack.");
-  mu_assert( List_last(mesh->nodes_stack) == n_3,
-      "Failed to add node to mesh->nodes_stack.");
-
-  mu_assert(List_first(mesh->nodes_qtree->obj) == n_1,
-      "Failed to add node to mesh->nodes_qtree.");
-  mu_assert(List_last(mesh->nodes_qtree->obj) == n_3,
-      "Failed to add node to mesh->nodes_qtree.");
-  mu_assert(mesh->nodes_qtree->n_obj == 3,
-      "Failed to add node to mesh->nodes_qtree.");
-  mu_assert(mesh->nodes_qtree->n_obj_tot == 3,
-      "Failed to add node to mesh->nodes_qtree.");
+  mu_assert( List_last(mesh->nodes_stack) == n_9,
+      "Failed to add node to mesh->nodes_stack."); 
 
   /*--------------------------------------------------------
-  | Add new edges 
+  | Add nodes for interior boundary
   --------------------------------------------------------*/
-  tmEdge *e_1 = tmEdge_create(mesh, n_1, n_2);
-  tmEdge *e_2 = tmEdge_create(mesh, n_2, n_3);
+  tmNode *n_10 = tmNode_create(mesh, xy_10);
+  tmNode *n_11 = tmNode_create(mesh, xy_11);
+  tmNode *n_12 = tmNode_create(mesh, xy_12);
+  tmNode *n_13 = tmNode_create(mesh, xy_13);
+  tmNode *n_14 = tmNode_create(mesh, xy_14);
+  tmNode *n_15 = tmNode_create(mesh, xy_15);
+  tmNode *n_16 = tmNode_create(mesh, xy_16);
+  tmNode *n_17 = tmNode_create(mesh, xy_17);
 
-  mu_assert( List_first(mesh->edges_stack) == e_1,
-      "Failed to add edge to mesh->edges_stack.");
-  mu_assert( List_last(mesh->edges_stack) == e_2,
-      "Failed to add edge to mesh->edges_stack.");
+  tmBdry *bdry_ext = tmMesh_addBdry(mesh, FALSE, 0);
+  tmBdry *bdry_int = tmMesh_addBdry(mesh, TRUE,  1);
+
+  mu_assert( List_first(mesh->bdry_stack) == bdry_ext,
+      "Failed to create boundary.");
+  mu_assert( List_last(mesh->bdry_stack) == bdry_int,
+      "Failed to create boundary.");
 
   /*--------------------------------------------------------
-  | Add new triangle 
+  | Create exterior boundary edges
   --------------------------------------------------------*/
-  tmTri *t_1 = tmTri_create(mesh, n_1, n_2, n_3);
-  mu_assert( List_first(mesh->tris_stack) == t_1,
-      "Failed to add tri to mesh->tris_stack.");
+  tmEdge *e_0 = tmBdry_addEdge(bdry_ext, n_0, n_1);
+  tmEdge *e_1 = tmBdry_addEdge(bdry_ext, n_1, n_2);
+  tmEdge *e_2 = tmBdry_addEdge(bdry_ext, n_2, n_3);
+  tmEdge *e_3 = tmBdry_addEdge(bdry_ext, n_3, n_4);
+  tmEdge *e_4 = tmBdry_addEdge(bdry_ext, n_4, n_5);
+  tmEdge *e_5 = tmBdry_addEdge(bdry_ext, n_5, n_6);
+  tmEdge *e_6 = tmBdry_addEdge(bdry_ext, n_6, n_7);
+  tmEdge *e_7 = tmBdry_addEdge(bdry_ext, n_7, n_8);
+  tmEdge *e_8 = tmBdry_addEdge(bdry_ext, n_8, n_9);
+  tmEdge *e_9 = tmBdry_addEdge(bdry_ext, n_9, n_0);
+
+  /*--------------------------------------------------------
+  | Check if qtree works for boundary edges
+  --------------------------------------------------------*/
+  mu_assert( tmQtree_containsObj(bdry_ext->edges_qtree->child_SW, e_0, 0) == TRUE,
+      "Edge e_0 has not been added to mesh qtree.");
+  mu_assert( tmQtree_containsObj(bdry_ext->edges_qtree->child_SE, e_1, 0) == TRUE,
+      "Edge e_1 has not been added to mesh qtree.");
+  mu_assert( tmQtree_containsObj(bdry_ext->edges_qtree->child_SE, e_2, 0) == TRUE,
+      "Edge e_2 has not been added to mesh qtree.");
+  mu_assert( tmQtree_containsObj(bdry_ext->edges_qtree->child_SE, e_3, 0) == TRUE,
+      "Edge e_3 has not been added to mesh qtree.");
+  mu_assert( tmQtree_containsObj(bdry_ext->edges_qtree->child_NE, e_4, 0) == TRUE,
+      "Edge e_4 has not been added to mesh qtree.");
+  mu_assert( tmQtree_containsObj(bdry_ext->edges_qtree->child_NE, e_5, 0) == TRUE,
+      "Edge e_5 has not been added to mesh qtree.");
+  mu_assert( tmQtree_containsObj(bdry_ext->edges_qtree->child_NE, e_6, 0) == TRUE,
+      "Edge e_6 has not been added to mesh qtree.");
+  mu_assert( tmQtree_containsObj(bdry_ext->edges_qtree->child_NW, e_7, 0) == TRUE,
+      "Edge e_7 has not been added to mesh qtree.");
+  mu_assert( tmQtree_containsObj(bdry_ext->edges_qtree->child_NW, e_8, 0) == TRUE,
+      "Edge e_8 has not been added to mesh qtree.");
+  mu_assert( tmQtree_containsObj(bdry_ext->edges_qtree->child_SW, e_9, 0) == TRUE,
+      "Edge e_9 has not been added to mesh qtree."); 
+
+  /*--------------------------------------------------------
+  | Check function for finding edges in qree
+  --------------------------------------------------------*/
+  tmDouble bbox_min[2] = { 13.0, -1.0 };
+  tmDouble bbox_max[2] = { 22.0, 11.0 };
+
+  List *obj_bbox = tmQtree_getObjBbox(bdry_ext->edges_qtree, 
+                                      bbox_min, bbox_max);
+
+  mu_assert(obj_bbox->count == 4,
+      "tmQtree_getObjBbox() failed.");
+  mu_assert(obj_bbox->first->value == e_4,
+      "tmQtree_getObjBbox() failed.");
+  mu_assert(obj_bbox->first->next->value == e_5,
+      "tmQtree_getObjBbox() failed.");
+  mu_assert(obj_bbox->last->prev->value == e_2,
+      "tmQtree_getObjBbox() failed.");
+  mu_assert(obj_bbox->last->value == e_3,
+      "tmQtree_getObjBbox() failed.");
+
+  if (obj_bbox != NULL)
+    List_destroy(obj_bbox);
+
+  /*--------------------------------------------------------
+  | Create interior boundary edges
+  --------------------------------------------------------*/
+  tmEdge *e_10 = tmBdry_addEdge(bdry_int, n_10, n_11);
+  tmEdge *e_11 = tmBdry_addEdge(bdry_int, n_11, n_12);
+  tmEdge *e_12 = tmBdry_addEdge(bdry_int, n_12, n_13);
+  tmEdge *e_13 = tmBdry_addEdge(bdry_int, n_13, n_14);
+  tmEdge *e_14 = tmBdry_addEdge(bdry_int, n_14, n_15);
+  tmEdge *e_15 = tmBdry_addEdge(bdry_int, n_15, n_16);
+  tmEdge *e_16 = tmBdry_addEdge(bdry_int, n_16, n_17);
+  tmEdge *e_17 = tmBdry_addEdge(bdry_int, n_17, n_10);
+  
+  /*--------------------------------------------------------
+  | Check is left / left on functions
+  --------------------------------------------------------*/
+  mu_assert(tmEdge_isLeft( e_0, n_9, TM_NODE ) == TRUE,
+      "tmEdge_isLeft() failed.");
+  mu_assert(tmEdge_isLeftOn( e_0, n_1, TM_NODE ) == TRUE,
+      "tmEdge_isLeft() failed."); 
+
 
   tmMesh_destroy(mesh);
 
@@ -451,50 +554,3 @@ char *test_tmQtree_performance()
 
 } /* test_tmQtree_performance() */
 
-/*************************************************************
-* Unit test function to test the tmBdry structure
-************************************************************/
-char *test_tmBdry()
-{
-  tmDouble xy_min[2] = { -5.0, -5.0 };
-  tmDouble xy_max[2] = {  5.0,  5.0 };
-  tmMesh *mesh = tmMesh_create(xy_min, xy_max, 3);
-
-  /*--------------------------------------------------------
-  | Add new nodes 
-  --------------------------------------------------------*/
-  tmDouble xy_1[2] = {-2.50,-2.50};
-  tmDouble xy_2[2] = { 2.50,-2.50};
-  tmDouble xy_3[2] = { 2.50, 2.50};
-  tmDouble xy_4[2] = {-2.50, 2.50};
-
-  tmDouble xy_5[2] = {-1.00,-1.00};
-  tmDouble xy_6[2] = {-1.00, 1.00};
-  tmDouble xy_7[2] = { 1.00, 1.00};
-  tmDouble xy_8[2] = { 1.00,-1.00};
-
-  tmNode *n_1 = tmNode_create(mesh, xy_1);
-  tmNode *n_2 = tmNode_create(mesh, xy_2);
-  tmNode *n_3 = tmNode_create(mesh, xy_3);
-  tmNode *n_4 = tmNode_create(mesh, xy_4);
-
-  tmNode *n_5 = tmNode_create(mesh, xy_5);
-  tmNode *n_6 = tmNode_create(mesh, xy_6);
-  tmNode *n_7 = tmNode_create(mesh, xy_7);
-  tmNode *n_8 = tmNode_create(mesh, xy_8);
-
-  tmBdry *b_1 = tmBdry_create(mesh);
-  tmBdry_init( b_1, 0, TRUE );
-
-  tmBdry_addEdge(b_1, n_1, n_2);
-  tmBdry_addEdge(b_1, n_2, n_3);
-  tmBdry_addEdge(b_1, n_3, n_4);
-  tmBdry_addEdge(b_1, n_4, n_1);
-
-  tmBdry_destroy(b_1);
-
-  tmMesh_destroy(mesh);
-
-  return NULL;
-
-} /* test_tmBdry() */

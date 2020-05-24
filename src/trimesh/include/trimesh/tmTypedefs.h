@@ -17,6 +17,7 @@ typedef struct tmNode  tmNode;
 typedef struct tmEdge  tmEdge;
 typedef struct tmTri   tmTri;
 typedef struct tmBdry  tmBdry;
+typedef struct tmFront tmFront;
 typedef struct tmQtree tmQtree;
 typedef struct tmMesh  tmMesh;
 
@@ -121,6 +122,50 @@ typedef struct tmMesh  tmMesh;
   && ( (rsmin)[0] <= (pqmax)[0] )                 \
   && ( (pqmin)[1] <= (rsmax)[1] )                 \
   && ( (rsmin)[1] <= (pqmax)[1] ) )                
+
+
+/*----------------------------------------------------------
+| check the orientation of a node tuple (p,q,r)
+----------------------------------------------------------*/
+static inline int ORIENTATION(tmDouble p[2], 
+                              tmDouble q[2], 
+                              tmDouble r[2])
+{
+  tmDouble area2 = ( ( p[0] - r[0] ) * ( q[1] - r[1] )
+                   - ( q[0] - r[0] ) * ( p[1] - r[1] ) );
+  /* Colinearity of all nodes */
+  if ( (area2 * area2) < SMALL )
+    return 0;
+  /* Counter clockwise orienation */
+  if ( area2 > 0.0 )
+    return 1;
+  return 2;
+}
+
+/*----------------------------------------------------------
+| check if node r is located to the left of (p,q) 
+----------------------------------------------------------*/
+static inline tmBool IS_LEFT(tmDouble p[2], 
+                             tmDouble q[2], 
+                             tmDouble r[2])
+{
+  if ( ORIENTATION(p, q, r) == 1 )
+    return TRUE;
+  return FALSE;
+}
+
+/*----------------------------------------------------------
+| check if node r is located to the left of (p,q) or on it
+----------------------------------------------------------*/
+static inline tmBool IS_LEFTON(tmDouble p[2], 
+                               tmDouble q[2], 
+                               tmDouble r[2])
+{
+  if ( ORIENTATION(p, q, r) == 2 )
+    return FALSE;
+  return TRUE;
+}
+
 
 
 #endif /* TRIMESH_TMTYPEDEFS_H */

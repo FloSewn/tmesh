@@ -22,16 +22,17 @@ tmNode *tmNode_create(tmMesh *mesh, tmDouble xy[2])
   /*-------------------------------------------------------
   | Add node to stack of mesh
   -------------------------------------------------------*/
-  node->mesh  = mesh;
+  node->mesh      = mesh;
+  node->qtree_pos = NULL;
+
   node->xy[0] = xy[0];
   node->xy[1] = xy[1];
 
   /*-------------------------------------------------------
   | Init node properties
   -------------------------------------------------------*/
-  node->is_active   = FALSE;
   node->on_bdry     = FALSE;
-  node->bdry_index  = -1;
+  node->on_front    = FALSE;
 
   /*-------------------------------------------------------
   | Init node lists

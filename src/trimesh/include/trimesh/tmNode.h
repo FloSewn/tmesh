@@ -25,21 +25,20 @@ typedef struct tmNode {
   ListNode *stack_pos;
   ListNode *qtree_pos;
   tmQtree  *qtree;
-  tmBool    is_active;
 
   /*-------------------------------------------------------
   | Boundary properties if node is located on a boundary
   -------------------------------------------------------*/
   tmBool  on_bdry;
-  int     bdry_index;
   List   *bdry_edges;
   int     n_bdry_edges;
 
   /*-------------------------------------------------------
   | All adjacent front edges to this node 
   -------------------------------------------------------*/
-  List *front_edges;
-  int   n_front_edges;
+  tmBool  on_front;
+  List   *front_edges;
+  int     n_front_edges;
 
   /*-------------------------------------------------------
   | All adjacent triangles to this node 

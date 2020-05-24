@@ -1,12 +1,12 @@
-#ifndef TRIMESH_TMBDRY_H
-#define TRIMESH_TMBDRY_H
+#ifndef TRIMESH_TMFRONT_H
+#define TRIMESH_TMFRONT_H
 
 #include "trimesh/tmTypedefs.h"
 
 /**********************************************************
-* tmBdry: Boundary structure
+* tmBdry: Advancing front structure
 **********************************************************/
-typedef struct tmBdry {
+typedef struct tmFront {
 
   /*-------------------------------------------------------
   | Parent mesh properties
@@ -14,77 +14,60 @@ typedef struct tmBdry {
   tmMesh *mesh;
 
   /*-------------------------------------------------------
-  | Properties of this boundary
+  | Properties of the advancing front
   -------------------------------------------------------*/
-  int    no_edges;
-  int    is_interior;
-  int    index;
+  int   no_edges;
 
   /*-------------------------------------------------------
-  | Boundary edges
+  | Advancing front edges
   -------------------------------------------------------*/
-  tmEdge   *edges_head;
-  List     *edges_stack;
-  tmQtree  *edges_qtree;
-  ListNode *mesh_pos;
+  tmEdge  *edges_head;
+  List    *edges_stack;
+  tmQtree *edges_qtree;
 
-} tmBdry;
+} tmFront;
 
 
 /**********************************************************
-* Function: tmBdry_create()
+* Function: tmFront_create()
 *----------------------------------------------------------
-* Create a new tmBdry structure and returns a pointer
+* Create a new tmFront structure and returns a pointer
 * to it.
 *----------------------------------------------------------
-* @return: Pointer to a new tmBdry structure
+* @return: Pointer to a new tmFront structure
 **********************************************************/
-tmBdry *tmBdry_create(tmMesh *mesh, 
-                      tmBool  is_interior,
-                      int     index);
+tmFront *tmFront_create(tmMesh *mesh);
 
 /**********************************************************
-* Function: tmBdry_destroy()
+* Function: tmFront_destroy()
 *----------------------------------------------------------
-* Destroys a tmBdry structure and frees all its
+* Destroys a tmFront structure and frees all its
 * memory.
 *----------------------------------------------------------
-* @param *mesh: pointer to a tmBdry to destroy
+* @param *mesh: pointer to a tmFront to destroy
 *
 **********************************************************/ 
-void tmBdry_destroy(tmBdry *bdry);
+void tmFront_destroy(tmFront *front);
 
 /**********************************************************
-* Function: tmBdry_addEdge()
+* Function: tmFront_addEdge()
 *----------------------------------------------------------
-* Function to add an edge to a tmBdry structure
+* Function to add an edge to a tmFront structure
 *----------------------------------------------------------
 * @return: ListNode to tmEdge on the mesh's edge stack
 **********************************************************/
-tmEdge *tmBdry_addEdge(tmBdry *bdry, 
-                       tmNode *n1, 
-                       tmNode *n2);
+tmEdge *tmFront_addEdge(tmFront *front, 
+                        tmNode  *n1, 
+                        tmNode * n2);
 
 /**********************************************************
-* Function: tmBdry_remEdge()
+* Function: tmFront_remEdge()
 *----------------------------------------------------------
 * Function to remove an edge from a tmBdry structure
 *----------------------------------------------------------
 *
 **********************************************************/
-void tmBdry_remEdge(tmBdry *bdry, tmEdge *edge);
-
-/**********************************************************
-* Function: tmBdry_isLeft()
-*----------------------------------------------------------
-* Check if an object is left of all boundary edges
-*----------------------------------------------------------
-* @param *edge: pointer to a tmEdge 
-* @param *obj:  pointer to object to check for
-* @param  obj_type: object type specifier
-* @return boolean if object is located on the left of bdry
-**********************************************************/
-tmBool tmBdry_isLeft(tmBdry *bdry, void *obj, int obj_type);
+void tmFront_remEdge(tmFront *front, tmEdge *edge);
 
 
 #endif

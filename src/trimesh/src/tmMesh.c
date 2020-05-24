@@ -1,5 +1,7 @@
 #include "trimesh/tmTypedefs.h"
 #include "trimesh/tmMesh.h"
+#include "trimesh/tmBdry.h"
+#include "trimesh/tmFront.h"
 #include "trimesh/tmEdge.h"
 #include "trimesh/tmNode.h"
 #include "trimesh/tmTri.h"
@@ -27,31 +29,39 @@ tmMesh *tmMesh_create(tmDouble xy_min[2],
   -------------------------------------------------------*/
   mesh->qtree_max_obj = qtree_max_obj;
 
+  mesh->xy_min[0] = xy_min[0];
+  mesh->xy_min[1] = xy_min[1];
+
+  mesh->xy_max[0] = xy_max[0];
+  mesh->xy_max[1] = xy_max[1];
+
   /*-------------------------------------------------------
   | Mesh nodes 
   -------------------------------------------------------*/
-  mesh->nodes_head = NULL;
-  mesh->nodes_stack = List_create();
-  mesh->no_nodes = 0;
-  mesh->nodes_qtree = tmQtree_create(mesh, TM_NODE);
+  mesh->nodes_head    = NULL;
+  mesh->nodes_stack   = List_create();
+  mesh->no_nodes      = 0;
+  mesh->nodes_qtree   = tmQtree_create(mesh, TM_NODE);
   tmQtree_init(mesh->nodes_qtree, NULL, 0, xy_min, xy_max); 
 
   /*-------------------------------------------------------
-  | Mesh edges 
+  | Mesh boundary edges 
   -------------------------------------------------------*/
-  mesh->edges_head = NULL;
-  mesh->edges_stack = List_create();
-  mesh->no_edges = 0;
-  mesh->edges_qtree = tmQtree_create(mesh, TM_EDGE);
-  tmQtree_init(mesh->edges_qtree, NULL, 0, xy_min, xy_max);
+  mesh->bdry_stack         = List_create();
+  mesh->no_bdrys           = 0;
+
+  /*-------------------------------------------------------
+  | Mesh front edges 
+  -------------------------------------------------------*/
+  mesh->front             = tmFront_create(mesh);
   
   /*-------------------------------------------------------
   | Mesh triangles 
   -------------------------------------------------------*/
-  mesh->tris_head = NULL;
-  mesh->tris_stack = List_create();
-  mesh->no_tris = 0;
-  mesh->tris_qtree = tmQtree_create(mesh, TM_TRI);
+  mesh->tris_head         = NULL;
+  mesh->tris_stack        = List_create();
+  mesh->no_tris           = 0;
+  mesh->tris_qtree        = tmQtree_create(mesh, TM_TRI);
   tmQtree_init(mesh->tris_qtree, NULL, 0, xy_min, xy_max);
 
 
@@ -76,26 +86,20 @@ void tmMesh_destroy(tmMesh *mesh)
   ListNode *cur, *nxt;
 
   /*-------------------------------------------------------
-  | Free all nodes on the stack
+  | Free all boundary structures
   -------------------------------------------------------*/
-  cur = nxt = mesh->nodes_stack->first;
+  cur = nxt = mesh->bdry_stack->first;
   while (nxt != NULL)
   {
     nxt = cur->next;
-    tmNode_destroy(cur->value);
+    tmBdry_destroy(cur->value);
     cur = nxt;
   }
 
   /*-------------------------------------------------------
-  | Free all edges on the stack
+  | Free advancing front structure
   -------------------------------------------------------*/
-  cur = nxt = mesh->edges_stack->first;
-  while (nxt != NULL)
-  {
-    nxt = cur->next;
-    tmEdge_destroy(cur->value);
-    cur = nxt;
-  }
+  tmFront_destroy(mesh->front);
 
   /*-------------------------------------------------------
   | Free all tris on the stack
@@ -109,18 +113,28 @@ void tmMesh_destroy(tmMesh *mesh)
   }
 
   /*-------------------------------------------------------
+  | Free all nodes on the stack
+  -------------------------------------------------------*/
+  cur = nxt = mesh->nodes_stack->first;
+  while (nxt != NULL)
+  {
+    nxt = cur->next;
+    tmNode_destroy(cur->value);
+    cur = nxt;
+  }
+
+  /*-------------------------------------------------------
   | Free all quadtree structures
   -------------------------------------------------------*/
   tmQtree_destroy(mesh->nodes_qtree);
-  tmQtree_destroy(mesh->edges_qtree);
   tmQtree_destroy(mesh->tris_qtree);
 
   /*-------------------------------------------------------
   | Free all list structures
   -------------------------------------------------------*/
   List_destroy(mesh->nodes_stack);
-  List_destroy(mesh->edges_stack);
   List_destroy(mesh->tris_stack);
+  List_destroy(mesh->bdry_stack);
 
   /*-------------------------------------------------------
   | Finally free mesh structure memory
@@ -148,25 +162,6 @@ ListNode *tmMesh_addNode(tmMesh *mesh, tmNode *node)
   return node_pos;
 
 } /* tmMesh_addNode() */
-
-/**********************************************************
-* Function: tmMesh_addEdge()
-*----------------------------------------------------------
-* Function to add a tmEdge to a tmMesh
-*----------------------------------------------------------
-* @return: tmEdge index on the mesh's edge stack
-**********************************************************/
-ListNode *tmMesh_addEdge(tmMesh *mesh, tmEdge *edge)
-{
-  ListNode *edge_pos;
-  mesh->no_edges += 1;
-  List_push(mesh->edges_stack, edge);
-  tmQtree_addObj(mesh->edges_qtree, edge);
-  edge_pos = List_last_node(mesh->edges_stack);
-  
-  return edge_pos;
-
-} /* tmMesh_addEdge() */
 
 /**********************************************************
 * Function: tmMesh_addTri()
@@ -217,36 +212,6 @@ void tmMesh_remNode(tmMesh *mesh, tmNode *node)
 } /* tmMesh_remNode() */
 
 /**********************************************************
-* Function: tmMesh_remEdge()
-*----------------------------------------------------------
-* Function to remove a tmEdge from a tmMesh
-*----------------------------------------------------------
-*
-**********************************************************/
-void tmMesh_remEdge(tmMesh *mesh, tmEdge *edge)
-{
-  tmBool    qtree_rem;
-
-  /*-------------------------------------------------------
-  | Check if object is in the mesh
-  -------------------------------------------------------*/
-  if ( edge->mesh != mesh )
-    log_warn("Can not remove edge from mesh. Edge not found.");
-
-  /*-------------------------------------------------------
-  | Remove node from qtree
-  -------------------------------------------------------*/
-  qtree_rem = tmQtree_remObj(mesh->edges_qtree, edge);
-  mesh->no_edges -= 1;
-
-  /*-------------------------------------------------------
-  | Remove node from stack
-  -------------------------------------------------------*/
-  List_remove(mesh->edges_stack, edge->stack_pos);
-
-} /* tmMesh_remEdge() */
-
-/**********************************************************
 * Function: tmMesh_remTri()
 *----------------------------------------------------------
 * Function to remove a tmTri from a tmMesh
@@ -275,3 +240,40 @@ void tmMesh_remTri(tmMesh *mesh, tmTri *tri)
   List_remove(mesh->tris_stack, tri->stack_pos);
 
 } /* tmMesh_remTri() */
+
+/**********************************************************
+* Function: tmMesh_addBdry()
+*----------------------------------------------------------
+* Function to add a boundary structure to a tmMesh
+*----------------------------------------------------------
+* @return: tmBdry pointer
+**********************************************************/
+tmBdry *tmMesh_addBdry(tmMesh *mesh,
+                       tmBool  is_interior,
+                       int     index)
+{
+  tmBdry *bdry = tmBdry_create(mesh, is_interior, index);
+  mesh->no_bdrys += 1;
+  List_push(mesh->bdry_stack, bdry);
+  bdry->mesh_pos = List_last_node(mesh->bdry_stack);
+
+  return bdry;
+
+} /* tmMesh_addBdry() */
+
+/**********************************************************
+* Function: tmMesh_remBdry()
+*----------------------------------------------------------
+* Function to remove a boundary structure from a tmMesh
+*----------------------------------------------------------
+*
+**********************************************************/
+void tmMesh_remBdry(tmMesh *mesh, tmBdry *bdry)
+{
+  /*-------------------------------------------------------
+  | Remove boundary from the mesh 
+  -------------------------------------------------------*/
+  mesh->no_bdrys -= 1;
+  List_remove(mesh->bdry_stack, bdry->mesh_pos);
+
+} /* tmMesh_remBdry() */

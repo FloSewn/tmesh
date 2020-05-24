@@ -1,5 +1,5 @@
-#ifndef TRIMESH_TMEDGE_H
-#define TRIMESH_TMEDGE_H
+#ifndef TRIMESH_TMBDRYEDGE_H
+#define TRIMESH_TMBDRYEDGE_H
 
 #include "trimesh/tmTypedefs.h"
 
@@ -9,10 +9,11 @@
 typedef struct tmEdge {
 
   /*-------------------------------------------------------
-  | Parent mesh properties
+  | Parent structures
   -------------------------------------------------------*/
-  tmMesh *mesh;
-  tmBdry *bdry;
+  tmMesh  *mesh;
+  tmBdry  *bdry;
+  tmFront *front;
 
   /*-------------------------------------------------------
   | Edge centroid coordinates 
@@ -22,11 +23,8 @@ typedef struct tmEdge {
   /*-------------------------------------------------------
   | Properties of this edge
   -------------------------------------------------------*/
-  tmBool    is_active;
   tmBool    is_on_front;
   tmBool    is_on_bdry;
-
-  int       bdry_index;
 
   ListNode *stack_pos;
   ListNode *qtree_pos;
@@ -77,10 +75,14 @@ typedef struct tmEdge {
 *----------------------------------------------------------
 * @param mesh:  parent mesh of the new edge
 * @param n1,n2: Start and ending nodes of this edge
+* @param on_bdry: flag for boundary / front edge type
 *
 * @return: Pointer to a new tmEdge structure
 **********************************************************/
-tmEdge *tmEdge_create(tmMesh *mesh, tmNode *n1, tmNode *n2);
+tmEdge *tmEdge_create(tmMesh *mesh, 
+                      tmNode *n1, 
+                      tmNode *n2,
+                      tmBdry *bdry);
 
 /**********************************************************
 * Function: tmEdge_destroy()
@@ -92,13 +94,27 @@ tmEdge *tmEdge_create(tmMesh *mesh, tmNode *n1, tmNode *n2);
 void tmEdge_destroy(tmEdge *edge);
 
 /**********************************************************
-* Function: tmEdge_init()
+* Function: tmEdge_isLeft()
 *----------------------------------------------------------
-* Init a new tmEdge structure 
+* Check if an object is left of the edge
 *----------------------------------------------------------
-* @param edge: tmEdge structure to init
-*
+* @param *edge: pointer to a tmEdge 
+* @param *obj:  pointer to object to check for
+* @param  obj_type: object type specifier
+* @return boolean if object is located on the left of edge
 **********************************************************/
-void tmEdge_init(tmEdge *edge, tmBdry *bdry);
+tmBool tmEdge_isLeft(tmEdge *edge, void *obj, int obj_type);
+
+/**********************************************************
+* Function: tmEdge_isLeftOn()
+*----------------------------------------------------------
+* Check if an object is left of or on the edge
+*----------------------------------------------------------
+* @param *edge: pointer to a tmEdge 
+* @param *obj:  pointer to object to check for
+* @param  obj_type: object type specifier
+* @return boolean if object is located on the left of edge
+**********************************************************/
+tmBool tmEdge_isLeftOn(tmEdge *edge, void *obj, int obj_type);
 
 #endif

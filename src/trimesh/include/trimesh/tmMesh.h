@@ -12,6 +12,8 @@ typedef struct tmMesh {
   | Mesh properties 
   -------------------------------------------------------*/
   int      qtree_max_obj;
+  tmDouble xy_min[2];
+  tmDouble xy_max[2];
 
   /*-------------------------------------------------------
   | Mesh nodes 
@@ -22,12 +24,15 @@ typedef struct tmMesh {
   tmQtree *nodes_qtree;
 
   /*-------------------------------------------------------
-  | Mesh edges 
+  | Mesh boundaries 
   -------------------------------------------------------*/
-  tmEdge  *edges_head;
-  List    *edges_stack;
-  int      no_edges;
-  tmQtree *edges_qtree;
+  int    no_bdrys;
+  List  *bdry_stack;
+
+  /*-------------------------------------------------------
+  | Mesh advancing front edges 
+  -------------------------------------------------------*/
+  tmFront *front;
 
   /*-------------------------------------------------------
   | Mesh triangles 
@@ -73,15 +78,6 @@ void tmMesh_destroy(tmMesh *mesh);
 ListNode *tmMesh_addNode(tmMesh *mesh, tmNode *node);
 
 /**********************************************************
-* Function: tmMesh_addEdge()
-*----------------------------------------------------------
-* Function to add a tmEdge to a tmMesh
-*----------------------------------------------------------
-* @return: tmEdge index on the mesh's edge stack
-**********************************************************/
-ListNode *tmMesh_addEdge(tmMesh *mesh, tmEdge *edge);
-
-/**********************************************************
 * Function: tmMesh_addTri()
 *----------------------------------------------------------
 * Function to add a tmTri to a tmMesh
@@ -100,15 +96,6 @@ ListNode *tmMesh_addTri(tmMesh *mesh, tmTri *tri);
 void tmMesh_remNode(tmMesh *mesh, tmNode *node);
 
 /**********************************************************
-* Function: tmMesh_remEdge()
-*----------------------------------------------------------
-* Function to remove a tmEdge from a tmMesh
-*----------------------------------------------------------
-*
-**********************************************************/
-void tmMesh_remEdge(tmMesh *mesh, tmEdge *edge);
-
-/**********************************************************
 * Function: tmMesh_remTri()
 *----------------------------------------------------------
 * Function to remove a tmTri from a tmMesh
@@ -116,5 +103,25 @@ void tmMesh_remEdge(tmMesh *mesh, tmEdge *edge);
 *
 **********************************************************/
 void tmMesh_remTri(tmMesh *mesh, tmTri *tri);
+
+/**********************************************************
+* Function: tmMesh_addBdry()
+*----------------------------------------------------------
+* Function to add a boundary structure to a tmMesh
+*----------------------------------------------------------
+* @return: tmBdry pointer
+**********************************************************/
+tmBdry *tmMesh_addBdry(tmMesh *mesh,
+                       tmBool  is_interior,
+                       int     index);
+
+/**********************************************************
+* Function: tmMesh_remBdry()
+*----------------------------------------------------------
+* Function to remove a boundary structure from a tmMesh
+*----------------------------------------------------------
+*
+**********************************************************/
+void tmMesh_remBdry(tmMesh *mesh, tmBdry *bdry);
 
 #endif

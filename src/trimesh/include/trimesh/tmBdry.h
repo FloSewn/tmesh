@@ -137,4 +137,16 @@ tmBool tmBdry_isRightOn(tmBdry *bdry, void *obj, int obj_type);
 **********************************************************/
 tmEdge *tmBdry_splitEdge(tmBdry *bdry, tmEdge *edge);
 
+/**********************************************************
+* Function: tmBdry_refine()
+*----------------------------------------------------------
+* Refine the edges of a boundary structure according to
+* a size function
+*----------------------------------------------------------
+* @param *bdry: pointer to bdry
+* @param *sizefun: function pointer to size function
+* @return: 
+**********************************************************/
+void tmBdry_refine(tmBdry *bdry, tmSizeFun size_fun);
+
 #endif

@@ -46,6 +46,7 @@ typedef struct tmTri {
   | Centroid coordinates
   -------------------------------------------------------*/
   tmDouble xy[2];
+  tmIndex  index; /* Only used for the mesh-output       */       
 
   /*-------------------------------------------------------
   | Triangle area

@@ -11,24 +11,6 @@
 #include "lcthw/darray.h"
 
 /***********************************************************
-* Basic structure typedefs
-***********************************************************/
-typedef struct tmNode  tmNode;
-typedef struct tmEdge  tmEdge;
-typedef struct tmTri   tmTri;
-typedef struct tmBdry  tmBdry;
-typedef struct tmFront tmFront;
-typedef struct tmQtree tmQtree;
-typedef struct tmMesh  tmMesh;
-
-/***********************************************************
-* Basic structure labels
-***********************************************************/
-#define TM_NODE 0
-#define TM_EDGE 1
-#define TM_TRI  2
-
-/***********************************************************
 * Flag to use double precision -> undefine to use float
 ***********************************************************/
 #define TM_USE_DOUBLE
@@ -45,6 +27,29 @@ typedef struct tmMesh  tmMesh;
 #define FALSE    0
 
 /***********************************************************
+* Basic structure labels
+***********************************************************/
+#define TM_NODE 0
+#define TM_EDGE 1
+#define TM_TRI  2
+
+/***********************************************************
+* Basic structure typedefs
+***********************************************************/
+typedef struct tmNode  tmNode;
+typedef struct tmEdge  tmEdge;
+typedef struct tmTri   tmTri;
+typedef struct tmBdry  tmBdry;
+typedef struct tmFront tmFront;
+typedef struct tmQtree tmQtree;
+typedef struct tmMesh  tmMesh;
+
+/***********************************************************
+* Function pointers
+***********************************************************/
+typedef tmDouble (*tmSizeFun) (tmDouble xy[2]);
+
+/***********************************************************
 * Debugging
 ***********************************************************/
 #define TM_DEBUG 1
@@ -53,6 +58,7 @@ typedef struct tmMesh  tmMesh;
 * Constants used in code
 ***********************************************************/
 #define PI_D 3.1415926535897932384626433832795
+#define TM_MIN_SIZE 1.0E-8
 
 /***********************************************************
 * Minimum and maximum allowed coordinates

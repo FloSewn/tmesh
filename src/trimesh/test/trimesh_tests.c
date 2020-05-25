@@ -19,6 +19,15 @@
 
 
 /*************************************************************
+* Size function to test boundary refinement
+*************************************************************/
+static inline tmDouble size_fun_1( tmDouble xy[2] )
+{
+  return 0.05 + 0.5 * xy[0] + 0.5 * xy[1];
+}
+
+
+/*************************************************************
 * Unit test function to handle creation and 
 * destruction of a trimesh structure
 *************************************************************/
@@ -268,9 +277,20 @@ char *test_tmBdry_refine()
   mu_assert( e4->n2 == n1,
       "tmBdry_splitEdge() failed.");
 
+  /*--------------------------------------------------------
+  | Refine whole boundary according to size function
+  --------------------------------------------------------*/
+  tmBdry_refine(bdry_ext, size_fun_1);
+
+  /*--------------------------------------------------------
+  | Print the mesh data 
+  --------------------------------------------------------*/
+  tmMesh_printMesh(mesh);
+
   tmMesh_destroy(mesh);
 
   return NULL;
+
 } /* test_tmBdry_refine() */
 
 

@@ -136,4 +136,13 @@ void tmMesh_remBdry(tmMesh *mesh, tmBdry *bdry);
 **********************************************************/
 tmBool tmMesh_objInside(tmMesh *mesh, void *obj, int obj_type);
 
+/**********************************************************
+* Function: tmMesh_printMesh()
+*----------------------------------------------------------
+* Fuction to print out the mesh data
+*----------------------------------------------------------
+* @param mesh: pointer to mesh structure
+**********************************************************/
+void tmMesh_printMesh(tmMesh *mesh);
+
 #endif

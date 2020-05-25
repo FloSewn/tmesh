@@ -277,3 +277,45 @@ tmEdge *tmBdry_splitEdge(tmBdry *bdry, tmEdge *edge)
   return ne1;
 
 } /* tmEdge_split() */
+
+/**********************************************************
+* Function: tmBdry_refine()
+*----------------------------------------------------------
+* Refine the edges of a boundary structure according to
+* a size function
+*----------------------------------------------------------
+* @param *bdry: pointer to bdry
+* @param *sizefun: function pointer to size function
+* @return: 
+**********************************************************/
+void tmBdry_refine(tmBdry *bdry, tmSizeFun size_fun)
+{
+
+  ListNode *cur, *nxt;
+  int counter = 0;
+
+  cur = nxt = bdry->edges_stack->first;
+
+  while ( counter < bdry->no_edges )
+  {
+    nxt = cur->next;
+
+    tmDouble rho = size_fun( ((tmEdge*)cur->value)->xy );
+    check( rho > TM_MIN_SIZE,
+        "Size function return value lower than defined minimum scale.");
+
+    if ( ((tmEdge*)cur->value)->len > rho )
+      tmBdry_splitEdge(bdry, cur->value);
+    else
+      counter += 1;
+
+    cur = nxt;
+
+    if (cur == NULL)
+      cur = bdry->edges_stack->first;
+  }
+
+error:
+  return;
+
+} /* tmBdry_refine() */

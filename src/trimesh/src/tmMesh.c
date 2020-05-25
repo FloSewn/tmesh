@@ -319,3 +319,56 @@ tmBool tmMesh_objInside(tmMesh *mesh,
 
 } /* tmMesh_objInside() */
 
+
+/**********************************************************
+* Function: tmMesh_printMesh()
+*----------------------------------------------------------
+* Fuction to print out the mesh data
+*----------------------------------------------------------
+* @param mesh: pointer to mesh structure
+**********************************************************/
+void tmMesh_printMesh(tmMesh *mesh) 
+{
+  ListNode *cur, *cur_bdry;
+  int node_index = 0;
+  int edge_index = 0;
+  int bdry_edge_index = 0;
+
+  /*-------------------------------------------------------
+  | Set node indices and print node coordinates
+  -------------------------------------------------------*/
+  printf("NODES %d\n", mesh->no_nodes);
+  for (cur = mesh->nodes_stack->first; 
+       cur != NULL; cur = cur->next)
+  {
+    tmDouble *xy = ((tmNode*)cur->value)->xy;
+    ((tmNode*)cur->value)->index = node_index;
+    printf("%d\t%9.5f\t%9.5f\n", node_index, xy[0], xy[1]);
+    node_index += 1;
+  }
+
+  /*-------------------------------------------------------
+  | Set print boundary edges
+  -------------------------------------------------------*/
+  for (cur_bdry = mesh->bdry_stack->first; 
+       cur_bdry != NULL; cur_bdry = cur_bdry->next)
+  {
+    tmBdry *bdry = (tmBdry*)cur_bdry->value;
+
+    printf("BOUNDARY %d %d\n", 
+        ((tmBdry*)cur_bdry->value)->index,
+        ((tmBdry*)cur_bdry->value)->no_edges);
+
+    for (cur = bdry->edges_stack->first; 
+         cur != NULL; cur = cur->next)
+    {
+      tmIndex ind1 = ((tmEdge*)cur->value)->n1->index;
+      tmIndex ind2 = ((tmEdge*)cur->value)->n2->index;
+      ((tmEdge*)cur->value)->index = edge_index;
+      printf("%d\t%9d\t%9d\n", edge_index, ind1, ind2);
+      edge_index += 1;
+    }
+  }
+
+} /* tmMesh_printMesh() */
+

@@ -73,6 +73,48 @@ tmNode *tmNode_create(tmMesh *mesh, tmDouble xy[2]);
 **********************************************************/
 void tmNode_destroy(tmNode *node);
 
+/**********************************************************
+* Function: tmNode_getBdryEdgeIn()
+*----------------------------------------------------------
+* Returns a list of ingoing boundary edges
+*----------------------------------------------------------
+* @param *mesh: pointer to a tmNode 
+*
+* @return: List of tmEdges
+**********************************************************/
+List *tmNode_getBdryEdgeIn(tmNode *node);
 
+/**********************************************************
+* Function: tmNode_getBdryEdgeOut()
+*----------------------------------------------------------
+* Returns a list of outgoing boundary edges
+*----------------------------------------------------------
+* @param *mesh: pointer to a tmNode 
+*
+* @return: List of tmEdges
+**********************************************************/
+List *tmNode_getBdryEdgeOut(tmNode *node);
+
+/**********************************************************
+* Function: tmNode_getFrontEdgeIn()
+*----------------------------------------------------------
+* Returns a list of ingoing advancing front edges
+*----------------------------------------------------------
+* @param *mesh: pointer to a tmNode 
+*
+* @return: List of tmEdges
+**********************************************************/
+List *tmNode_getFrontEdgeIn(tmNode *node);
+
+/**********************************************************
+* Function: tmNode_getFrontEdgeOut()
+*----------------------------------------------------------
+* Returns a list of outgoing advancing front edges
+*----------------------------------------------------------
+* @param *mesh: pointer to a tmNode 
+*
+* @return: List of tmEdges
+**********************************************************/
+List *tmNode_getFrontEdgeOut(tmNode *node);
 
 #endif

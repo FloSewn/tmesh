@@ -8,6 +8,11 @@
 char *test_mesh_create_destroy();
 
 /*************************************************************
+* Unit test function to the boundary refinement
+************************************************************/
+char *test_tmBdry_refine();
+
+/*************************************************************
 * Unit test function to handle the tmQtree structure
 *
 * Maximum number of qtree-objects must be set to 3 !

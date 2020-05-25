@@ -172,8 +172,6 @@ char *test_mesh_create_destroy()
       "tmEdge_isLeft() failed.");
   mu_assert(tmEdge_isLeftOn( e_0, n_1, TM_NODE ) == TRUE,
       "tmEdge_isLeft() failed."); 
-
-
   /*--------------------------------------------------------
   | Check boundary functions
   --------------------------------------------------------*/
@@ -216,6 +214,64 @@ char *test_mesh_create_destroy()
   return NULL;
 } /* test_mesh_create_destroy() */
 
+
+/*************************************************************
+* Unit test function to the boundary refinement
+************************************************************/
+char *test_tmBdry_refine()
+{
+  tmDouble xy_min[2] = {  -5.0, -5.0 };
+  tmDouble xy_max[2] = {  15.0, 15.0 };
+  tmMesh *mesh = tmMesh_create(xy_min, xy_max, 3);
+
+  /*--------------------------------------------------------
+  | exterior nodes
+  --------------------------------------------------------*/
+  tmDouble xy0[2] = {  0.0,  0.0 };
+  tmDouble xy1[2] = { 11.0,  0.0 };
+  tmDouble xy2[2] = { 11.0,  7.0 };
+  tmDouble xy3[2] = {  0.0,  7.0 };
+
+  tmNode *n0 = tmNode_create(mesh, xy0);
+  tmNode *n1 = tmNode_create(mesh, xy1);
+  tmNode *n2 = tmNode_create(mesh, xy2);
+  tmNode *n3 = tmNode_create(mesh, xy3);
+
+  tmBdry *bdry_ext = tmMesh_addBdry(mesh, FALSE, 0);
+  tmEdge *e0 = tmBdry_addEdge(bdry_ext, n0, n1);
+  tmEdge *e1 = tmBdry_addEdge(bdry_ext, n1, n2);
+  tmEdge *e2 = tmBdry_addEdge(bdry_ext, n2, n3);
+  tmEdge *e3 = tmBdry_addEdge(bdry_ext, n3, n0);
+
+  /*--------------------------------------------------------
+  | Split edge e_0
+  --------------------------------------------------------*/
+  e0 = tmBdry_splitEdge(bdry_ext, e0);
+
+  tmNode *n4 = e0->n2;
+  mu_assert( n4->xy[0] == 5.5, 
+      "tmBdry_splitEdge() failed.");
+  mu_assert( n4->xy[1] == 0.0, 
+      "tmBdry_splitEdge() failed.");
+
+  List *n4_e_in = tmNode_getBdryEdgeIn(n4);
+  mu_assert( e0 == List_first(n4_e_in),
+      "tmNode_getBdryEdgeIn() failed.");
+  List_destroy(n4_e_in);
+
+  List *n4_e_out = tmNode_getBdryEdgeOut(n4);
+  tmEdge *e4 = List_first(n4_e_out);
+  List_destroy(n4_e_out);
+
+  mu_assert( e4->n1 == n4,
+      "tmBdry_splitEdge() failed.");
+  mu_assert( e4->n2 == n1,
+      "tmBdry_splitEdge() failed.");
+
+  tmMesh_destroy(mesh);
+
+  return NULL;
+} /* test_tmBdry_refine() */
 
 
 /*************************************************************

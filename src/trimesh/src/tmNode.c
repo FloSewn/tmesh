@@ -84,3 +84,111 @@ void tmNode_destroy(tmNode *node)
   free(node);
 
 } /* tmNode_destroy() */
+
+/**********************************************************
+* Function: tmNode_getBdryEdgeIn()
+*----------------------------------------------------------
+* Returns a list of ingoing boundary edges
+*----------------------------------------------------------
+* @param *mesh: pointer to a tmNode 
+*
+* @return: List of tmEdges
+**********************************************************/
+List *tmNode_getBdryEdgeIn(tmNode *node)
+{
+  ListNode *cur;
+  tmEdge   *cur_edge;
+  List     *found_edges = List_create();
+
+  for ( cur = node->bdry_edges->first; 
+        cur != NULL; cur = cur->next )
+  {
+    cur_edge = (tmEdge*) cur->value;
+    if ( cur_edge->n2 == node )
+      List_push( found_edges, cur_edge );
+  }
+
+  return found_edges;
+
+} /* tmNode_getBdryEdgeIn() */
+
+/**********************************************************
+* Function: tmNode_getBdryEdgeOut()
+*----------------------------------------------------------
+* Returns a list of outgoing boundary edges
+*----------------------------------------------------------
+* @param *mesh: pointer to a tmNode 
+*
+* @return: List of tmEdges
+**********************************************************/
+List *tmNode_getBdryEdgeOut(tmNode *node)
+{
+  ListNode *cur;
+  tmEdge   *cur_edge;
+  List     *found_edges = List_create();
+
+  for ( cur = node->bdry_edges->first; 
+        cur != NULL; cur = cur->next )
+  {
+    cur_edge = (tmEdge*) cur->value;
+    if ( cur_edge->n1 == node )
+      List_push( found_edges, cur_edge );
+  }
+
+  return found_edges;
+
+} /* tmNode_getBdryEdgeOut() */
+
+/**********************************************************
+* Function: tmNode_getFrontEdgeIn()
+*----------------------------------------------------------
+* Returns a list of ingoing advancing front edges
+*----------------------------------------------------------
+* @param *mesh: pointer to a tmNode 
+*
+* @return: List of tmEdges
+**********************************************************/
+List *tmNode_getFrontEdgeIn(tmNode *node)
+{
+  ListNode *cur;
+  tmEdge   *cur_edge;
+  List     *found_edges = List_create();
+
+  for ( cur = node->front_edges->first; 
+        cur != NULL; cur = cur->next )
+  {
+    cur_edge = (tmEdge*) cur->value;
+    if ( cur_edge->n2 == node )
+      List_push( found_edges, cur_edge );
+  }
+
+  return found_edges;
+
+} /* tmNode_getFrontEdgeIn() */
+
+/**********************************************************
+* Function: tmNode_getFrontEdgeOut()
+*----------------------------------------------------------
+* Returns a list of outgoing advancing front edges
+*----------------------------------------------------------
+* @param *mesh: pointer to a tmNode 
+*
+* @return: List of tmEdges
+**********************************************************/
+List *tmNode_getFrontEdgeOut(tmNode *node)
+{
+  ListNode *cur;
+  tmEdge   *cur_edge;
+  List     *found_edges = List_create();
+
+  for ( cur = node->front_edges->first; 
+        cur != NULL; cur = cur->next )
+  {
+    cur_edge = (tmEdge*) cur->value;
+    if ( cur_edge->n1 == node )
+      List_push( found_edges, cur_edge );
+  }
+
+  return found_edges;
+
+} /* tmNode_getFrontEdgeOut() */

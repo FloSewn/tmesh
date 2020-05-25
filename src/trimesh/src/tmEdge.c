@@ -338,4 +338,3 @@ tmBool tmEdge_isRightOn(tmEdge *edge, void *obj, int obj_type)
   return IS_RIGHTON( edge->n1->xy, edge->n2->xy, xy);
 
 } /* tmEdge_isRightOn() */
-

@@ -249,3 +249,31 @@ tmBool tmBdry_isRightOn(tmBdry *bdry, void *obj, int obj_type)
   return is_right;
 
 } /* tmBdry_isRightOn() */
+
+/**********************************************************
+* Function: tmBdry_splitEdge()
+*----------------------------------------------------------
+* Split an edge by inserting a new node on its centroid
+* and splitting it into two new edges
+* This edge will be pointing from its node n1 to the new
+* node and a new edge will be created, which points
+* from the new node to n2.
+*----------------------------------------------------------
+* @param *bdry: pointer to bdry
+* @param *edge: pointer to a tmEdge 
+* @return: pointer to newly created first edge
+**********************************************************/
+tmEdge *tmBdry_splitEdge(tmBdry *bdry, tmEdge *edge)
+{
+  tmNode *n1 = edge->n1;
+  tmNode *n2 = edge->n2;
+  tmNode *nn = tmNode_create(edge->mesh, edge->xy);
+
+  tmBdry_remEdge(bdry, edge);
+
+  tmEdge *ne1 = tmBdry_addEdge(bdry, n1, nn);
+  tmEdge *ne2 = tmBdry_addEdge(bdry, nn, n2);
+
+  return ne1;
+
+} /* tmEdge_split() */

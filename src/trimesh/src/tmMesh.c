@@ -337,13 +337,13 @@ void tmMesh_printMesh(tmMesh *mesh)
   /*-------------------------------------------------------
   | Set node indices and print node coordinates
   -------------------------------------------------------*/
-  printf("NODES %d\n", mesh->no_nodes);
+  fprintf(stdout,"NODES %d\n", mesh->no_nodes);
   for (cur = mesh->nodes_stack->first; 
        cur != NULL; cur = cur->next)
   {
     tmDouble *xy = ((tmNode*)cur->value)->xy;
     ((tmNode*)cur->value)->index = node_index;
-    printf("%d\t%9.5f\t%9.5f\n", node_index, xy[0], xy[1]);
+    fprintf(stdout,"%d\t%9.5f\t%9.5f\n", node_index, xy[0], xy[1]);
     node_index += 1;
   }
 
@@ -355,7 +355,7 @@ void tmMesh_printMesh(tmMesh *mesh)
   {
     tmBdry *bdry = (tmBdry*)cur_bdry->value;
 
-    printf("BOUNDARY %d %d\n", 
+    fprintf(stdout,"BOUNDARY %d %d\n", 
         ((tmBdry*)cur_bdry->value)->index,
         ((tmBdry*)cur_bdry->value)->no_edges);
 
@@ -365,7 +365,7 @@ void tmMesh_printMesh(tmMesh *mesh)
       tmIndex ind1 = ((tmEdge*)cur->value)->n1->index;
       tmIndex ind2 = ((tmEdge*)cur->value)->n2->index;
       ((tmEdge*)cur->value)->index = edge_index;
-      printf("%d\t%9d\t%9d\n", edge_index, ind1, ind2);
+      fprintf(stdout,"%d\t%9d\t%9d\n", edge_index, ind1, ind2);
       edge_index += 1;
     }
   }

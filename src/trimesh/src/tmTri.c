@@ -69,6 +69,12 @@ tmTri *tmTri_create(tmMesh *mesh,
   tri->t3 = NULL;
 
   /*-------------------------------------------------------
+  | Init buffer variables ( e.g. for sorting )
+  -------------------------------------------------------*/
+  tri->dblBuf = 0.0;
+  tri->indBuf = 0;
+
+  /*-------------------------------------------------------
   | Add tri to qtree
   -------------------------------------------------------*/
   tri->stack_pos = tmMesh_addTri(mesh, tri);

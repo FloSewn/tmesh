@@ -53,6 +53,12 @@ typedef struct tmTri {
   -------------------------------------------------------*/
   tmDouble area;
 
+  /*-------------------------------------------------------
+  | Buffer variables ( e.g. for sorting )
+  -------------------------------------------------------*/
+  tmDouble dblBuf;
+  tmIndex  indBuf;
+
 } tmTri;
 
 

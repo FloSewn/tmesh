@@ -139,3 +139,80 @@ void tmFront_remEdge(tmFront *front, tmEdge *edge)
   tmEdge_destroy(edge);
 
 } /* tmFront_remEdge() */
+
+/**********************************************************
+* Function: tmFront_init()
+*----------------------------------------------------------
+* Function to initialize the advancing front of a mesh
+* --> Clone of all current boundaries
+*----------------------------------------------------------
+* 
+**********************************************************/
+void tmFront_init(tmMesh *mesh)
+{
+  ListNode *cur, *cur_bdry;
+
+  tmFront *front = mesh->front;
+
+  /*-------------------------------------------------------
+  | Loop over all boundaries
+  -------------------------------------------------------*/
+  for (cur_bdry = mesh->bdry_stack->first; 
+       cur_bdry != NULL; cur_bdry = cur_bdry->next)
+  {
+    tmBdry *bdry = (tmBdry*)cur_bdry->value;
+
+    /*-----------------------------------------------------
+    | Loop over all boundary edges
+    -----------------------------------------------------*/
+    for (cur = bdry->edges_stack->first; 
+         cur != NULL; cur = cur->next)
+    {
+      tmNode *n1 = ((tmEdge*)cur->value)->n1;
+      tmNode *n2 = ((tmEdge*)cur->value)->n2;
+
+      tmFront_addEdge(front, n1, n2);
+    }
+  }
+
+} /* tmFront_init() */
+
+/**********************************************************
+* Function: tmFront_sortEdges()
+*----------------------------------------------------------
+* Function to sort the advancing front edges 
+* according to their length in ascending order 
+*----------------------------------------------------------
+* 
+**********************************************************/
+void tmFront_sortEdges(tmMesh *mesh)
+{
+  ListNode *cur;
+  tmFront  *front       = mesh->front;
+  List     *front_edges = front->edges_stack; 
+
+  /*-------------------------------------------------------
+  | Sort edge entries 
+  | -> Only list values are swapped
+  -------------------------------------------------------*/
+  int sorted = List_bubble_sort(front_edges, 
+                        (List_compare) tmEdge_compareLen);
+  check( sorted == 0,
+      "List sort on advancing front edges failed.");
+
+  /*-------------------------------------------------------
+  | Update list positions 
+  -------------------------------------------------------*/
+  for (cur = front_edges->first; 
+       cur != NULL; cur = cur->next)
+  {
+    ((tmEdge*)cur->value)->stack_pos = cur;
+  }
+
+
+error:
+  return;
+
+} /* tmFront_sortEdges() */
+
+

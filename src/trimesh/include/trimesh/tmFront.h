@@ -69,5 +69,24 @@ tmEdge *tmFront_addEdge(tmFront *front,
 **********************************************************/
 void tmFront_remEdge(tmFront *front, tmEdge *edge);
 
+/**********************************************************
+* Function: tmFront_init()
+*----------------------------------------------------------
+* Function to initialize the advancing front of a mesh
+* --> Clone of all current boundaries
+*----------------------------------------------------------
+* 
+**********************************************************/
+void tmFront_init(tmMesh *mesh);
+
+/**********************************************************
+* Function: tmFront_sortEdges()
+*----------------------------------------------------------
+* Function to sort the advancing front edges 
+* according to their length in ascending order 
+*----------------------------------------------------------
+* 
+**********************************************************/
+void tmFront_sortEdges(tmMesh *mesh);
 
 #endif

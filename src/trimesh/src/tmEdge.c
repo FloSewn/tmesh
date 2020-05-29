@@ -51,6 +51,12 @@ tmEdge *tmEdge_create(tmMesh *mesh,
   edge->t2 = NULL;
 
   /*-------------------------------------------------------
+  | Init buffer variables ( e.g. for sorting )
+  -------------------------------------------------------*/
+  edge->dblBuf = 0.0;
+  edge->indBuf = 0;
+
+  /*-------------------------------------------------------
   | Init geometric edge properties
   -------------------------------------------------------*/
   edge->xy[0] = 0.5 * (n1->xy[0] + n2->xy[0]);
@@ -338,3 +344,30 @@ tmBool tmEdge_isRightOn(tmEdge *edge, void *obj, int obj_type)
   return IS_RIGHTON( edge->n1->xy, edge->n2->xy, xy);
 
 } /* tmEdge_isRightOn() */
+
+/**********************************************************
+* Function: tmEdge_compareLen()
+*----------------------------------------------------------
+* Compare two edges according to their lengths
+*
+* -> Returns an integer less than zero, if length of e1 is 
+*    less than lenght of e2
+*
+* -> Returns zero, if length of e1 equals length of e2
+*
+*  -> Returns an integer greater than zero if length of 
+*     e1 is greater than length of e2
+*----------------------------------------------------------
+* @param *e1, *e2: pointer to tmEdges to compare
+**********************************************************/
+int tmEdge_compareLen(tmEdge *e1, tmEdge *e2)
+{
+  if (e1->len > e2->len)
+    return 1;
+
+  if EQ(e1->len, e2->len)
+    return 0;
+
+  return -1;
+
+} /*tmEdge_compareLen() */

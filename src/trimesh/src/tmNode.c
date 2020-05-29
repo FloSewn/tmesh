@@ -47,6 +47,12 @@ tmNode *tmNode_create(tmMesh *mesh, tmDouble xy[2])
   node->n_tris = 0;
 
   /*-------------------------------------------------------
+  | Init buffer variables ( e.g. for sorting )
+  -------------------------------------------------------*/
+  node->dblBuf = 0.0;
+  node->indBuf = 0;
+
+  /*-------------------------------------------------------
   | Add node to qtree
   -------------------------------------------------------*/
   node->stack_pos = tmMesh_addNode(mesh, node);
@@ -192,3 +198,31 @@ List *tmNode_getFrontEdgeOut(tmNode *node)
   return found_edges;
 
 } /* tmNode_getFrontEdgeOut() */
+
+
+/**********************************************************
+* Function: tmNode_compareDblBuf()
+*----------------------------------------------------------
+* Compare the tmDouble buffers of two nodes
+*
+* -> Returns an integer less than zero, if dblBuf of n1 is 
+*    less than dblBuf of n2
+*
+* -> Returns zero, if dblBuf of n1 equals dblBuf of n2
+*
+*  -> Returns an integer greater than zero if dblBuf of 
+*     n1 is greater than dblBuf of n2
+*----------------------------------------------------------
+* @param *n1, *n2: pointer to tmNodes to compare
+**********************************************************/
+int tmNode_compareDblBuf(tmNode *n1, tmNode *n2)
+{
+  if (n1->dblBuf > n2->dblBuf)
+    return 1;
+
+  if EQ(n1->dblBuf, n2->dblBuf)
+    return 0;
+
+  return -1;
+
+} /* tmNode_compareDblBuf() */

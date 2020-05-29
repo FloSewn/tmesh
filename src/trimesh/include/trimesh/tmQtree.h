@@ -153,4 +153,19 @@ List *tmQtree_getObjBbox(tmQtree *qtree,
                          tmDouble xy_min[2], 
                          tmDouble xy_max[2]);
 
+/**********************************************************
+* Function: tmQtree_getObjCirc()
+*----------------------------------------------------------
+* Return a list of objects that are contained within
+* a specified circle 
+*----------------------------------------------------------
+* @param qtree: tmQtree structure to initialize
+* @param xy: circle centroid
+* @param r: circle radius
+*
+**********************************************************/
+List *tmQtree_getObjCirc(tmQtree *qtree, 
+                         tmDouble xy[2], 
+                         tmDouble r);
+
 #endif

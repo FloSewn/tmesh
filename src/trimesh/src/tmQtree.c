@@ -819,3 +819,127 @@ List *tmQtree_getObjBbox(tmQtree *qtree,
     return obj_found;
 
 } /* tmQtree_getObjBbox() */
+
+/**********************************************************
+* Function: tmQtree_getObjCirc()
+*----------------------------------------------------------
+* Return a list of objects that are contained within
+* a specified circle 
+*----------------------------------------------------------
+* @param qtree: tmQtree structure to initialize
+* @param xy: circle centroid
+* @param r: circle radius
+*
+**********************************************************/
+List *tmQtree_getObjCirc(tmQtree *qtree, 
+                         tmDouble xy[2], 
+                         tmDouble r)
+{
+  /*-------------------------------------------------------
+  | Check if circle bbox overlaps with this qtree
+  -------------------------------------------------------*/
+  tmDouble xy_min[2] = { xy[0]-r, xy[1]-r };
+  tmDouble xy_max[2] = { xy[0]+r, xy[1]+r };
+
+  tmBool overlap = BBOX_OVERLAP(xy_min, 
+                                xy_max,
+                                qtree->xy_min,
+                                qtree->xy_max);
+
+  if (overlap == FALSE)
+    return NULL;
+
+
+  List *obj_found = List_create();
+
+  /*-------------------------------------------------------
+  | If bbox is splitted, search in children
+  -------------------------------------------------------*/
+  if (qtree->is_splitted == TRUE)
+  {
+    List *obj_NE = tmQtree_getObjCirc(qtree->child_NE,
+                                      xy, r);
+    if (obj_NE != NULL)
+    {
+      List_join(obj_found, obj_NE);
+      List_destroy(obj_NE);
+    }
+
+    List *obj_NW = tmQtree_getObjCirc(qtree->child_NW,
+                                      xy, r);
+    if (obj_NW != NULL)
+    {
+      List_join(obj_found, obj_NW);
+      List_destroy(obj_NW);
+    }
+
+    List *obj_SW = tmQtree_getObjCirc(qtree->child_SW,
+                                      xy, r);
+    if (obj_SW != NULL)
+    {
+      List_join(obj_found, obj_SW);
+      List_destroy(obj_SW);
+    }
+
+    List *obj_SE = tmQtree_getObjCirc(qtree->child_SE,
+                                      xy, r);
+    if (obj_SE != NULL)
+    {
+      List_join(obj_found, obj_SE);
+      List_destroy(obj_SE);
+    }
+    
+  }
+  /*-------------------------------------------------------
+  | Else return all objects of this qtree that are 
+  | within bbox
+  -------------------------------------------------------*/
+  else
+  {
+    tmBool    in_circ;
+    tmDouble *cur_xy;
+    ListNode *cur;
+
+    for (cur = qtree->obj->first; 
+         cur != NULL; cur = cur->next)
+    {
+      if ( qtree->obj_type == TM_NODE)
+        cur_xy = ((tmNode*)cur->value)->xy;
+      else if ( qtree->obj_type == TM_EDGE)
+        cur_xy = ((tmEdge*)cur->value)->xy;
+      else if ( qtree->obj_type == TM_TRI)
+        cur_xy = ((tmTri*)cur->value)->xy;
+      else
+        log_err("Wrong type provied for tmQtree_getObjCirc()");
+
+      const tmDouble dist2 = (cur_xy[0]-xy[0])*(cur_xy[0]-xy[0]) 
+                           + (cur_xy[1]-xy[1])*(cur_xy[1]-xy[1]);
+      const tmDouble r2    = r * r;
+      const tmBool in_circ = dist2 <= r2;
+
+      if (in_circ == TRUE)
+      {
+        List_push(obj_found, cur->value);
+
+        /* Buffer distance of object to centroid */
+        if ( qtree->obj_type == TM_NODE)
+          ((tmNode*)cur->value)->dblBuf = r2;
+        else if ( qtree->obj_type == TM_EDGE)
+          ((tmEdge*)cur->value)->dblBuf = r2;
+        else if ( qtree->obj_type == TM_TRI)
+          ((tmTri*)cur->value)->dblBuf = r2;
+        else
+          log_err("Wrong type provied for tmQtree_getObjCirc()");
+      }
+    }
+  }
+
+  if (obj_found->count == 0)
+  {
+    List_destroy(obj_found);
+    return NULL;
+  }
+  else
+    return obj_found;
+
+} /* tmQtree_getObjCirc() */

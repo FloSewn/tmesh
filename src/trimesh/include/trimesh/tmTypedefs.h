@@ -8,6 +8,7 @@
 
 #include "lcthw/dbg.h"
 #include "lcthw/list.h"
+#include "lcthw/list_algos.h"
 #include "lcthw/darray.h"
 
 /***********************************************************

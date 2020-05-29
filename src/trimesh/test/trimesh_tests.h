@@ -25,4 +25,10 @@ char *test_tmQtree();
 ************************************************************/
 char *test_tmQtree_performance();
 
+/*************************************************************
+* Unit test function for the advancing front algorithm
+************************************************************/
+char *test_tmFront_init();
+char *test_tmFront_advance();
+
 #endif

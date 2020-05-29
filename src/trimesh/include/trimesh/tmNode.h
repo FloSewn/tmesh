@@ -47,6 +47,12 @@ typedef struct tmNode {
   List *tris;
   int   n_tris;
 
+  /*-------------------------------------------------------
+  | Buffer variables ( e.g. for sorting )
+  -------------------------------------------------------*/
+  tmDouble dblBuf;
+  tmIndex  indBuf;
+
 } tmNode;
 
 

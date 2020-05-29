@@ -4,6 +4,7 @@
 #include "trimesh/tmBdry.h"
 #include "trimesh/tmMesh.h"
 #include "trimesh/tmQtree.h"
+#include "trimesh/tmFront.h"
 
 #include "lcthw/list.h"
 #include "lcthw/minunit.h"
@@ -24,6 +25,10 @@
 static inline tmDouble size_fun_1( tmDouble xy[2] )
 {
   return 0.05 + 0.5 * xy[0] + 0.5 * xy[1];
+}
+static inline tmDouble size_fun_2( tmDouble xy[2] )
+{
+  return 5.0;
 }
 
 
@@ -481,7 +486,7 @@ char *test_tmQtree()
       "Failed to distribute number of nodes.");
 
   /*--------------------------------------------------------
-  | Check function for finding objects in qree
+  | Check function for finding objects in qree with bbox
   --------------------------------------------------------*/
   tmDouble bbox_min[2] = { -1.0, -1.0 };
   tmDouble bbox_max[2] = {  1.0,  1.0 };
@@ -500,6 +505,28 @@ char *test_tmQtree()
 
   if (obj_bbox != NULL)
     List_destroy(obj_bbox);
+
+  /*--------------------------------------------------------
+  | Check function for finding objects in qree with circle
+  --------------------------------------------------------*/
+  tmDouble xy_c[2] = { 1.0, 1.0 };
+  tmDouble r_c     = 0.75;
+
+  List *obj_circ = tmQtree_getObjCirc(mesh->nodes_qtree, 
+                                      xy_c, r_c);
+
+  mu_assert(obj_circ->count == 3,
+      "tmQtree_getObjCirc() failed.");
+  mu_assert(obj_circ->first->value == n_5,
+      "tmQtree_getObjCirc() failed.");
+  mu_assert(obj_circ->first->next->value == n_3,
+      "tmQtree_getObjCirc() failed.");
+  mu_assert(obj_circ->last->value == n_4,
+      "tmQtree_getObjCirc() failed.");
+
+  if (obj_circ != NULL)
+    List_destroy(obj_circ);
+
 
 
   /*--------------------------------------------------------
@@ -667,3 +694,134 @@ char *test_tmQtree_performance()
 
 } /* test_tmQtree_performance() */
 
+
+/*************************************************************
+* Unit test function for the advancing front algorithm
+************************************************************/
+char *test_tmFront_init()
+{
+  tmDouble xy_min[2] = {  -5.0, -5.0 };
+  tmDouble xy_max[2] = {  15.0, 15.0 };
+  tmMesh *mesh = tmMesh_create(xy_min, xy_max, 3);
+
+  /*--------------------------------------------------------
+  | exterior nodes
+  --------------------------------------------------------*/
+  tmDouble xy0[2] = {  0.0,  0.0 };
+  tmDouble xy1[2] = {  8.0,  0.0 };
+  tmDouble xy2[2] = {  9.0,  7.0 };
+  tmDouble xy3[2] = {  0.0,  5.0 };
+
+  tmNode *n0 = tmNode_create(mesh, xy0);
+  tmNode *n1 = tmNode_create(mesh, xy1);
+  tmNode *n2 = tmNode_create(mesh, xy2);
+  tmNode *n3 = tmNode_create(mesh, xy3);
+
+  tmBdry *bdry_ext = tmMesh_addBdry(mesh, FALSE, 0);
+  tmEdge *e0 = tmBdry_addEdge(bdry_ext, n0, n1);
+  tmEdge *e1 = tmBdry_addEdge(bdry_ext, n1, n2);
+  tmEdge *e2 = tmBdry_addEdge(bdry_ext, n2, n3);
+  tmEdge *e3 = tmBdry_addEdge(bdry_ext, n3, n0);
+
+  /*--------------------------------------------------------
+  | Initialize the advancing front and 
+  | check for its correct initialization 
+  --------------------------------------------------------*/
+  tmFront_init(mesh);
+
+  ListNode *cur_front, *cur_bdry;
+  ListNode *nxt_front, *nxt_bdry;
+  cur_front = nxt_front = mesh->front->edges_stack->first;
+  cur_bdry = nxt_bdry = bdry_ext->edges_stack->first;
+  while (cur_front != NULL || cur_bdry != NULL)
+  {
+    nxt_front = cur_front->next;
+    nxt_bdry = cur_bdry->next;
+    mu_assert( ((tmEdge*)cur_front->value)->n1 == ((tmEdge*)cur_bdry->value)->n1,
+        "Failed to init front.");
+    mu_assert( ((tmEdge*)cur_front->value)->n2 == ((tmEdge*)cur_bdry->value)->n2,
+        "Failed to init front.");
+    cur_front = nxt_front;
+    cur_bdry = nxt_bdry;
+  }
+
+  /*--------------------------------------------------------
+  | Sort advancing front according to edge lengths
+  | and check if sorting succeeded
+  --------------------------------------------------------*/
+  tmFront_sortEdges(mesh);
+
+  cur_front = nxt_front = mesh->front->edges_stack->first;
+  while (cur_front != NULL)
+  {
+    nxt_front = cur_front->next;
+    if (nxt_front != NULL)
+    {
+      tmDouble cur_len = ((tmEdge*)cur_front->value)->len;
+      tmDouble nxt_len = ((tmEdge*)nxt_front->value)->len;
+      mu_assert(cur_len <= nxt_len,
+          "Failed to sort the advancing front");
+    }
+    cur_front = nxt_front;
+  }
+
+  /*--------------------------------------------------------
+  | Print the mesh data 
+  --------------------------------------------------------*/
+  tmMesh_printMesh(mesh);
+
+  tmMesh_destroy(mesh);
+
+  return NULL;
+} /* test_tmFront_init() */
+
+
+/*************************************************************
+* Unit test function for the advancing front algorithm
+************************************************************/
+char *test_tmFront_advance()
+{
+  tmDouble xy_min[2] = { -15.0,-15.0 };
+  tmDouble xy_max[2] = {  15.0, 15.0 };
+  tmMesh *mesh = tmMesh_create(xy_min, xy_max, 3);
+
+  /*--------------------------------------------------------
+  | exterior nodes
+  --------------------------------------------------------*/
+  tmDouble xy0[2] = {  0.0,  0.0 };
+  tmDouble xy1[2] = { 10.0,  0.0 };
+  tmDouble xy2[2] = { 10.0, 10.0 };
+  tmDouble xy3[2] = {  0.0, 10.0 };
+
+  tmNode *n0 = tmNode_create(mesh, xy0);
+  tmNode *n1 = tmNode_create(mesh, xy1);
+  tmNode *n2 = tmNode_create(mesh, xy2);
+  tmNode *n3 = tmNode_create(mesh, xy3);
+
+  tmBdry *bdry_ext = tmMesh_addBdry(mesh, FALSE, 0);
+  tmEdge *e0 = tmBdry_addEdge(bdry_ext, n0, n1);
+  tmEdge *e1 = tmBdry_addEdge(bdry_ext, n1, n2);
+  tmEdge *e2 = tmBdry_addEdge(bdry_ext, n2, n3);
+  tmEdge *e3 = tmBdry_addEdge(bdry_ext, n3, n0);
+
+  /*--------------------------------------------------------
+  | Refine whole boundary according to size function
+  --------------------------------------------------------*/
+  tmBdry_refine(bdry_ext, size_fun_2);
+
+  /*--------------------------------------------------------
+  | Initialize the advancing front and 
+  | check for its correct initialization 
+  --------------------------------------------------------*/
+  tmFront_init(mesh);
+  tmFront_sortEdges(mesh);
+
+  /*--------------------------------------------------------
+  | Print the mesh data 
+  --------------------------------------------------------*/
+  tmMesh_printMesh(mesh);
+  tmMesh_destroy(mesh);
+
+  return NULL;
+
+} /* test_tmFront_advance() */

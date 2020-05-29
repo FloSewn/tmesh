@@ -66,6 +66,12 @@ typedef struct tmEdge {
   tmTri  *t1;
   tmTri  *t2;
 
+  /*-------------------------------------------------------
+  | Buffer variables ( e.g. for sorting )
+  -------------------------------------------------------*/
+  tmDouble dblBuf;
+  tmIndex  indBuf;
+
 } tmEdge;
 
 /**********************************************************
@@ -141,5 +147,22 @@ tmBool tmEdge_isRight(tmEdge *edge, void *obj, int obj_type);
 * @return boolean if object is located on the left of edge
 **********************************************************/
 tmBool tmEdge_isRightOn(tmEdge *edge, void *obj, int obj_type);
+
+/**********************************************************
+* Function: tmEdge_compareLen()
+*----------------------------------------------------------
+* Compare two edges according to their lengths
+*
+* -> Returns an integer less than zero, if length of e1 is 
+*    less than lenght of e2
+*
+* -> Returns zero, if length of e1 equals length of e2
+*
+*  -> Returns an integer greater than zero if length of 
+*     e1 is greater than length of e2
+*----------------------------------------------------------
+* @param *e1, *e2: pointer to tmEdges to compare
+**********************************************************/
+int tmEdge_compareLen(tmEdge *e1, tmEdge *e2);
 
 #endif

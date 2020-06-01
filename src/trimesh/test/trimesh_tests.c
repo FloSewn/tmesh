@@ -817,9 +817,58 @@ char *test_tmFront_advance()
   tmFront_sortEdges(mesh);
 
   /*--------------------------------------------------------
+  | Create new point at smallest edge
+  --------------------------------------------------------*/
+  tmEdge *ne = (tmEdge*) mesh->front->edges_stack->first->value;
+  tmNode *nn = tmEdge_createNode(ne, size_fun_2);
+
+  /*--------------------------------------------------------
+  | Get nodes in vicinity of nn
+  --------------------------------------------------------*/
+  List *nn_nb = tmNode_getNbrsFromSizeFun(nn, size_fun_2);
+
+  tmNode *first = (tmNode*) nn_nb->first->value;
+  tmNode *last  = (tmNode*) nn_nb->last->value;
+
+  mu_assert( first == nn, 
+      "tmNode_getNbrsFromSizeFun() error.");
+  mu_assert( nn_nb->count == 2,
+      "tmNode_getNbrsFromSizeFun() error.");
+
+  /*--------------------------------------------------------
+  | Form potential triangle with found nodes 
+  | -> Begin with closest
+  --------------------------------------------------------*/
+  tmNode *winner  = (tmNode*) nn_nb->first->next->value;
+  if (winner != NULL)
+  {
+    tmTri  *nt      = tmTri_create(nn->mesh, 
+                                   ne->n1, 
+                                   ne->n2, 
+                                   winner);
+
+    printf(" TRIANGLE: \n");
+    printf(" Nodes:   \n");
+    printf("        (%f,%f)\n", nt->n1->xy[0],nt->n1->xy[1]);
+    printf("        (%f,%f)\n", nt->n2->xy[0],nt->n2->xy[1]);
+    printf("        (%f,%f)\n", nt->n3->xy[0],nt->n3->xy[1]);
+    printf(" Circumradius:  %f\n",
+        nt->circ_r);
+    printf(" Circumcenter: (%f,%f)\n",
+        nt->circ_xy[0], nt->circ_xy[1]);
+    printf(" Center:       (%f,%f)\n",
+        nt->xy[0], nt->xy[1]);
+    printf(" ShapeFac:      %f\n",
+        nt->shapeFac);
+  }
+  
+  if (nn_nb != NULL)
+    List_destroy(nn_nb);
+
+  /*--------------------------------------------------------
   | Print the mesh data 
   --------------------------------------------------------*/
-  tmMesh_printMesh(mesh);
+  //tmMesh_printMesh(mesh);
   tmMesh_destroy(mesh);
 
   return NULL;

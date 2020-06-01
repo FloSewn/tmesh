@@ -124,4 +124,15 @@ List *tmNode_getFrontEdgeIn(tmNode *node);
 **********************************************************/
 List *tmNode_getFrontEdgeOut(tmNode *node);
 
+/**********************************************************
+* Function: tmNode_getNbrsFromSizeFun
+*----------------------------------------------------------
+* Function to estimate neighbouring nodes of a given node
+* within a range that is estimated from a sizefunction
+*----------------------------------------------------------
+* 
+**********************************************************/
+List *tmNode_getNbrsFromSizeFun(tmNode    *node, 
+                                tmSizeFun  sizeFun);
+
 #endif

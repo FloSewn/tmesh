@@ -198,7 +198,7 @@ void tmFront_sortEdges(tmMesh *mesh)
   int sorted = List_bubble_sort(front_edges, 
                         (List_compare) tmEdge_compareLen);
   check( sorted == 0,
-      "List sort on advancing front edges failed.");
+      "List sort in tmFront_sortEdges() failed.");
 
   /*-------------------------------------------------------
   | Update list positions 
@@ -214,5 +214,4 @@ error:
   return;
 
 } /* tmFront_sortEdges() */
-
 

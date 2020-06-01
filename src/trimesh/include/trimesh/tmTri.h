@@ -49,9 +49,17 @@ typedef struct tmTri {
   tmIndex  index; /* Only used for the mesh-output       */       
 
   /*-------------------------------------------------------
-  | Triangle area
+  | Triangle properties
   -------------------------------------------------------*/
+  tmDouble edgeLen[3];
   tmDouble area;
+  tmDouble shapeFac;
+  
+  /*-------------------------------------------------------
+  | Circumcenter und circumradius
+  -------------------------------------------------------*/
+  tmDouble circ_xy[2];
+  tmDouble circ_r;
 
   /*-------------------------------------------------------
   | Buffer variables ( e.g. for sorting )

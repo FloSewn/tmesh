@@ -3,6 +3,7 @@
 #include "trimesh/tmNode.h"
 #include "trimesh/tmTri.h"
 #include "trimesh/tmEdge.h"
+#include "trimesh/tmQtree.h"
 
 /**********************************************************
 * Function: tmNode_create()
@@ -209,6 +210,8 @@ List *tmNode_getFrontEdgeOut(tmNode *node)
 *    less than dblBuf of n2
 *
 * -> Returns zero, if dblBuf of n1 equals dblBuf of n2
+*    |-> IMPORTANT FOR FINDING NEIGHBOURING NODES
+*    |   ( initial node is ignored through this )
 *
 *  -> Returns an integer greater than zero if dblBuf of 
 *     n1 is greater than dblBuf of n2
@@ -226,3 +229,51 @@ int tmNode_compareDblBuf(tmNode *n1, tmNode *n2)
   return -1;
 
 } /* tmNode_compareDblBuf() */
+
+/**********************************************************
+* Function: tmNode_getNbrsFromSizeFun
+*----------------------------------------------------------
+* Function to estimate neighbouring nodes of a given node
+* within a range that is estimated from a sizefunction
+*
+* ! node is last entry in list *inCirc !
+*
+*----------------------------------------------------------
+* 
+**********************************************************/
+List *tmNode_getNbrsFromSizeFun(tmNode    *node, 
+                                tmSizeFun  sizeFun)
+{
+  tmDouble r = sizeFun( node->xy );
+
+  List *inCirc = tmQtree_getObjCirc(node->mesh->nodes_qtree,
+                                    node->xy,
+                                    r);
+
+  /*-------------------------------------------------------
+  | Sort neighbors by distance to node
+  | -> Distance to node is already buffered in dblBuf 
+  |    of node by tmQtree_getObjCirc()
+  -------------------------------------------------------*/
+  int sorted = List_bubble_sort(inCirc, 
+                        (List_compare) tmNode_compareDblBuf);
+  check( sorted == 0,
+      "List sort in tmNode_getNbrsFromSizeFun() failed.");
+
+  /*-------------------------------------------------------
+  | !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  | node is last entry in list *inCirc,
+  | because compare function <tmNode_compareDblBuf> 
+  | returns a 0 when the distance between objects is zero
+  | -> DEPENDS ALSO ON SORT ALGORITHM
+  | !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  -------------------------------------------------------*/
+  //if ( inCirc->last != NULL )
+  //  List_remove( inCirc, inCirc->last );
+
+  return inCirc;
+
+error:
+  return NULL;
+
+} /* tmNode_getNbrsFromSizeFun() */

@@ -371,3 +371,29 @@ int tmEdge_compareLen(tmEdge *e1, tmEdge *e2)
   return -1;
 
 } /*tmEdge_compareLen() */
+
+/**********************************************************
+* Function: tmEdge_createNode()
+*----------------------------------------------------------
+* Create new node perpendicular to an edge with a distance
+* according to a size function
+*----------------------------------------------------------
+* @param edge: pointer to edge
+* @param sizefun: function pointer to size function
+* 
+**********************************************************/
+tmNode *tmEdge_createNode(tmEdge *edge, tmSizeFun sizeFun)
+{
+  tmDouble *xy_e  = edge->xy;
+  tmDouble *dxy_n = edge->dxy_n;
+
+  tmDouble d      = sizeFun(xy_e);
+
+  tmDouble xy_n[2]  = { xy_e[0] + d * dxy_n[0], 
+                        xy_e[1] + d * dxy_n[1] };
+
+  tmNode *n = tmNode_create(edge->mesh, xy_n);
+
+  return n;
+
+} /* tmEdge_createNode() */

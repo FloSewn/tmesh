@@ -915,7 +915,7 @@ List *tmQtree_getObjCirc(tmQtree *qtree,
       const tmDouble dist2 = (cur_xy[0]-xy[0])*(cur_xy[0]-xy[0]) 
                            + (cur_xy[1]-xy[1])*(cur_xy[1]-xy[1]);
       const tmDouble r2    = r * r;
-      const tmBool in_circ = dist2 <= r2;
+      const tmBool in_circ = dist2 <= r2 ? TRUE : FALSE;
 
       if (in_circ == TRUE)
       {
@@ -923,11 +923,11 @@ List *tmQtree_getObjCirc(tmQtree *qtree,
 
         /* Buffer distance of object to centroid */
         if ( qtree->obj_type == TM_NODE)
-          ((tmNode*)cur->value)->dblBuf = r2;
+          ((tmNode*)cur->value)->dblBuf = dist2;
         else if ( qtree->obj_type == TM_EDGE)
-          ((tmEdge*)cur->value)->dblBuf = r2;
+          ((tmEdge*)cur->value)->dblBuf = dist2;
         else if ( qtree->obj_type == TM_TRI)
-          ((tmTri*)cur->value)->dblBuf = r2;
+          ((tmTri*)cur->value)->dblBuf = dist2;
         else
           log_err("Wrong type provied for tmQtree_getObjCirc()");
       }

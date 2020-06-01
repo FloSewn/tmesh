@@ -165,4 +165,16 @@ tmBool tmEdge_isRightOn(tmEdge *edge, void *obj, int obj_type);
 **********************************************************/
 int tmEdge_compareLen(tmEdge *e1, tmEdge *e2);
 
+/**********************************************************
+* Function: tmEdge_createNode()
+*----------------------------------------------------------
+* Create new node perpendicular to an edge with a distance
+* according to a size function
+*----------------------------------------------------------
+* @param edge: pointer to edge
+* @param sizefun: function pointer to size function
+* 
+**********************************************************/
+tmNode *tmEdge_createNode(tmEdge *edge, tmSizeFun sizeFun);
+
 #endif

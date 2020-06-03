@@ -30,5 +30,6 @@ char *test_tmQtree_performance();
 ************************************************************/
 char *test_tmFront_init();
 char *test_tmFront_advance();
+char *test_tmFront_simpleMesh();
 
 #endif

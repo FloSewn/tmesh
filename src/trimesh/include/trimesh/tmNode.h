@@ -132,7 +132,45 @@ List *tmNode_getFrontEdgeOut(tmNode *node);
 *----------------------------------------------------------
 * 
 **********************************************************/
-List *tmNode_getNbrsFromSizeFun(tmNode    *node, 
-                                tmSizeFun  sizeFun);
+List *tmNode_getNbrsFromSizeFun(tmNode *node);
+
+/**********************************************************
+* Function: tmNode_getFrontNbrs
+*----------------------------------------------------------
+* Returns a list of tmNodes that are connected to a
+* given tmNode through advancing front edges
+*
+*----------------------------------------------------------
+* 
+**********************************************************/
+List *tmNode_getFrontNbrs(tmNode *node);
+
+/**********************************************************
+* Function: tmNode_getAdjFrontEdge()
+*----------------------------------------------------------
+* Checks for a node n wether it is connected to a 
+* node m through an advancing front edge.
+* If yes, the edge is returned - otherwise a NULL pointer
+* is returned
+*
+*----------------------------------------------------------
+* @param n: node whose advancing front edges are checked
+* @param m: node which is search for on edges other ends
+* 
+**********************************************************/
+tmEdge *tmNode_getAdjFrontEdge(tmNode *n, tmNode *m);
+
+/**********************************************************
+* Function: tmNode_isValid()
+*----------------------------------------------------------
+* Checks, if a node is valid for the mesh genereation 
+* process. The node may not be located too close 
+* to preceeding edges in its vicinity in order to be valid
+*
+*----------------------------------------------------------
+* @param node: node to be checked
+* 
+**********************************************************/
+tmBool tmNode_isValid(tmNode *node);
 
 #endif

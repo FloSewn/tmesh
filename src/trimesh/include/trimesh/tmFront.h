@@ -89,4 +89,29 @@ void tmFront_init(tmMesh *mesh);
 **********************************************************/
 void tmFront_sortEdges(tmMesh *mesh);
 
+/**********************************************************
+* Function: tmFront_advance()
+*----------------------------------------------------------
+* Function to advance the front edges 
+* by one step
+*----------------------------------------------------------
+* @parameter mesh:  pointer to mesh structure
+* @parameter eStart: pointer to advancing front edge
+*                    which will be advanced
+* @return boolean:  if advancement was successfull
+* 
+**********************************************************/
+tmBool tmFront_advance(tmMesh *mesh, tmEdge *e_ad);
+
+/**********************************************************
+* Function: tmFront_update()
+*----------------------------------------------------------
+* Function to update the front edges with a new node
+*----------------------------------------------------------
+* @param n: new node which is included in the front
+* @param e: current edge which will be replaced
+* 
+**********************************************************/
+void tmFront_update(tmMesh *mesh, tmNode *n, tmEdge *e);
+
 #endif

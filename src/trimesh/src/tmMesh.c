@@ -17,9 +17,10 @@
 *----------------------------------------------------------
 * @return: Pointer to a new tmMesh structure
 **********************************************************/
-tmMesh *tmMesh_create(tmDouble xy_min[2], 
-                      tmDouble xy_max[2], 
-                      int      qtree_max_obj)
+tmMesh *tmMesh_create(tmDouble  xy_min[2], 
+                      tmDouble  xy_max[2], 
+                      int       qtree_max_obj,
+                      tmSizeFun sizeFun)
 {
   tmMesh *mesh = (tmMesh*) calloc( 1, sizeof(tmMesh) );
   check_mem(mesh);
@@ -54,6 +55,11 @@ tmMesh *tmMesh_create(tmDouble xy_min[2],
   | Mesh front edges 
   -------------------------------------------------------*/
   mesh->front             = tmFront_create(mesh);
+
+  /*-------------------------------------------------------
+  | Mesh size function 
+  -------------------------------------------------------*/
+  mesh->sizeFun           = sizeFun;
   
   /*-------------------------------------------------------
   | Mesh triangles 
@@ -332,6 +338,7 @@ void tmMesh_printMesh(tmMesh *mesh)
   ListNode *cur, *cur_bdry;
   int node_index = 0;
   int edge_index = 0;
+  int tri_index  = 0;
   int bdry_edge_index = 0;
 
   /*-------------------------------------------------------
@@ -348,7 +355,7 @@ void tmMesh_printMesh(tmMesh *mesh)
   }
 
   /*-------------------------------------------------------
-  | Set print boundary edges
+  | print boundary edges
   -------------------------------------------------------*/
   for (cur_bdry = mesh->bdry_stack->first; 
        cur_bdry != NULL; cur_bdry = cur_bdry->next)
@@ -370,5 +377,88 @@ void tmMesh_printMesh(tmMesh *mesh)
     }
   }
 
+  /*-------------------------------------------------------
+  | print front edges
+  -------------------------------------------------------*/
+  edge_index = 0;
+  fprintf(stdout,"FRONT %d\n", mesh->front->no_edges);
+  for (cur = mesh->front->edges_stack->first; 
+       cur != NULL; cur = cur->next)
+  {
+    tmIndex ind1 = ((tmEdge*)cur->value)->n1->index;
+    tmIndex ind2 = ((tmEdge*)cur->value)->n2->index;
+    ((tmEdge*)cur->value)->index = edge_index;
+    fprintf(stdout,"%d\t%9d\t%9d\n", edge_index, ind1, ind2);
+    edge_index += 1;
+  }
+
+  /*-------------------------------------------------------
+  | print triangles
+  -------------------------------------------------------*/
+  fprintf(stdout,"TRIANGLES %d\n", mesh->no_tris);
+  for (cur = mesh->tris_stack->first; 
+       cur != NULL; cur = cur->next)
+  {
+    tmTri *curTri = (tmTri*)cur->value;
+    ((tmTri*)cur->value)->index = tri_index;
+
+    fprintf(stdout,"%d\t%d\t%d\t%d\n", 
+        tri_index, 
+        curTri->n1->index,
+        curTri->n2->index,
+        curTri->n3->index);
+
+    tri_index += 1;
+  }
+
 } /* tmMesh_printMesh() */
 
+
+/**********************************************************
+* Function: tmMesh_adfMeshing()
+*----------------------------------------------------------
+* Function to perform the advancing front loop 
+* until either no edges are available anymore or until 
+* a final iteration is reached
+*----------------------------------------------------------
+* 
+**********************************************************/
+void tmMesh_ADFMeshing(tmMesh *mesh)
+{
+  int n = 0;
+
+  ListNode *cur, *nxt;
+
+  tmFront *front = mesh->front;
+
+  tmFront_init(mesh);
+  tmFront_sortEdges(mesh);
+
+  cur = nxt = front->edges_stack->first;
+
+  while (n < front->no_edges && front->no_edges > 0)
+  {
+    nxt = cur->next;
+
+    tmEdge *curEdge = (tmEdge*)cur->value;
+
+    if ( tmFront_advance(mesh, curEdge) == TRUE )
+    {
+      tmFront_sortEdges(mesh);
+      cur = front->edges_stack->first;
+      n = 0;
+    }
+    else
+    {
+      cur = nxt;
+      n += 1;
+    }
+  }
+
+  if ( front->no_edges > 0 )
+    log_err("The advancing front meshing was not successfull.");
+
+error:
+  return;
+
+} /* tmMesh_adfMeshing() */

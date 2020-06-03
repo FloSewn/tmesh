@@ -144,9 +144,8 @@ tmEdge *tmBdry_splitEdge(tmBdry *bdry, tmEdge *edge);
 * a size function
 *----------------------------------------------------------
 * @param *bdry: pointer to bdry
-* @param *sizefun: function pointer to size function
 * @return: 
 **********************************************************/
-void tmBdry_refine(tmBdry *bdry, tmSizeFun size_fun);
+void tmBdry_refine(tmBdry *bdry);
 
 #endif

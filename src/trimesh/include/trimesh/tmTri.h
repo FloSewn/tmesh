@@ -54,6 +54,9 @@ typedef struct tmTri {
   tmDouble edgeLen[3];
   tmDouble area;
   tmDouble shapeFac;
+  tmDouble angles[3];
+  tmDouble minAngle;
+  tmDouble maxAngle;
   
   /*-------------------------------------------------------
   | Circumcenter und circumradius
@@ -93,5 +96,14 @@ tmTri *tmTri_create(tmMesh *mesh,
 * @param *mesh: pointer to a tmTri to destroy
 **********************************************************/
 void tmTri_destroy(tmTri *tri);
+
+/**********************************************************
+* Function: tmTri_isValid()
+*----------------------------------------------------------
+* Function to check wether a provided triangle is valid
+*----------------------------------------------------------
+* @param *tri: pointer to a tmTri 
+**********************************************************/
+tmBool tmTri_isValid(tmTri *tri);
 
 #endif

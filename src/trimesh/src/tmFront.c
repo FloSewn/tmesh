@@ -5,6 +5,7 @@
 #include "trimesh/tmBdry.h"
 #include "trimesh/tmQtree.h"
 #include "trimesh/tmFront.h"
+#include "trimesh/tmTri.h"
 
 /**********************************************************
 * Function: tmFront_create()
@@ -134,7 +135,7 @@ void tmFront_remEdge(tmFront *front, tmEdge *edge)
   List_remove(front->edges_stack, edge->stack_pos);
 
   /*-------------------------------------------------------
-  | Destroy edge
+  | Destroy edge -> removes also adjacency to edge nodes
   -------------------------------------------------------*/
   tmEdge_destroy(edge);
 
@@ -214,4 +215,172 @@ error:
   return;
 
 } /* tmFront_sortEdges() */
+
+/**********************************************************
+* Function: tmFront_advance()
+*----------------------------------------------------------
+* Function to advance the front edges 
+* by one step
+*----------------------------------------------------------
+* @parameter mesh:  pointer to mesh structure
+* @parameter eStart: pointer to advancing front edge
+*                    which will be advanced
+* @return boolean:  if advancement was successfull
+* 
+**********************************************************/
+tmBool tmFront_advance(tmMesh *mesh, tmEdge *e_ad)
+{
+  tmNode   *cn;
+  tmTri    *nt;
+  ListNode *cur, *nxt;
+
+  /*--------------------------------------------------------
+  | Create new point at edge
+  --------------------------------------------------------*/
+  tmNode *nn = tmEdge_createNode(e_ad);
+
+  /*--------------------------------------------------------
+  | Get nodes in vicinity of nn
+  --------------------------------------------------------*/
+  List *nn_nb = tmNode_getNbrsFromSizeFun(nn);
+
+  /*--------------------------------------------------------
+  | Form potential triangle with found nodes 
+  | -> Begin with closest
+  | -> First node in nn_nb is nn -> is skipped
+  --------------------------------------------------------*/
+  cur = nn_nb->first->next;
+
+  while (cur != NULL)
+  {
+    nxt = cur->next;
+    cn  = (tmNode*)cur->value;
+
+    /*------------------------------------------------------
+    | Continue if node is not part of the front
+    ------------------------------------------------------*/
+    if ( cn->on_front == FALSE )
+    {
+      cur = nxt;
+      continue;
+    }
+
+    /*------------------------------------------------------
+    | Create new potential triangle
+    ------------------------------------------------------*/
+    nt  = tmTri_create(mesh, e_ad->n1, e_ad->n2, cn);
+
+    /*------------------------------------------------------
+    | Continue if triangle is valid
+    | Update advancing front with this node
+    ------------------------------------------------------*/
+    if ( tmTri_isValid(nt) == TRUE ) 
+    {
+      tmFront_update(mesh, cn, e_ad);
+
+      tmNode_destroy(nn);
+
+      if (nn_nb != NULL)
+        List_destroy(nn_nb);
+
+      return TRUE;
+    }
+
+    /*------------------------------------------------------
+    | If triangle is invalid, remove it 
+    ------------------------------------------------------*/
+    tmTri_destroy(nt);
+    cur = nxt;
+  }
+
+  if (nn_nb != NULL)
+    List_destroy(nn_nb);
+
+  /*--------------------------------------------------------
+  | Check if new node is not placed too close to any 
+  | existing edges 
+  | 
+  | Form potential triangle with new node
+  --------------------------------------------------------*/
+  if ( tmNode_isValid(nn) == TRUE )
+  {
+    nt = tmTri_create(cn->mesh, e_ad->n1, e_ad->n2, nn);
+
+    if ( tmTri_isValid(nt) == TRUE ) 
+    {
+      tmFront_update(mesh, nn, e_ad);
+      return TRUE;
+    }
+
+    tmTri_destroy(nt);
+  }
+
+  return FALSE;
+
+} /* tmFront_advance() */
+
+/**********************************************************
+* Function: tmFront_update()
+*----------------------------------------------------------
+* Function to update the front edges with a new node
+*----------------------------------------------------------
+* @param n: new node which is included in the front
+* @param e: current edge which will be replaced
+* 
+**********************************************************/
+void tmFront_update(tmMesh *mesh, tmNode *n, tmEdge *e)
+{
+  /*--------------------------------------------------------
+  | Get advancing front edges that are adjacent to n
+  --------------------------------------------------------*/
+  tmEdge *n1_e = tmNode_getAdjFrontEdge(e->n1, n);
+  tmEdge *n2_e = tmNode_getAdjFrontEdge(e->n2, n);
+
+  /*--------------------------------------------------------
+  | Both edge nodes are connected to new node
+  | -> don't create new edge
+  --------------------------------------------------------*/
+  if ( n1_e != NULL && n2_e != NULL )
+  {
+    tmFront_remEdge(mesh->front, n1_e);
+    tmFront_remEdge(mesh->front, n2_e);
+  }
+
+  /*--------------------------------------------------------
+  | First edge node is connected to new node
+  | -> Create new edge between last edge node and new node
+  --------------------------------------------------------*/
+  if ( n1_e != NULL && n2_e == NULL )
+  {
+    tmFront_remEdge(mesh->front, n1_e);
+    tmFront_addEdge(mesh->front, n, e->n2);
+  }
+
+  /*--------------------------------------------------------
+  | Last edge node is connected to new node
+  | -> Create new edge between first edge node and new node
+  --------------------------------------------------------*/
+  if ( n1_e == NULL && n2_e != NULL )
+  {
+    tmFront_remEdge(mesh->front, n2_e);
+    tmFront_addEdge(mesh->front, e->n1, n);
+  }
+
+  /*--------------------------------------------------------
+  | No edge node is connected to new node
+  | -> Create edges between both edge nodes and new node
+  --------------------------------------------------------*/
+  if ( n1_e == NULL && n2_e == NULL )
+  {
+    tmFront_addEdge(mesh->front, e->n1, n);
+    tmFront_addEdge(mesh->front, n, e->n2);
+  }
+
+  /*--------------------------------------------------------
+  | Remove base edge
+  --------------------------------------------------------*/
+  tmFront_remEdge(mesh->front, e);
+
+} /* tmFront_update() */
+
 

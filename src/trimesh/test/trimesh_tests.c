@@ -40,7 +40,7 @@ char *test_mesh_create_destroy()
 {
   tmDouble xy_min[2] = {  -2.0, -2.0 };
   tmDouble xy_max[2] = {  22.0, 12.0 };
-  tmMesh *mesh = tmMesh_create(xy_min, xy_max, 3);
+  tmMesh *mesh = tmMesh_create(xy_min, xy_max, 3, size_fun_1);
 
   /*--------------------------------------------------------
   | exterior nodes
@@ -236,7 +236,7 @@ char *test_tmBdry_refine()
 {
   tmDouble xy_min[2] = {  -5.0, -5.0 };
   tmDouble xy_max[2] = {  15.0, 15.0 };
-  tmMesh *mesh = tmMesh_create(xy_min, xy_max, 3);
+  tmMesh *mesh = tmMesh_create(xy_min, xy_max, 3, size_fun_1);
 
   /*--------------------------------------------------------
   | exterior nodes
@@ -285,7 +285,7 @@ char *test_tmBdry_refine()
   /*--------------------------------------------------------
   | Refine whole boundary according to size function
   --------------------------------------------------------*/
-  tmBdry_refine(bdry_ext, size_fun_1);
+  tmBdry_refine(bdry_ext);
 
   /*--------------------------------------------------------
   | Print the mesh data 
@@ -309,7 +309,7 @@ char *test_tmQtree()
 {
   tmDouble xy_min[2] = { -2.0, -2.0 };
   tmDouble xy_max[2] = {  2.0,  2.0 };
-  tmMesh *mesh = tmMesh_create(xy_min, xy_max, 3);
+  tmMesh *mesh = tmMesh_create(xy_min, xy_max, 3, size_fun_1);
 
   /*--------------------------------------------------------
   | Add new nodes 
@@ -583,7 +583,7 @@ char *test_tmQtree_performance()
 
   tmDouble xy_min[2] = { -50.0, -55.0 };
   tmDouble xy_max[2] = {  55.0,  50.0 };
-  tmMesh *mesh = tmMesh_create(xy_min, xy_max, 10);
+  tmMesh *mesh = tmMesh_create(xy_min, xy_max, 10, size_fun_1);
 
   int n_nodes = 100;
 
@@ -702,7 +702,7 @@ char *test_tmFront_init()
 {
   tmDouble xy_min[2] = {  -5.0, -5.0 };
   tmDouble xy_max[2] = {  15.0, 15.0 };
-  tmMesh *mesh = tmMesh_create(xy_min, xy_max, 3);
+  tmMesh *mesh = tmMesh_create(xy_min, xy_max, 3, size_fun_1);
 
   /*--------------------------------------------------------
   | exterior nodes
@@ -783,7 +783,7 @@ char *test_tmFront_advance()
 {
   tmDouble xy_min[2] = { -15.0,-15.0 };
   tmDouble xy_max[2] = {  15.0, 15.0 };
-  tmMesh *mesh = tmMesh_create(xy_min, xy_max, 3);
+  tmMesh *mesh = tmMesh_create(xy_min, xy_max, 3, size_fun_2);
 
   /*--------------------------------------------------------
   | exterior nodes
@@ -807,7 +807,7 @@ char *test_tmFront_advance()
   /*--------------------------------------------------------
   | Refine whole boundary according to size function
   --------------------------------------------------------*/
-  tmBdry_refine(bdry_ext, size_fun_2);
+  tmBdry_refine(bdry_ext);
 
   /*--------------------------------------------------------
   | Initialize the advancing front and 
@@ -820,12 +820,12 @@ char *test_tmFront_advance()
   | Create new point at smallest edge
   --------------------------------------------------------*/
   tmEdge *ne = (tmEdge*) mesh->front->edges_stack->first->value;
-  tmNode *nn = tmEdge_createNode(ne, size_fun_2);
+  tmNode *nn = tmEdge_createNode(ne);
 
   /*--------------------------------------------------------
   | Get nodes in vicinity of nn
   --------------------------------------------------------*/
-  List *nn_nb = tmNode_getNbrsFromSizeFun(nn, size_fun_2);
+  List *nn_nb = tmNode_getNbrsFromSizeFun(nn);
 
   tmNode *first = (tmNode*) nn_nb->first->value;
   tmNode *last  = (tmNode*) nn_nb->last->value;
@@ -840,30 +840,55 @@ char *test_tmFront_advance()
   | -> Begin with closest
   --------------------------------------------------------*/
   tmNode *winner  = (tmNode*) nn_nb->first->next->value;
-  if (winner != NULL)
-  {
-    tmTri  *nt      = tmTri_create(nn->mesh, 
-                                   ne->n1, 
-                                   ne->n2, 
-                                   winner);
+  tmTri  *nt      = tmTri_create(nn->mesh, 
+                                 ne->n1, 
+                                 ne->n2, 
+                                 winner);
 
-    printf(" TRIANGLE: \n");
-    printf(" Nodes:   \n");
-    printf("        (%f,%f)\n", nt->n1->xy[0],nt->n1->xy[1]);
-    printf("        (%f,%f)\n", nt->n2->xy[0],nt->n2->xy[1]);
-    printf("        (%f,%f)\n", nt->n3->xy[0],nt->n3->xy[1]);
-    printf(" Circumradius:  %f\n",
-        nt->circ_r);
-    printf(" Circumcenter: (%f,%f)\n",
-        nt->circ_xy[0], nt->circ_xy[1]);
-    printf(" Center:       (%f,%f)\n",
-        nt->xy[0], nt->xy[1]);
-    printf(" ShapeFac:      %f\n",
-        nt->shapeFac);
+  mu_assert( EQ( 180.0 * nt->minAngle / PI_D, 45.0 ),
+      "Resulting triangle is not right.")
+  mu_assert( EQ( 180.0 * nt->maxAngle / PI_D, 90.0 ),
+      "Resulting triangle is not right.")
+
+  /*--------------------------------------------------------
+  | Get node neighbors on advancing front of edge nodes
+  --------------------------------------------------------*/
+  List *n1_nb = tmNode_getFrontNbrs(ne->n1);
+  List *n2_nb = tmNode_getFrontNbrs(ne->n2);
+
+  tmEdge *n1_e = tmNode_getAdjFrontEdge(ne->n1, winner);
+  tmEdge *n2_e = tmNode_getAdjFrontEdge(ne->n2, winner);
+
+  /*--------------------------------------------------------
+  | Get edges in front that also share nn
+  --------------------------------------------------------*/
+  if ( n1_e != NULL )
+  {
+    tmFront_remEdge(mesh->front, n1_e);
+    tmFront_addEdge(mesh->front, winner, ne->n2);
   }
-  
+
+  if ( n2_e != NULL )
+  {
+    tmFront_remEdge(mesh->front, n2_e);
+    tmFront_addEdge(mesh->front, ne->n1, winner);
+  }
+
+  if ( n1_e == NULL && n2_e == NULL )
+  {
+    tmFront_addEdge(mesh->front, ne->n1, winner);
+    tmFront_addEdge(mesh->front, winner, ne->n2);
+  }
+
+  tmFront_remEdge(mesh->front, ne);
+
+
   if (nn_nb != NULL)
     List_destroy(nn_nb);
+  if (n1_nb != NULL)
+    List_destroy(n1_nb);
+  if (n2_nb != NULL)
+    List_destroy(n2_nb);
 
   /*--------------------------------------------------------
   | Print the mesh data 
@@ -874,3 +899,50 @@ char *test_tmFront_advance()
   return NULL;
 
 } /* test_tmFront_advance() */
+
+/*************************************************************
+* Unit test function for the advancing front algorithm
+************************************************************/
+char *test_tmFront_simpleMesh()
+{
+  tmDouble xy_min[2] = { -15.0,-15.0 };
+  tmDouble xy_max[2] = {  15.0, 15.0 };
+  tmMesh *mesh = tmMesh_create(xy_min, xy_max, 3, size_fun_2);
+
+  /*--------------------------------------------------------
+  | exterior nodes
+  --------------------------------------------------------*/
+  tmDouble xy0[2] = {  0.0,  0.0 };
+  tmDouble xy1[2] = { 10.0,  0.0 };
+  tmDouble xy2[2] = { 10.0, 10.0 };
+  tmDouble xy3[2] = {  0.0, 10.0 };
+
+  tmNode *n0 = tmNode_create(mesh, xy0);
+  tmNode *n1 = tmNode_create(mesh, xy1);
+  tmNode *n2 = tmNode_create(mesh, xy2);
+  tmNode *n3 = tmNode_create(mesh, xy3);
+
+  tmBdry *bdry_ext = tmMesh_addBdry(mesh, FALSE, 0);
+  tmEdge *e0 = tmBdry_addEdge(bdry_ext, n0, n1);
+  tmEdge *e1 = tmBdry_addEdge(bdry_ext, n1, n2);
+  tmEdge *e2 = tmBdry_addEdge(bdry_ext, n2, n3);
+  tmEdge *e3 = tmBdry_addEdge(bdry_ext, n3, n0);
+
+  /*--------------------------------------------------------
+  | Refine whole boundary according to size function
+  --------------------------------------------------------*/
+  tmBdry_refine(bdry_ext);
+
+  /*--------------------------------------------------------
+  | Create mesh
+  --------------------------------------------------------*/
+  tmMesh_ADFMeshing(mesh);
+
+  /*--------------------------------------------------------
+  | Print the mesh data 
+  --------------------------------------------------------*/
+  tmMesh_printMesh(mesh);
+  tmMesh_destroy(mesh);
+
+  return NULL;
+} /* test_tmFront_simpleMesh() */

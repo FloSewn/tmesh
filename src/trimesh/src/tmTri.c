@@ -56,6 +56,15 @@ static void tmTri_calcEdgeLen(tmTri *tri);
 **********************************************************/
 static void tmTri_calcShapeFac(tmTri *tri);
 
+/**********************************************************
+* Function: tmTri_calcAngles()
+*----------------------------------------------------------
+* Computes the angles of a triangle
+*----------------------------------------------------------
+* @param tri: triangle structure
+**********************************************************/
+static void tmTri_calcAngles(tmTri *tri);
+
 
 /**********************************************************
 *
@@ -156,6 +165,45 @@ static void tmTri_calcShapeFac(tmTri *tri)
 
 } /* tmTri_calcShapeFac() */
 
+/**********************************************************
+* 
+**********************************************************/
+static void tmTri_calcAngles(tmTri *tri)
+{
+  tmDouble *p = tri->n1->xy;
+  tmDouble *q = tri->n2->xy;
+  tmDouble *r = tri->n3->xy;
+
+  tmDouble l1 = tri->edgeLen[0];
+  tmDouble l2 = tri->edgeLen[1];
+  tmDouble l3 = tri->edgeLen[2];
+
+  tmDouble a1 = ( (q[0]-p[0])*(r[0]-p[0])
+                + (q[1]-p[1])*(r[1]-p[1]) ) / (l2*l3);
+
+  tmDouble a2 = ( (p[0]-q[0])*(r[0]-q[0])
+                + (p[1]-q[1])*(r[1]-q[1]) ) / (l1*l3);
+
+  tmDouble a3 = ( (p[0]-r[0])*(q[0]-r[0])
+                + (p[1]-r[1])*(q[1]-r[1]) ) / (l1*l2);
+
+  a1 = acos(a1);
+  a2 = acos(a2);
+  a3 = acos(a3);
+
+  tri->angles[0] = a1;
+  tri->angles[1] = a2;
+  tri->angles[2] = a3;
+
+  tmDouble aMin, aMax;
+  aMin = (aMin = a1 < a2 ? a1 : a2) < a3 ? aMin : a3; 
+  aMax = (aMax = a1 > a2 ? a1 : a2) > a3 ? aMax : a3; 
+
+  tri->minAngle = aMin;
+  tri->maxAngle = aMax;
+
+} /* tmTri_calcAngles() */
+
 
 
 /**********************************************************
@@ -194,6 +242,11 @@ tmTri *tmTri_create(tmMesh *mesh,
   tri->xy[1]      = 0.0;
   tri->area       = 0.0;
   tri->shapeFac   = 0.0;
+  tri->angles[0]  = 0.0;
+  tri->angles[1]  = 0.0;
+  tri->angles[2]  = 0.0;
+  tri->minAngle   = 0.0;
+  tri->maxAngle   = 0.0;
   tri->edgeLen[0] = 0.0;
   tri->edgeLen[1] = 0.0;
   tri->edgeLen[2] = 0.0;
@@ -228,6 +281,7 @@ tmTri *tmTri_create(tmMesh *mesh,
   tmTri_calcCircumcenter(tri);
   tmTri_calcEdgeLen(tri);
   tmTri_calcShapeFac(tri);
+  tmTri_calcAngles(tri);
 
   return tri;
 error:
@@ -240,13 +294,62 @@ error:
 *----------------------------------------------------------
 * Destroys a tmTri structure and frees all its memory.
 *----------------------------------------------------------
-* @param *mesh: pointer to a tmTri to destroy
+* @param *tri: pointer to a tmTri to destroy
 **********************************************************/
 void tmTri_destroy(tmTri *tri)
 {
+  /*-------------------------------------------------------
+  | Remove triangle from qtree 
+  -------------------------------------------------------*/
+  tmMesh_remTri(tri->mesh, tri);
+
   /*-------------------------------------------------------
   | Finally free tri structure memory
   -------------------------------------------------------*/
   free(tri);
 
 } /* tmTri_destroy() */
+
+/**********************************************************
+* Function: tmTri_isValid()
+*----------------------------------------------------------
+* Function to check wether a provided triangle is valid
+*----------------------------------------------------------
+* @param *tri: pointer to a tmTri 
+**********************************************************/
+tmBool tmTri_isValid(tmTri *tri)
+{
+  tmDouble minAngle = 25.0 * PI_D / 180.;
+  tmDouble maxAngle = 110.0 * PI_D / 180.;
+
+  /*-------------------------------------------------------
+  | 1) Check if new triangle edges intersect with 
+  |    with any existing triangle in its vicinity
+  -------------------------------------------------------*/
+
+  /*-------------------------------------------------------
+  | 2) Check if new triangle edges intersect with 
+  |    with any existing boundary edge in its vicinity
+  -------------------------------------------------------*/
+
+  /*-------------------------------------------------------
+  | 3) Check if new triangle edges intersect with 
+  |    with any existing front edge in its vicinity
+  -------------------------------------------------------*/
+
+  /*-------------------------------------------------------
+  | 4) Check if triangle quality is good enough
+  -------------------------------------------------------*/
+  if (tri->minAngle >= minAngle && tri->maxAngle <= maxAngle)
+    return TRUE;
+
+  printf(" REJECTING TRIANGLE with coordinates:\n");
+  printf(" (%.3f, %.3f)\n", tri->n1->xy[0], tri->n1->xy[1]);
+  printf(" (%.3f, %.3f)\n", tri->n2->xy[0], tri->n2->xy[1]);
+  printf(" (%.3f, %.3f)\n", tri->n3->xy[0], tri->n3->xy[1]);
+  printf(" ANGLES: %.3f, %.3f\n", tri->minAngle, tri->maxAngle);
+
+
+  return FALSE;
+
+} /* tmTri_isValid() */

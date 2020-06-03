@@ -21,6 +21,7 @@ char *all_tests()
   mu_run_test(test_tmBdry_refine);
   mu_run_test(test_tmFront_init);
   mu_run_test(test_tmFront_advance);
+  mu_run_test(test_tmFront_simpleMesh);
 
 
 

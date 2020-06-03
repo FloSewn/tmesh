@@ -379,13 +379,14 @@ int tmEdge_compareLen(tmEdge *e1, tmEdge *e2)
 * according to a size function
 *----------------------------------------------------------
 * @param edge: pointer to edge
-* @param sizefun: function pointer to size function
 * 
 **********************************************************/
-tmNode *tmEdge_createNode(tmEdge *edge, tmSizeFun sizeFun)
+tmNode *tmEdge_createNode(tmEdge *edge)
 {
   tmDouble *xy_e  = edge->xy;
   tmDouble *dxy_n = edge->dxy_n;
+
+  tmSizeFun sizeFun = edge->mesh->sizeFun;
 
   tmDouble d      = sizeFun(xy_e);
 

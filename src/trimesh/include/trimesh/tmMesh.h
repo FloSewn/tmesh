@@ -35,6 +35,11 @@ typedef struct tmMesh {
   tmFront *front;
 
   /*-------------------------------------------------------
+  | Mesh size function
+  -------------------------------------------------------*/
+  tmSizeFun sizeFun;
+
+  /*-------------------------------------------------------
   | Mesh triangles 
   -------------------------------------------------------*/
   tmTri   *tris_head;
@@ -53,9 +58,10 @@ typedef struct tmMesh {
 *----------------------------------------------------------
 * @return: Pointer to a new tmMesh structure
 **********************************************************/
-tmMesh *tmMesh_create(tmDouble xy_min[2], 
-                      tmDouble xy_max[2],
-                      int      qtree_max_obj);
+tmMesh *tmMesh_create(tmDouble  xy_min[2], 
+                      tmDouble  xy_max[2],
+                      int       qtree_max_obj,
+                      tmSizeFun sizeFun);
 
 /**********************************************************
 * Function: tmMesh_destroy()
@@ -144,5 +150,16 @@ tmBool tmMesh_objInside(tmMesh *mesh, void *obj, int obj_type);
 * @param mesh: pointer to mesh structure
 **********************************************************/
 void tmMesh_printMesh(tmMesh *mesh);
+
+/**********************************************************
+* Function: tmMesh_adfMeshing()
+*----------------------------------------------------------
+* Function to perform the advancing front loop 
+* until either no edges are available anymore or until 
+* a final iteration is reached
+*----------------------------------------------------------
+* 
+**********************************************************/
+void tmMesh_ADFMeshing(tmMesh *mesh);
 
 #endif

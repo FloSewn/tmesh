@@ -197,6 +197,54 @@ static inline tmBool IS_RIGHTON(tmDouble p[2],
   return TRUE;
 }
 
+/*----------------------------------------------------------
+| Function returns the squared normal distance between an 
+| edge and a node.
+| The edge is defined through its vertices (v,w) 
+| The node is defined through its coordinates p
+| 
+| Source:
+|   https://stackoverflow.com/questions/849211/shortest-distance-between-a-point-and-a-line-segment
+----------------------------------------------------------*/
+static inline tmDouble EDGE_NODE_DIST2(tmDouble v[2],
+                                       tmDouble w[2],
+                                       tmDouble p[2])
+{
+  const tmDouble dx_e = w[0]-v[0];
+  const tmDouble dy_e = w[1]-v[1];
+  const tmDouble l2 = dx_e*dx_e + dy_e*dy_e;
+
+  const tmDouble dotP = ( (p[0]-v[0]) * dx_e
+                        + (p[1]-v[1]) * dy_e ) / l2;
+
+  const tmDouble t = MAX(0.0, MIN(1.0, dotP));
+
+  const tmDouble proj_x = v[0] + t * dx_e;
+  const tmDouble proj_y = v[1] + t * dy_e;
+
+  const tmDouble dx = proj_x - p[0];
+  const tmDouble dy = proj_y - p[1];
+
+  const tmDouble dist2 = dx*dx + dy*dy;
+  
+  return dist2;
+}
+
+
+/*----------------------------------------------------------
+| Check if an object is contained in a provided list
+----------------------------------------------------------*/
+static inline tmBool OBJ_IN_LIST(void *obj, List *list)
+{
+  ListNode *cur;
+  for (cur = list->first; cur != NULL; cur = cur->next)
+    if ( cur->value == obj )
+      return TRUE;
+
+  return FALSE;
+error:
+  return -1;
+}
 
 
 #endif /* TRIMESH_TMTYPEDEFS_H */

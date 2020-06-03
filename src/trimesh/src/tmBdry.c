@@ -285,10 +285,9 @@ tmEdge *tmBdry_splitEdge(tmBdry *bdry, tmEdge *edge)
 * a size function
 *----------------------------------------------------------
 * @param *bdry: pointer to bdry
-* @param *sizefun: function pointer to size function
 * @return: 
 **********************************************************/
-void tmBdry_refine(tmBdry *bdry, tmSizeFun size_fun)
+void tmBdry_refine(tmBdry *bdry)
 {
 
   ListNode *cur, *nxt;
@@ -296,11 +295,13 @@ void tmBdry_refine(tmBdry *bdry, tmSizeFun size_fun)
 
   cur = nxt = bdry->edges_stack->first;
 
+  tmSizeFun sizeFun = bdry->mesh->sizeFun;
+
   while ( counter < bdry->no_edges )
   {
     nxt = cur->next;
 
-    tmDouble rho = size_fun( ((tmEdge*)cur->value)->xy );
+    tmDouble rho = sizeFun( ((tmEdge*)cur->value)->xy );
     check( rho > TM_MIN_SIZE,
         "Size function return value lower than defined minimum scale.");
 

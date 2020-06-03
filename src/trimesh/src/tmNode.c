@@ -4,6 +4,8 @@
 #include "trimesh/tmTri.h"
 #include "trimesh/tmEdge.h"
 #include "trimesh/tmQtree.h"
+#include "trimesh/tmBdry.h"
+#include "trimesh/tmFront.h"
 
 /**********************************************************
 * Function: tmNode_create()
@@ -241,10 +243,10 @@ int tmNode_compareDblBuf(tmNode *n1, tmNode *n2)
 *----------------------------------------------------------
 * 
 **********************************************************/
-List *tmNode_getNbrsFromSizeFun(tmNode    *node, 
-                                tmSizeFun  sizeFun)
+List *tmNode_getNbrsFromSizeFun(tmNode *node)
 {
-  tmDouble r = sizeFun( node->xy );
+  tmSizeFun sizeFun = node->mesh->sizeFun;
+  tmDouble        r = sizeFun( node->xy );
 
   List *inCirc = tmQtree_getObjCirc(node->mesh->nodes_qtree,
                                     node->xy,
@@ -259,14 +261,11 @@ List *tmNode_getNbrsFromSizeFun(tmNode    *node,
                         (List_compare) tmNode_compareDblBuf);
   check( sorted == 0,
       "List sort in tmNode_getNbrsFromSizeFun() failed.");
+  check( inCirc->first->value == node,
+      "List sort in tmNode_getNbrsFromSizeFun() failed.");
 
   /*-------------------------------------------------------
-  | !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  | node is last entry in list *inCirc,
-  | because compare function <tmNode_compareDblBuf> 
-  | returns a 0 when the distance between objects is zero
-  | -> DEPENDS ALSO ON SORT ALGORITHM
-  | !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  | node is first entry in list *inCirc,
   -------------------------------------------------------*/
   //if ( inCirc->last != NULL )
   //  List_remove( inCirc, inCirc->last );
@@ -277,3 +276,194 @@ error:
   return NULL;
 
 } /* tmNode_getNbrsFromSizeFun() */
+
+/**********************************************************
+* Function: tmNode_getFrontNbrs
+*----------------------------------------------------------
+* Returns a list of tmNodes that are connected to a
+* given tmNode through advancing front edges
+*
+*----------------------------------------------------------
+* 
+**********************************************************/
+List *tmNode_getFrontNbrs(tmNode *node)
+{
+  ListNode *cur  = NULL;
+  List     *nbrs = List_create();
+
+  for (cur = node->front_edges->first;
+       cur != NULL; cur = cur->next)
+  {
+    tmEdge *e  = (tmEdge*)cur->value;
+
+    if ( node == e->n1 )
+      List_push( nbrs, e->n2 );
+    else if ( node == e->n2 )
+      List_push( nbrs, e->n1 );
+    else
+      log_err("Invalid edge found in tmNode_getFrontNbrs().");
+  }
+
+  return nbrs;
+error:
+  return NULL;
+
+} /* tmNode_getFrontNbrs() */
+
+/**********************************************************
+* Function: tmNode_getAdjFrontEdge()
+*----------------------------------------------------------
+* Checks for a node n wether it is connected to a 
+* node m through an advancing front edge.
+* If yes, the edge is returned - otherwise a NULL pointer
+* is returned
+*
+*----------------------------------------------------------
+* @param n: node whose advancing front edges are checked
+* @param m: node which is search for on edges other ends
+* 
+**********************************************************/
+tmEdge *tmNode_getAdjFrontEdge(tmNode *n, tmNode *m)
+{
+  ListNode *cur  = NULL;
+
+  for (cur = n->front_edges->first;
+       cur != NULL; cur = cur->next)
+  {
+    tmEdge *e  = (tmEdge*)cur->value;
+
+    if ( m == e->n1 || m == e->n2 )
+      return e;
+  }
+
+  return NULL;
+
+} /* tmNode_getAdjFrontEdge() */
+
+/**********************************************************
+* Function: tmNode_isValid()
+*----------------------------------------------------------
+* Checks, if a node is valid for the mesh genereation 
+* process. The node may not be located too close 
+* to preceeding edges in its vicinity in order to be valid
+*
+*----------------------------------------------------------
+* @param node: node to be checked
+* 
+**********************************************************/
+tmBool tmNode_isValid(tmNode *node)
+{
+  tmDouble fac = 0.1;
+
+  tmMesh *mesh      = node->mesh;
+  tmSizeFun sizeFun = mesh->sizeFun;
+  tmDouble        r = sizeFun( node->xy );
+
+  tmDouble     dist = r * fac;
+  tmDouble    dist2 = dist * dist;
+
+  List     *inCirc;
+  ListNode *cur, *cur_bdry;
+  tmQtree  *cur_qtree;
+
+  /*-------------------------------------------------------
+  | 1) Get boundary edges in vicinity of node
+  |    Check that normal distance of node to all edges
+  |    is larger than fac*d
+  -------------------------------------------------------*/
+  for (cur_bdry = mesh->bdry_stack->first;
+       cur_bdry != NULL; cur_bdry = cur_bdry->next)
+  {
+    cur_qtree = ((tmBdry*)cur_bdry->value)->edges_qtree;
+
+    inCirc = tmQtree_getObjCirc(cur_qtree,
+                                node->xy,
+                                r);
+
+    for (cur = inCirc->first; cur != NULL; cur = cur->next)
+    {
+      tmNode *n1 = ((tmEdge*)cur->value)->n1;
+      tmNode *n2 = ((tmEdge*)cur->value)->n2;
+
+      if ( EDGE_NODE_DIST2(n1->xy, n2->xy, node->xy) < dist2 )
+      {
+        List_destroy(inCirc);
+        return FALSE;
+      }
+    }
+
+    List_destroy(inCirc);
+  }
+
+  /*-------------------------------------------------------
+  | 2) Get front edges in vicinity of node
+  |    Check that normal distance of node to all edges
+  |    is larger than fac*d
+  -------------------------------------------------------*/
+  cur_qtree = mesh->front->edges_qtree;
+
+  inCirc = tmQtree_getObjCirc(cur_qtree,
+                              node->xy,
+                              r);
+
+  for (cur = inCirc->first; cur != NULL; cur = cur->next)
+  {
+    tmNode *n1 = ((tmEdge*)cur->value)->n1;
+    tmNode *n2 = ((tmEdge*)cur->value)->n2;
+
+    if ( EDGE_NODE_DIST2(n1->xy, n2->xy, node->xy) < dist2 )
+    {
+      List_destroy(inCirc);
+      return FALSE;
+    }
+  }
+
+  List_destroy(inCirc);
+
+  /*-------------------------------------------------------
+  | 3) Get triangles in vicinity of node
+  |    Check that normal distance of node to all tri edges
+  |    is larger than fac*d
+  | 
+  |    -> Pontential Delaunay check here:
+  |       Is node in circumradius of triangle? 
+  |       Not implemented yet
+  -------------------------------------------------------*/
+  cur_qtree = mesh->tris_qtree;
+
+  inCirc = tmQtree_getObjCirc(cur_qtree,
+                              node->xy,
+                              r);
+
+  for (cur = inCirc->first; cur != NULL; cur = cur->next)
+  {
+    tmNode *n1 = ((tmTri*)cur->value)->n1;
+    tmNode *n2 = ((tmTri*)cur->value)->n2;
+    tmNode *n3 = ((tmTri*)cur->value)->n3;
+
+    if ( EDGE_NODE_DIST2(n1->xy, n2->xy, node->xy) < dist2 )
+    {
+      List_destroy(inCirc);
+      return FALSE;
+    }
+
+    if ( EDGE_NODE_DIST2(n2->xy, n3->xy, node->xy) < dist2 )
+    {
+      List_destroy(inCirc);
+      return FALSE;
+    }
+
+    if ( EDGE_NODE_DIST2(n3->xy, n1->xy, node->xy) < dist2 )
+    {
+      List_destroy(inCirc);
+      return FALSE;
+    }
+  }
+
+  List_destroy(inCirc);
+
+
+  return TRUE;
+
+
+} /* tmNode_isValid() */

@@ -271,11 +271,6 @@ tmTri *tmTri_create(tmMesh *mesh,
   tri->indBuf = 0;
 
   /*-------------------------------------------------------
-  | Add tri to qtree
-  -------------------------------------------------------*/
-  tri->stack_pos = tmMesh_addTri(mesh, tri);
-
-  /*-------------------------------------------------------
   | 
   -------------------------------------------------------*/
   tmTri_calcCentroid(tri);
@@ -284,6 +279,11 @@ tmTri *tmTri_create(tmMesh *mesh,
   tmTri_calcEdgeLen(tri);
   tmTri_calcShapeFac(tri);
   tmTri_calcAngles(tri);
+
+  /*-------------------------------------------------------
+  | Add tri to qtree
+  -------------------------------------------------------*/
+  tri->stack_pos = tmMesh_addTri(mesh, tri);
 
   return tri;
 error:

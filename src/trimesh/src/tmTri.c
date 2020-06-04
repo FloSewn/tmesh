@@ -226,7 +226,9 @@ tmTri *tmTri_create(tmMesh *mesh,
   /*-------------------------------------------------------
   | Add tri to stack of mesh
   -------------------------------------------------------*/
-  tri->mesh = mesh;
+  tri->mesh      = mesh;
+  tri->index     = mesh->no_tris;
+  tri->qtree_pos = NULL;
 
   /*-------------------------------------------------------
   | Init tri nodes
@@ -343,10 +345,8 @@ tmBool tmTri_isValid(tmTri *tri)
   if (tri->minAngle >= minAngle && tri->maxAngle <= maxAngle)
     return TRUE;
 
-  printf(" REJECTING TRIANGLE with coordinates:\n");
-  printf(" (%.3f, %.3f)\n", tri->n1->xy[0], tri->n1->xy[1]);
-  printf(" (%.3f, %.3f)\n", tri->n2->xy[0], tri->n2->xy[1]);
-  printf(" (%.3f, %.3f)\n", tri->n3->xy[0], tri->n3->xy[1]);
+  printf(" REJECTING T%d: (%d, %d, %d)\n",
+      tri->index, tri->n1->index, tri->n2->index, tri->n3->index);
   printf(" ANGLES: %.3f, %.3f\n", tri->minAngle, tri->maxAngle);
 
 

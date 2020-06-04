@@ -239,6 +239,9 @@ tmBool tmFront_advance(tmMesh *mesh, tmEdge *e_ad)
   --------------------------------------------------------*/
   tmNode *nn = tmEdge_createNode(e_ad);
 
+  printf(" N%d: (%.3f, %.3f)\n",
+      nn->index, nn->xy[0], nn->xy[1]);
+
   /*--------------------------------------------------------
   | Get nodes in vicinity of nn
   --------------------------------------------------------*/
@@ -283,6 +286,10 @@ tmBool tmFront_advance(tmMesh *mesh, tmEdge *e_ad)
       if (nn_nb != NULL)
         List_destroy(nn_nb);
 
+      printf(" NT%d (%d, %d, %d)\n",
+          nt->index,
+          nt->n1->index, nt->n2->index, nt->n3->index);
+
       return TRUE;
     }
 
@@ -304,16 +311,23 @@ tmBool tmFront_advance(tmMesh *mesh, tmEdge *e_ad)
   --------------------------------------------------------*/
   if ( tmNode_isValid(nn) == TRUE )
   {
-    nt = tmTri_create(cn->mesh, e_ad->n1, e_ad->n2, nn);
+    nt = tmTri_create(mesh, e_ad->n1, e_ad->n2, nn);
 
     if ( tmTri_isValid(nt) == TRUE ) 
     {
       tmFront_update(mesh, nn, e_ad);
+
+      printf(" NT%d (%d, %d, %d)\n",
+          nt->index,
+          nt->n1->index, nt->n2->index, nt->n3->index);
+
       return TRUE;
     }
 
     tmTri_destroy(nt);
   }
+
+  tmNode_destroy(nn);
 
   return FALSE;
 

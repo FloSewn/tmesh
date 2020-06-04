@@ -101,11 +101,13 @@ void tmMesh_destroy(tmMesh *mesh)
     tmBdry_destroy(cur->value);
     cur = nxt;
   }
+  printf(" > MESH BOUNDARIES FREE\n");
 
   /*-------------------------------------------------------
   | Free advancing front structure
   -------------------------------------------------------*/
   tmFront_destroy(mesh->front);
+  printf(" > MESH FRONT FREE\n");
 
   /*-------------------------------------------------------
   | Free all tris on the stack
@@ -117,6 +119,7 @@ void tmMesh_destroy(tmMesh *mesh)
     tmTri_destroy(cur->value);
     cur = nxt;
   }
+  printf(" > MESH TRIS DESTROYED\n");
 
   /*-------------------------------------------------------
   | Free all nodes on the stack
@@ -128,12 +131,15 @@ void tmMesh_destroy(tmMesh *mesh)
     tmNode_destroy(cur->value);
     cur = nxt;
   }
+  printf(" > MESH NODES DESTROYED\n");
 
   /*-------------------------------------------------------
   | Free all quadtree structures
   -------------------------------------------------------*/
   tmQtree_destroy(mesh->nodes_qtree);
+  printf(" > MESH NODES_QTREE FREE\n");
   tmQtree_destroy(mesh->tris_qtree);
+  printf(" > MESH TRIS_QTREE FREE\n");
 
   /*-------------------------------------------------------
   | Free all list structures
@@ -198,7 +204,6 @@ ListNode *tmMesh_addTri(tmMesh *mesh, tmTri *tri)
 **********************************************************/
 void tmMesh_remNode(tmMesh *mesh, tmNode *node)
 {
-  ListNode *cur;
   tmBool    qtree_rem;
 
   if ( node->mesh != mesh )
@@ -441,6 +446,9 @@ void tmMesh_ADFMeshing(tmMesh *mesh)
     nxt = cur->next;
 
     tmEdge *curEdge = (tmEdge*)cur->value;
+    printf("-----------------------------------\n");
+    printf(" E: (%d -> %d)\n", 
+        curEdge->n1->index, curEdge->n2->index);
 
     if ( tmFront_advance(mesh, curEdge) == TRUE )
     {

@@ -28,8 +28,9 @@ tmNode *tmNode_create(tmMesh *mesh, tmDouble xy[2])
   node->mesh      = mesh;
   node->qtree_pos = NULL;
 
-  node->xy[0] = xy[0];
-  node->xy[1] = xy[1];
+  node->xy[0]     = xy[0];
+  node->xy[1]     = xy[1];
+  node->index     = mesh->no_nodes;
 
   /*-------------------------------------------------------
   | Init node properties
@@ -355,16 +356,22 @@ tmBool tmNode_isValid(tmNode *node)
 {
   tmDouble fac = 0.1;
 
-  tmMesh *mesh      = node->mesh;
+  tmMesh   *mesh    = node->mesh;
   tmSizeFun sizeFun = mesh->sizeFun;
-  tmDouble        r = sizeFun( node->xy );
+  tmDouble  r       = sizeFun( node->xy );
 
-  tmDouble     dist = r * fac;
-  tmDouble    dist2 = dist * dist;
+  tmDouble  dist    = r * fac;
+  tmDouble  dist2   = dist * dist;
 
   List     *inCirc;
   ListNode *cur, *cur_bdry;
   tmQtree  *cur_qtree;
+
+  /*-------------------------------------------------------
+  | 0) Check if node is within the domain
+  -------------------------------------------------------*/
+  if ( tmMesh_objInside(mesh, node, TM_NODE) == FALSE )
+    return FALSE;
 
   /*-------------------------------------------------------
   | 1) Get boundary edges in vicinity of node
@@ -380,19 +387,23 @@ tmBool tmNode_isValid(tmNode *node)
                                 node->xy,
                                 r);
 
-    for (cur = inCirc->first; cur != NULL; cur = cur->next)
+    if ( inCirc != NULL )
     {
-      tmNode *n1 = ((tmEdge*)cur->value)->n1;
-      tmNode *n2 = ((tmEdge*)cur->value)->n2;
-
-      if ( EDGE_NODE_DIST2(n1->xy, n2->xy, node->xy) < dist2 )
+      for (cur = inCirc->first; cur != NULL; cur = cur->next)
       {
-        List_destroy(inCirc);
-        return FALSE;
+        tmNode *n1 = ((tmEdge*)cur->value)->n1;
+        tmNode *n2 = ((tmEdge*)cur->value)->n2;
+
+        if ( EDGE_NODE_DIST2(n1->xy, n2->xy, node->xy) < dist2 )
+        {
+          List_destroy(inCirc);
+          return FALSE;
+        }
       }
     }
 
-    List_destroy(inCirc);
+    if ( inCirc != NULL )
+      List_destroy(inCirc);
   }
 
   /*-------------------------------------------------------
@@ -406,19 +417,23 @@ tmBool tmNode_isValid(tmNode *node)
                               node->xy,
                               r);
 
-  for (cur = inCirc->first; cur != NULL; cur = cur->next)
+  if ( inCirc != NULL)
   {
-    tmNode *n1 = ((tmEdge*)cur->value)->n1;
-    tmNode *n2 = ((tmEdge*)cur->value)->n2;
-
-    if ( EDGE_NODE_DIST2(n1->xy, n2->xy, node->xy) < dist2 )
+    for (cur = inCirc->first; cur != NULL; cur = cur->next)
     {
-      List_destroy(inCirc);
-      return FALSE;
+      tmNode *n1 = ((tmEdge*)cur->value)->n1;
+      tmNode *n2 = ((tmEdge*)cur->value)->n2;
+
+      if ( EDGE_NODE_DIST2(n1->xy, n2->xy, node->xy) < dist2 )
+      {
+        List_destroy(inCirc);
+        return FALSE;
+      }
     }
   }
 
-  List_destroy(inCirc);
+  if ( inCirc != NULL )
+    List_destroy(inCirc);
 
   /*-------------------------------------------------------
   | 3) Get triangles in vicinity of node
@@ -435,32 +450,36 @@ tmBool tmNode_isValid(tmNode *node)
                               node->xy,
                               r);
 
-  for (cur = inCirc->first; cur != NULL; cur = cur->next)
+  if ( inCirc != NULL )
   {
-    tmNode *n1 = ((tmTri*)cur->value)->n1;
-    tmNode *n2 = ((tmTri*)cur->value)->n2;
-    tmNode *n3 = ((tmTri*)cur->value)->n3;
-
-    if ( EDGE_NODE_DIST2(n1->xy, n2->xy, node->xy) < dist2 )
+    for (cur = inCirc->first; cur != NULL; cur = cur->next)
     {
-      List_destroy(inCirc);
-      return FALSE;
-    }
+      tmNode *n1 = ((tmTri*)cur->value)->n1;
+      tmNode *n2 = ((tmTri*)cur->value)->n2;
+      tmNode *n3 = ((tmTri*)cur->value)->n3;
 
-    if ( EDGE_NODE_DIST2(n2->xy, n3->xy, node->xy) < dist2 )
-    {
-      List_destroy(inCirc);
-      return FALSE;
-    }
+      if ( EDGE_NODE_DIST2(n1->xy, n2->xy, node->xy) < dist2 )
+      {
+        List_destroy(inCirc);
+        return FALSE;
+      }
 
-    if ( EDGE_NODE_DIST2(n3->xy, n1->xy, node->xy) < dist2 )
-    {
-      List_destroy(inCirc);
-      return FALSE;
+      if ( EDGE_NODE_DIST2(n2->xy, n3->xy, node->xy) < dist2 )
+      {
+        List_destroy(inCirc);
+        return FALSE;
+      }
+
+      if ( EDGE_NODE_DIST2(n3->xy, n1->xy, node->xy) < dist2 )
+      {
+        List_destroy(inCirc);
+        return FALSE;
+      }
     }
   }
 
-  List_destroy(inCirc);
+  if ( inCirc != NULL )
+    List_destroy(inCirc);
 
 
   return TRUE;

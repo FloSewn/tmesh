@@ -349,7 +349,6 @@ tmBool tmTri_isValid(tmTri *tri)
       tri->index, tri->n1->index, tri->n2->index, tri->n3->index);
   printf(" ANGLES: %.3f, %.3f\n", tri->minAngle, tri->maxAngle);
 
-
   return FALSE;
 
 } /* tmTri_isValid() */

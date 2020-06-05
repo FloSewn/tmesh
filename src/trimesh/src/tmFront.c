@@ -250,19 +250,32 @@ tmBool tmFront_advance(tmMesh *mesh, tmEdge *e_ad)
   /*--------------------------------------------------------
   | Form potential triangle with found nodes 
   | -> Begin with closest
-  | -> First node in nn_nb is nn -> is skipped
   --------------------------------------------------------*/
-  cur = nn_nb->first->next;
+  cur = nn_nb->first;
 
+  int iter = 0;
   while (cur != NULL)
   {
+    iter += 1;
+    printf("ITERATION: %d/%d\n", iter, nn_nb->count);
+
     nxt = cur->next;
     cn  = (tmNode*)cur->value;
 
     /*------------------------------------------------------
-    | Continue if node is not part of the front
+    | Continue if node is not part of the front or if it 
+    | the newly created node
     ------------------------------------------------------*/
-    if ( cn->on_front == FALSE )
+    if ( cn->on_front == FALSE || cn == nn )
+    {
+      cur = nxt;
+      continue;
+    }
+
+    /*------------------------------------------------------
+    | Continue if node is colinear to base edge
+    ------------------------------------------------------*/
+    if (ORIENTATION(e_ad->n1->xy, e_ad->n2->xy, cn->xy) == 0) 
     {
       cur = nxt;
       continue;
@@ -298,6 +311,7 @@ tmBool tmFront_advance(tmMesh *mesh, tmEdge *e_ad)
     ------------------------------------------------------*/
     tmTri_destroy(nt);
     cur = nxt;
+
   }
 
   if (nn_nb != NULL)

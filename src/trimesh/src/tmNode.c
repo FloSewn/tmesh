@@ -262,14 +262,6 @@ List *tmNode_getNbrsFromSizeFun(tmNode *node)
                         (List_compare) tmNode_compareDblBuf);
   check( sorted == 0,
       "List sort in tmNode_getNbrsFromSizeFun() failed.");
-  check( inCirc->first->value == node,
-      "List sort in tmNode_getNbrsFromSizeFun() failed.");
-
-  /*-------------------------------------------------------
-  | node is first entry in list *inCirc,
-  -------------------------------------------------------*/
-  //if ( inCirc->last != NULL )
-  //  List_remove( inCirc, inCirc->last );
 
   return inCirc;
 
@@ -483,6 +475,5 @@ tmBool tmNode_isValid(tmNode *node)
 
 
   return TRUE;
-
 
 } /* tmNode_isValid() */

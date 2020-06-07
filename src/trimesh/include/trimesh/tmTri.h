@@ -127,4 +127,15 @@ tmBool tmTri_edgeIntersect(tmTri *t, tmNode *e1, tmNode *e2);
 **********************************************************/
 tmBool tmTri_triIntersect(tmTri *t1, tmTri *t2);
 
+/**********************************************************
+* Function: tmTri_nodeIntersect()
+*----------------------------------------------------------
+* Function to check wether a provided triangles intersects
+* with a node
+*----------------------------------------------------------
+* @param *t: pointer to tmTri 
+* @param *n: pointer to tmNode
+**********************************************************/
+tmBool tmTri_nodeIntersect(tmTri *t, tmNode *n);
+
 #endif

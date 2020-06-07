@@ -322,8 +322,8 @@ void tmTri_destroy(tmTri *tri)
 **********************************************************/
 tmBool tmTri_isValid(tmTri *tri)
 {
-  tmDouble minAngle = 25.0 * PI_D / 180.;
-  tmDouble maxAngle = 110.0 * PI_D / 180.;
+  tmDouble minAngle = 15.0 * PI_D / 180.;
+  tmDouble maxAngle = 160.0 * PI_D / 180.;
 
   tmMesh   *mesh    = tri->mesh;
   tmSizeFun sizeFun = mesh->sizeFun;
@@ -348,12 +348,9 @@ tmBool tmTri_isValid(tmTri *tri)
   |    with any existing triangle in its vicinity
   -------------------------------------------------------*/
   cur_qtree = mesh->tris_qtree;
+  inCirc    = tmQtree_getObjCirc(cur_qtree, tri->xy, r);
 
-  inCirc = tmQtree_getObjCirc(cur_qtree,
-                              tri->xy,
-                              r);
   if ( inCirc != NULL)
-  {
     for (cur = inCirc->first; cur != NULL; cur = cur->next)
     {
       tmTri *t = (tmTri*)cur->value;
@@ -367,19 +364,40 @@ tmBool tmTri_isValid(tmTri *tri)
         return FALSE;
       }
     }
-  }
 
   if (inCirc != NULL)
     List_destroy(inCirc);
 
   /*-------------------------------------------------------
-  | 2) Check if new triangle edges intersect with 
+  | 2) Check if new triangle edges intersect  
   |    with any existing boundary edge in its vicinity
+  -------------------------------------------------------*/
+  cur_qtree = mesh->nodes_qtree;
+  inCirc    = tmQtree_getObjCirc(cur_qtree, tri->xy, r);
+
+  if ( inCirc != NULL)
+    for (cur = inCirc->first; cur != NULL; cur = cur->next)
+    {
+      tmNode *n = (tmNode*)cur->value;
+
+      if ( tmTri_nodeIntersect(tri, n) == TRUE )
+      {
+        List_destroy(inCirc);
+        return FALSE;
+      }
+    }
+
+  if (inCirc != NULL)
+    List_destroy(inCirc);
+
+  /*-------------------------------------------------------
+  | 3) Check if new triangle edges intersect  
+  |    with any existing front edge in its vicinity
   -------------------------------------------------------*/
 
   /*-------------------------------------------------------
-  | 3) Check if new triangle edges intersect with 
-  |    with any existing front edge in its vicinity
+  | 4) Check if new triangle edges intersect  
+  |    with any existing node in its vicinity
   -------------------------------------------------------*/
 
   /*-------------------------------------------------------
@@ -456,3 +474,35 @@ tmBool tmTri_triIntersect(tmTri *t1, tmTri *t2)
   return FALSE;
 
 } /* tmTri_triIntersect() */
+
+/**********************************************************
+* Function: tmTri_nodeIntersect()
+*----------------------------------------------------------
+* Function to check wether a provided triangles intersects
+* with a node
+*----------------------------------------------------------
+* @param *t: pointer to tmTri 
+* @param *n: pointer to tmNode
+**********************************************************/
+tmBool tmTri_nodeIntersect(tmTri *t, tmNode *n)
+{
+  if (n == t->n1 || n == t->n2 || n == t->n3)
+    return FALSE;
+
+  tmDouble *xy1 = t->n1->xy;
+  tmDouble *xy2 = t->n2->xy;
+  tmDouble *xy3 = t->n3->xy;
+
+  /* Check if node is contained within triangle */
+  tmBool left1 = IS_LEFTON( xy1, xy2, n->xy);
+  tmBool left2 = IS_LEFTON( xy2, xy3, n->xy);
+  tmBool left3 = IS_LEFTON( xy3, xy1, n->xy);
+  tmBool n_in_tri =  left1 & left2 & left3;
+
+  if (n_in_tri == TRUE)
+    return TRUE;
+
+  return FALSE;
+
+
+} /* tmTri_nodeIntersect() */

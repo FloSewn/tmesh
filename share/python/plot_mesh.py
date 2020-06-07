@@ -8,7 +8,15 @@ from matplotlib import pyplot as plt
 from matplotlib.patches import Polygon
 from matplotlib.collections import PatchCollection
 import numpy as np
-import sys
+import sys, os
+
+TRI_PATCH = {'edgecolors' : ['k'],
+             'linewidths' : 0.5,
+             'facecolors' : ['r'],
+             'joinstyle'  : 'round',
+             'capstyle'   : 'round',
+             'alpha'      : 0.3,
+             'cmap'       : 'coolwarm'}
 
 def read_meshdata(mesh_file):
     '''
@@ -79,47 +87,47 @@ def read_meshdata(mesh_file):
 
 def main():
     ''' The main function '''
-    if len(sys.argv) < 2:
-        print("plot_boundary.py <mesh>.dat")
+    if len(sys.argv) < 3:
+        print("plot_boundary.py <mesh>.dat <export_path>")
         sys.exit(1)
 
     nodes, boundaries, front_edges, tris = read_meshdata(sys.argv[1])
+    export_path = sys.argv[2]
 
 
-    fig, ax = plt.subplots(1,1,figsize=(10,10))
 
-    for i_bdry, edges in boundaries.items():
-        for e in edges:
-            ax.plot(nodes[e,0], nodes[e,1], c='k',
-                    lw=2.0, ls='-',marker='o')
+    for step in range(len(tris), -1, -1):
 
-    patches = {'edgecolors' : ['k'],
-               'linewidths' : 0.5,
-               'facecolors' : ['r'],
-               'joinstyle'  : 'round',
-               'capstyle'   : 'round',
-               'alpha'      : 0.3,
-               'cmap'       : 'coolwarm'}
+        fig, ax = plt.subplots(1,1,figsize=(10,10))
 
-    tri_patches = []
-    for i_tri, tri in enumerate(tris):
-        tri_patches.append(Polygon([nodes[tri[i]] for i in range(3)]))
+        for i_bdry, edges in boundaries.items():
+            for e in edges:
+                ax.plot(nodes[e,0], nodes[e,1], c='k',
+                        lw=2.0, ls='-',marker='o')
 
-    for e in front_edges:
-        ax.plot(nodes[e,0], nodes[e,1], c='r',
-                lw=3.0, ls='-',marker='o')
+        #for i, n in enumerate(nodes):
+        #    ax.text(n[0],n[1],i)
 
-    for i, n in enumerate(nodes):
-        ax.text(n[0],n[1],i)
+        if step == len(tris):
+            for e in front_edges:
+                ax.plot(nodes[e,0], nodes[e,1], c='r',
+                        lw=3.0, ls='-',marker='o')
 
+        tri_patches = []
+        for i_tri, tri in enumerate(tris[:step]):
+            tri_patches.append(Polygon([nodes[tri[i]] for i in range(3)]))
 
-    tri_col = PatchCollection(tri_patches, **patches)
-    ax.add_collection(tri_col)
+        tri_col = PatchCollection(tri_patches, **TRI_PATCH)
+        ax.add_collection(tri_col)
 
-    ax.set_xlim((-2,12))
-    ax.set_ylim((-2,12))
+        ax.set_xlim((nodes[:,0].min(),nodes[:,0].max()))
+        ax.set_ylim((nodes[:,1].min(),nodes[:,1].max()))
 
-    plt.show()
+        fig_path = os.path.join( export_path, 'mesh_step_{:}'.format(step))
+        print("Exporting {:}".format(fig_path))
+        plt.tight_layout()
+        fig.savefig(fig_path + '.png', dpi=300)
+        plt.close(fig)
 
 
 

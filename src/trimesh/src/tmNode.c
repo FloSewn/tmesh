@@ -351,7 +351,7 @@ tmEdge *tmNode_getAdjFrontEdge(tmNode *n, tmNode *m)
 **********************************************************/
 tmBool tmNode_isValid(tmNode *node)
 {
-  tmDouble fac = 0.1;
+  tmDouble fac = 0.25;
 
   tmMesh   *mesh    = node->mesh;
   tmSizeFun sizeFun = mesh->sizeFun;

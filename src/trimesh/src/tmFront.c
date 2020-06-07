@@ -417,4 +417,3 @@ void tmFront_update(tmMesh *mesh, tmNode *n, tmEdge *e)
 
 } /* tmFront_update() */
 
-

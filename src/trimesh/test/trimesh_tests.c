@@ -32,7 +32,7 @@ static inline tmDouble size_fun_2( tmDouble xy[2] )
 }
 static inline tmDouble size_fun_3( tmDouble xy[2] )
 {
-  return 0.5; // + 0.05 * xy[0] + 0.1 * xy[1];
+  return 0.4 + 0.1 * xy[0] + 0.1 * xy[1];
 }
 
 

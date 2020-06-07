@@ -101,13 +101,13 @@ void tmMesh_destroy(tmMesh *mesh)
     tmBdry_destroy(cur->value);
     cur = nxt;
   }
-  printf(" > MESH BOUNDARIES FREE\n");
+  tmPrint(" MESH BOUNDARIES FREE");
 
   /*-------------------------------------------------------
   | Free advancing front structure
   -------------------------------------------------------*/
   tmFront_destroy(mesh->front);
-  printf(" > MESH FRONT FREE\n");
+  tmPrint(" MESH FRONT FREE");
 
   /*-------------------------------------------------------
   | Free all tris on the stack
@@ -119,7 +119,7 @@ void tmMesh_destroy(tmMesh *mesh)
     tmTri_destroy(cur->value);
     cur = nxt;
   }
-  printf(" > MESH TRIS DESTROYED\n");
+  tmPrint(" MESH TRIS DESTROYED");
 
   /*-------------------------------------------------------
   | Free all nodes on the stack
@@ -131,15 +131,15 @@ void tmMesh_destroy(tmMesh *mesh)
     tmNode_destroy(cur->value);
     cur = nxt;
   }
-  printf(" > MESH NODES DESTROYED\n");
+  tmPrint(" MESH NODES DESTROYED");
 
   /*-------------------------------------------------------
   | Free all quadtree structures
   -------------------------------------------------------*/
   tmQtree_destroy(mesh->nodes_qtree);
-  printf(" > MESH NODES_QTREE FREE\n");
+  tmPrint(" MESH NODES_QTREE FREE");
   tmQtree_destroy(mesh->tris_qtree);
-  printf(" > MESH TRIS_QTREE FREE\n");
+  tmPrint(" MESH TRIS_QTREE FREE");
 
   /*-------------------------------------------------------
   | Free all list structures
@@ -436,20 +436,29 @@ void tmMesh_ADFMeshing(tmMesh *mesh)
 
   tmFront *front = mesh->front;
 
+  /*-------------------------------------------------------
+  | Initialize the front from mesh boundaries
+  -------------------------------------------------------*/
   tmFront_init(mesh);
   tmFront_sortEdges(mesh);
 
+  /*-------------------------------------------------------
+  | Main loop for finding creating triangles
+  -------------------------------------------------------*/
   cur = nxt = front->edges_stack->first;
-
   while (n < front->no_edges && front->no_edges > 0)
   {
     nxt = cur->next;
-
     tmEdge *curEdge = (tmEdge*)cur->value;
-    printf("-----------------------------------\n");
-    printf(" E: (%d -> %d)\n", 
+    
+    tmPrint("-----------------------------------");
+    tmPrint(" E: (%d -> %d)", 
         curEdge->n1->index, curEdge->n2->index);
 
+    /*-----------------------------------------------------
+    | Try to form new triangle with current base segment
+    | -> go to next segment, if it failed
+    -----------------------------------------------------*/
     if ( tmFront_advance(mesh, curEdge) == TRUE )
     {
       tmFront_sortEdges(mesh);

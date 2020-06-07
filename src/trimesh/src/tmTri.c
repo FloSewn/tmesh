@@ -3,6 +3,7 @@
 #include "trimesh/tmTri.h"
 #include "trimesh/tmEdge.h"
 #include "trimesh/tmNode.h"
+#include "trimesh/tmQtree.h"
 
 /**********************************************************
 * Function: tmTri_calcCentroid()
@@ -324,10 +325,52 @@ tmBool tmTri_isValid(tmTri *tri)
   tmDouble minAngle = 25.0 * PI_D / 180.;
   tmDouble maxAngle = 110.0 * PI_D / 180.;
 
+  tmMesh   *mesh    = tri->mesh;
+  tmSizeFun sizeFun = mesh->sizeFun;
+  tmDouble  r       = sizeFun( tri->xy );
+
+  List     *inCirc;
+  ListNode *cur, *cur_bdry;
+  tmQtree  *cur_qtree;
+
+  tmNode   *n1 = tri->n1;
+  tmNode   *n2 = tri->n2;
+  tmNode   *n3 = tri->n3;
+
+  /*-------------------------------------------------------
+  | 0) Check if triangle is within the domain
+  -------------------------------------------------------*/
+  if ( tmMesh_objInside(mesh, tri, TM_TRI) == FALSE )
+    return FALSE;
+
   /*-------------------------------------------------------
   | 1) Check if new triangle edges intersect with 
   |    with any existing triangle in its vicinity
   -------------------------------------------------------*/
+  cur_qtree = mesh->tris_qtree;
+
+  inCirc = tmQtree_getObjCirc(cur_qtree,
+                              tri->xy,
+                              r);
+  if ( inCirc != NULL)
+  {
+    for (cur = inCirc->first; cur != NULL; cur = cur->next)
+    {
+      tmTri *t = (tmTri*)cur->value;
+
+      if (t == tri)
+        continue;
+
+      if ( tmTri_triIntersect(tri,t) == TRUE )
+      {
+        List_destroy(inCirc);
+        return FALSE;
+      }
+    }
+  }
+
+  if (inCirc != NULL)
+    List_destroy(inCirc);
 
   /*-------------------------------------------------------
   | 2) Check if new triangle edges intersect with 
@@ -340,15 +383,76 @@ tmBool tmTri_isValid(tmTri *tri)
   -------------------------------------------------------*/
 
   /*-------------------------------------------------------
-  | 4) Check if triangle quality is good enough
+  | 3) Check if triangle quality is good enough
   -------------------------------------------------------*/
   if (tri->minAngle >= minAngle && tri->maxAngle <= maxAngle)
     return TRUE;
 
-  printf(" REJECTING T%d: (%d, %d, %d)\n",
+  tmPrint(" REJECTING T%d: (%d, %d, %d)",
       tri->index, tri->n1->index, tri->n2->index, tri->n3->index);
-  printf(" ANGLES: %.3f, %.3f\n", tri->minAngle, tri->maxAngle);
+  tmPrint(" ANGLES: %.3f, %.3f", tri->minAngle, tri->maxAngle);
 
   return FALSE;
 
 } /* tmTri_isValid() */
+
+
+/**********************************************************
+* Function: tmTri_edgeIntersect()
+*----------------------------------------------------------
+* Function to check wether a provided triangles intersects
+* with an edge, defined by its vertices e1, e2
+*----------------------------------------------------------
+* @param *t: pointer to tmTri 
+* @param *e1,e2: pointer to nodes defining the edge
+**********************************************************/
+tmBool tmTri_edgeIntersect(tmTri *t, tmNode *e1, tmNode *e2)
+{
+  tmDouble *n1_xy = t->n1->xy;
+  tmDouble *n2_xy = t->n2->xy;
+  tmDouble *n3_xy = t->n3->xy;
+
+  tmDouble *e1_xy = e1->xy;
+  tmDouble *e2_xy = e2->xy;
+
+  if( INTERSECTION_IN_LINES(e1_xy, e2_xy, n1_xy, n2_xy) )
+    return TRUE;
+  
+  if( INTERSECTION_IN_LINES(e1_xy, e2_xy, n2_xy, n3_xy) )
+    return TRUE;
+
+  if( INTERSECTION_IN_LINES(e1_xy, e2_xy, n3_xy, n1_xy) )
+    return TRUE;
+
+  return FALSE;
+
+
+} /* tmTri_edgeIntersect() */
+
+
+/**********************************************************
+* Function: tmTri_triIntersectn()
+*----------------------------------------------------------
+* Function to check wether two provided triangles intersect
+*----------------------------------------------------------
+* @param *t1: pointer to first tmTri 
+* @param *t2: pointer to second tmTri 
+**********************************************************/
+tmBool tmTri_triIntersect(tmTri *t1, tmTri *t2)
+{
+  tmNode *n1 = t2->n1;
+  tmNode *n2 = t2->n2;
+  tmNode *n3 = t2->n3;
+
+  if ( tmTri_edgeIntersect(t1, n1, n2) == TRUE )
+    return TRUE;
+
+  if ( tmTri_edgeIntersect(t1, n2, n3) == TRUE )
+    return TRUE;
+
+  if ( tmTri_edgeIntersect(t1, n3, n1) == TRUE )
+    return TRUE;
+  
+  return FALSE;
+
+} /* tmTri_triIntersect() */

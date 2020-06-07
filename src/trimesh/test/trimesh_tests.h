@@ -26,6 +26,11 @@ char *test_tmQtree();
 char *test_tmQtree_performance();
 
 /*************************************************************
+* Unit test function for the triangle intersection 
+************************************************************/
+char *test_tmTri_intersection();
+
+/*************************************************************
 * Unit test function for the advancing front algorithm
 ************************************************************/
 char *test_tmFront_init();

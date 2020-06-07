@@ -849,7 +849,6 @@ List *tmQtree_getObjCirc(tmQtree *qtree,
   if (overlap == FALSE)
     return NULL;
 
-
   List *obj_found = List_create();
 
   /*-------------------------------------------------------

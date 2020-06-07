@@ -254,6 +254,12 @@ List *tmNode_getNbrsFromSizeFun(tmNode *node)
                                     r);
 
   /*-------------------------------------------------------
+  | inCirc can be NULL, if node is outside of the domain   
+  -------------------------------------------------------*/
+  if (inCirc == NULL)
+    return NULL;
+
+  /*-------------------------------------------------------
   | Sort neighbors by distance to node
   | -> Distance to node is already buffered in dblBuf 
   |    of node by tmQtree_getObjCirc()
@@ -264,7 +270,6 @@ List *tmNode_getNbrsFromSizeFun(tmNode *node)
       "List sort in tmNode_getNbrsFromSizeFun() failed.");
 
   return inCirc;
-
 error:
   return NULL;
 

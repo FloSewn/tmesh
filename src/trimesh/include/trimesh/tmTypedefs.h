@@ -53,7 +53,15 @@ typedef tmDouble (*tmSizeFun) (tmDouble xy[2]);
 /***********************************************************
 * Debugging
 ***********************************************************/
-#define TM_DEBUG 1
+#define TM_DEBUG
+
+#ifdef TM_DEBUG 
+#define tmPrint(M, ...) fprintf(stdout, "> " M "\n",\
+    ##__VA_ARGS__)
+#else
+#define tmPrint(M, ...)
+#endif
+
 
 /***********************************************************
 * Constants used in code
@@ -140,12 +148,15 @@ static inline int ORIENTATION(tmDouble p[2],
 {
   tmDouble area2 = ( ( p[0] - r[0] ) * ( q[1] - r[1] )
                    - ( q[0] - r[0] ) * ( p[1] - r[1] ) );
+
   /* Colinearity of all nodes */
   if ( (area2 * area2) < SMALL )
     return 0;
+
   /* Counter clockwise orienation */
   if ( area2 > 0.0 )
     return 1;
+
   return 2;
 }
 
@@ -230,7 +241,6 @@ static inline tmDouble EDGE_NODE_DIST2(tmDouble v[2],
   return dist2;
 }
 
-
 /*----------------------------------------------------------
 | Check if an object is contained in a provided list
 ----------------------------------------------------------*/
@@ -244,6 +254,107 @@ static inline tmBool OBJ_IN_LIST(void *obj, List *list)
   return FALSE;
 error:
   return -1;
+}
+
+/*----------------------------------------------------------
+| Check if r lies within a segment (p,q)
+----------------------------------------------------------*/
+static inline tmBool IN_SEGMENT(tmDouble p[2], 
+                                tmDouble q[2], 
+                                tmDouble r[2])
+{
+  if ( ORIENTATION(p, q, r) != 0 )
+    return FALSE;
+
+  tmDouble bbox_min[2] = { MIN(p[0], q[0]), 
+                           MIN(p[1], q[1]) };
+  tmDouble bbox_max[2] = { MAX(p[0], q[0]), 
+                           MAX(p[1], q[1]) };
+
+  const tmDouble dx_e = q[0]-p[0];
+  const tmDouble dy_e = q[1]-p[1];
+  const tmDouble l2   = dx_e*dx_e + dy_e*dy_e;
+  const tmDouble t    = ( (r[0]-p[0]) * dx_e
+                        + (r[1]-p[1]) * dy_e ) / l2;
+
+  if ( t > 0.0 && t < 1.0 )
+    return TRUE;
+
+  return FALSE;
+}
+
+/*----------------------------------------------------------
+| Check if r lies within a segment (p,q) or on its endpoints
+----------------------------------------------------------*/
+static inline tmBool IN_ON_SEGMENT(tmDouble p[2], 
+                                   tmDouble q[2], 
+                                   tmDouble r[2])
+{
+  if ( ORIENTATION(p, q, r) != 0 )
+    return FALSE;
+
+  tmDouble bbox_min[2] = { MIN(p[0], q[0]), 
+                           MIN(p[1], q[1]) };
+  tmDouble bbox_max[2] = { MAX(p[0], q[0]), 
+                           MAX(p[1], q[1]) };
+
+  const tmDouble dx_e = q[0]-p[0];
+  const tmDouble dy_e = q[1]-p[1];
+  const tmDouble l2   = dx_e*dx_e + dy_e*dy_e;
+  const tmDouble t    = ( (r[0]-p[0]) * dx_e
+                        + (r[1]-p[1]) * dy_e ) / l2;
+
+  if ( t >= 0.0 && t <= 1.0 )
+    return TRUE;
+
+  return FALSE;
+}
+
+/*----------------------------------------------------------
+| Check if two line segments (p1,q1), (p2,q2) are crossing
+| 
+| * Returns True, if segments intersect at any point but 
+|   their endings
+| * Returns True, if one line contains a part of the other
+| * Returns False, if both lines share both end points
+| * Returns False in all other cases
+| 
+| -> Used for triangle edge intersection
+----------------------------------------------------------*/
+static inline tmBool INTERSECTION_IN_LINES(tmDouble p1[2], 
+                                           tmDouble q1[2], 
+                                           tmDouble p2[2], 
+                                           tmDouble q2[2])
+{
+  int o1 = ORIENTATION(p1, q1, p2);
+  int o2 = ORIENTATION(p1, q1, q2);
+  int o3 = ORIENTATION(p2, q2, p1);
+  int o4 = ORIENTATION(p2, q2, q1);
+
+  if (  ( (o1 == 1 && o2 == 2) || (o1 == 2 && o2 == 1) ) 
+     && ( (o3 == 1 && o4 == 2) || (o3 == 2 && o4 == 1) ) )
+  {
+    return TRUE;
+  }
+
+  /* (p1, q1) and p2 are colinear and p2 lies on segment (p1, q1) */
+  if ( (o1 == 0) && ( IN_SEGMENT(p1, q1, p2) == TRUE ) )
+    return TRUE;
+
+  /* (p1, q1) and q2 are colinear and q2 lies on segment (p1, q1) */
+  if ( (o2 == 0) && ( IN_SEGMENT(p1, q1, q2) == TRUE ) ) 
+    return TRUE;
+
+  /* (p2, q2) and p1 are colinear and p1 lies on segment (p2, q2) */
+  if ( (o3 == 0) && ( IN_SEGMENT(p2, q2, p1) == TRUE ) ) 
+    return TRUE;
+
+  /* (p2, q2) and q1 are colinear and q1 lies on segment (p2, q2) */
+  if ( (o4 == 0) && ( IN_SEGMENT(p2, q2, q1) == TRUE )) 
+    return TRUE;
+
+  return FALSE;
+
 }
 
 

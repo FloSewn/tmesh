@@ -1,3 +1,2 @@
 # ToDo List
-* Add function im tmQtree to get all objects in range of a point or in a rectangle
-* Add test on convergence of tmQtree speedup with random number of hundreds of points
+* Remove bug: Qtree stucks in loop, as several points lying directly on top of each other are created

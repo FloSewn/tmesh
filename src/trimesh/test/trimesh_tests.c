@@ -32,7 +32,7 @@ static inline tmDouble size_fun_2( tmDouble xy[2] )
 }
 static inline tmDouble size_fun_3( tmDouble xy[2] )
 {
-  return 2.5;
+  return 0.5; // + 0.05 * xy[0] + 0.1 * xy[1];
 }
 
 
@@ -699,6 +699,83 @@ char *test_tmQtree_performance()
 } /* test_tmQtree_performance() */
 
 
+/************************************************************
+* Unit test function for the triangle intersection 
+************************************************************/
+char *test_tmTri_intersection()
+{
+  tmDouble xy_min[2] = {   0.0,  0.0 };
+  tmDouble xy_max[2] = {  10.0, 10.0 };
+
+  tmMesh *mesh = tmMesh_create(xy_min, xy_max, 10, size_fun_3);
+
+  /*--------------------------------------------------------
+  | node definition
+  --------------------------------------------------------*/
+  tmDouble xy1[2]  = {  1.0,  1.0 };
+  tmDouble xy2[2]  = {  4.0,  1.0 };
+  tmDouble xy3[2]  = {  1.0,  4.0 };
+  tmDouble xy4[2]  = {  4.0,  3.0 };
+  tmDouble xy5[2]  = {  8.0,  3.0 };
+  tmDouble xy6[2]  = {  3.0,  4.0 };
+  tmDouble xy7[2]  = {  1.0,  7.0 };
+  tmDouble xy8[2]  = {  4.0,  6.0 };
+  tmDouble xy9[2]  = {  6.0,  6.0 };
+  tmDouble xy10[2] = {  8.0,  6.0 };
+  tmDouble xy11[2] = {  3.0,  9.0 };
+  tmDouble xy12[2] = {  8.0,  9.0 };
+
+  tmNode *n1  = tmNode_create(mesh, xy1);
+  tmNode *n2  = tmNode_create(mesh, xy2);
+  tmNode *n3  = tmNode_create(mesh, xy3);
+  tmNode *n4  = tmNode_create(mesh, xy4);
+  tmNode *n5  = tmNode_create(mesh, xy5);
+  tmNode *n6  = tmNode_create(mesh, xy6);
+  tmNode *n7  = tmNode_create(mesh, xy7);
+  tmNode *n8  = tmNode_create(mesh, xy8);
+  tmNode *n9  = tmNode_create(mesh, xy9);
+  tmNode *n10 = tmNode_create(mesh, xy10);
+  tmNode *n11 = tmNode_create(mesh, xy11);
+  tmNode *n12 = tmNode_create(mesh, xy12);
+
+  /*--------------------------------------------------------
+  | Create triangles
+  --------------------------------------------------------*/
+  tmTri *t1 = tmTri_create(mesh, n1 , n2 , n3 );
+  tmTri *t2 = tmTri_create(mesh, n2 , n8 , n3 );
+  tmTri *t3 = tmTri_create(mesh, n2 , n5 , n4 );
+  tmTri *t4 = tmTri_create(mesh, n4 , n5 , n9 );
+  tmTri *t5 = tmTri_create(mesh, n8 , n10, n12);
+  tmTri *t6 = tmTri_create(mesh, n6 , n11, n7 );
+
+  /*--------------------------------------------------------
+  | Check intersections
+  --------------------------------------------------------*/
+  mu_assert( tmTri_triIntersect(t1, t2) == FALSE,
+      "tmTri_triIntersect() gives wrong results.");
+  mu_assert( tmTri_triIntersect(t3, t4) == FALSE,
+      "tmTri_triIntersect() gives wrong results.");
+  mu_assert( tmTri_triIntersect(t2, t5) == FALSE,
+      "tmTri_triIntersect() gives wrong results.");
+
+  mu_assert( tmTri_triIntersect(t2, t3) == TRUE,
+      "tmTri_triIntersect() gives wrong results.");
+  mu_assert( tmTri_triIntersect(t2, t6) == TRUE,
+      "tmTri_triIntersect() gives wrong results.");
+  mu_assert( tmTri_triIntersect(t4, t5) == TRUE,
+      "tmTri_triIntersect() gives wrong results.");
+
+  /*--------------------------------------------------------
+  | Print the mesh data 
+  --------------------------------------------------------*/
+  tmMesh_printMesh(mesh);
+  tmMesh_destroy(mesh);
+
+  return NULL;
+
+} /* test_tmTri_intersection() */
+
+
 /*************************************************************
 * Unit test function for the advancing front algorithm
 ************************************************************/
@@ -904,6 +981,7 @@ char *test_tmFront_advance()
 
 } /* test_tmFront_advance() */
 
+
 /*************************************************************
 * Unit test function for the advancing front algorithm
 ************************************************************/
@@ -911,7 +989,7 @@ char *test_tmFront_simpleMesh()
 {
   tmDouble xy_min[2] = {   0.0,  0.0 };
   tmDouble xy_max[2] = {  10.0, 10.0 };
-  tmMesh *mesh = tmMesh_create(xy_min, xy_max, 3, size_fun_3);
+  tmMesh *mesh = tmMesh_create(xy_min, xy_max, 10, size_fun_3);
 
   /*--------------------------------------------------------
   | exterior nodes

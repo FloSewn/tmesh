@@ -106,4 +106,25 @@ void tmTri_destroy(tmTri *tri);
 **********************************************************/
 tmBool tmTri_isValid(tmTri *tri);
 
+/**********************************************************
+* Function: tmTri_edgeIntersect()
+*----------------------------------------------------------
+* Function to check wether a provided triangles intersects
+* with an edge, defined by its vertices e1, e2
+*----------------------------------------------------------
+* @param *t1: pointer to first tmTri 
+* @param *t2: pointer to second tmTri 
+**********************************************************/
+tmBool tmTri_edgeIntersect(tmTri *t, tmNode *e1, tmNode *e2);
+
+/**********************************************************
+* Function: tmTri_triIntersectn()
+*----------------------------------------------------------
+* Function to check wether two provided triangles intersect
+*----------------------------------------------------------
+* @param *t1: pointer to first tmTri 
+* @param *t2: pointer to second tmTri 
+**********************************************************/
+tmBool tmTri_triIntersect(tmTri *t1, tmTri *t2);
+
 #endif

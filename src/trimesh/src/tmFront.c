@@ -239,7 +239,7 @@ tmBool tmFront_advance(tmMesh *mesh, tmEdge *e_ad)
   --------------------------------------------------------*/
   tmNode *nn = tmEdge_createNode(e_ad);
 
-  printf(" N%d: (%.3f, %.3f)\n",
+  tmPrint(" N%d: (%.3f, %.3f)",
       nn->index, nn->xy[0], nn->xy[1]);
 
   /*--------------------------------------------------------
@@ -247,75 +247,81 @@ tmBool tmFront_advance(tmMesh *mesh, tmEdge *e_ad)
   --------------------------------------------------------*/
   List *nn_nb = tmNode_getNbrsFromSizeFun(nn);
 
-  /*--------------------------------------------------------
-  | Form potential triangle with found nodes 
-  | -> Begin with closest
-  --------------------------------------------------------*/
-  cur = nn_nb->first;
-
-  int iter = 0;
-  while (cur != NULL)
-  {
-    iter += 1;
-    printf("ITERATION: %d/%d\n", iter, nn_nb->count);
-
-    nxt = cur->next;
-    cn  = (tmNode*)cur->value;
-
-    /*------------------------------------------------------
-    | Continue if node is not part of the front or if it 
-    | the newly created node
-    ------------------------------------------------------*/
-    if ( cn->on_front == FALSE || cn == nn )
-    {
-      cur = nxt;
-      continue;
-    }
-
-    /*------------------------------------------------------
-    | Continue if node is colinear to base edge
-    ------------------------------------------------------*/
-    if (ORIENTATION(e_ad->n1->xy, e_ad->n2->xy, cn->xy) == 0) 
-    {
-      cur = nxt;
-      continue;
-    }
-
-    /*------------------------------------------------------
-    | Create new potential triangle
-    ------------------------------------------------------*/
-    nt  = tmTri_create(mesh, e_ad->n1, e_ad->n2, cn);
-
-    /*------------------------------------------------------
-    | Continue if triangle is valid
-    | Update advancing front with this node
-    ------------------------------------------------------*/
-    if ( tmTri_isValid(nt) == TRUE ) 
-    {
-      tmFront_update(mesh, cn, e_ad);
-
-      tmNode_destroy(nn);
-
-      if (nn_nb != NULL)
-        List_destroy(nn_nb);
-
-      printf(" NT%d (%d, %d, %d)\n",
-          nt->index,
-          nt->n1->index, nt->n2->index, nt->n3->index);
-
-      return TRUE;
-    }
-
-    /*------------------------------------------------------
-    | If triangle is invalid, remove it 
-    ------------------------------------------------------*/
-    tmTri_destroy(nt);
-    cur = nxt;
-
-  }
-
   if (nn_nb != NULL)
-    List_destroy(nn_nb);
+  {
+    /*------------------------------------------------------
+    | Form potential triangle with found nodes 
+    | -> Begin with closest
+    ------------------------------------------------------*/
+    cur = nn_nb->first;
+
+    int iter = 0;
+    while (cur != NULL)
+    {
+      iter += 1;
+      tmPrint("ITERATION: %d/%d - N%d", 
+          iter, nn_nb->count,
+          ((tmNode*)cur->value)->index);
+
+      nxt = cur->next;
+      cn  = (tmNode*)cur->value;
+
+      /*----------------------------------------------------
+      | Continue if node is not part of the front or if it 
+      | the newly created node
+      ----------------------------------------------------*/
+      if ( cn->on_front == FALSE || cn == nn )
+      {
+        cur = nxt;
+        continue;
+      }
+
+      /*----------------------------------------------------
+      | Continue if node is colinear to base edge
+      ----------------------------------------------------*/
+      if (ORIENTATION(e_ad->n1->xy,e_ad->n2->xy,cn->xy) == 0) 
+      {
+        cur = nxt;
+        continue;
+      }
+
+      /*----------------------------------------------------
+      | Create new potential triangle
+      ----------------------------------------------------*/
+      nt  = tmTri_create(mesh, e_ad->n1, e_ad->n2, cn);
+
+      /*----------------------------------------------------
+      | Continue if triangle is valid
+      | Update advancing front with this node
+      ----------------------------------------------------*/
+      if ( tmTri_isValid(nt) == TRUE ) 
+      {
+        tmFront_update(mesh, cn, e_ad);
+
+        tmNode_destroy(nn);
+
+        if (nn_nb != NULL)
+          List_destroy(nn_nb);
+
+        tmPrint(" NT%d (%d, %d, %d)",
+            nt->index,
+            nt->n1->index, nt->n2->index, nt->n3->index);
+
+        return TRUE;
+      }
+
+      /*----------------------------------------------------
+      | If triangle is invalid, remove it 
+      ----------------------------------------------------*/
+      tmTri_destroy(nt);
+      cur = nxt;
+
+    }
+
+    if (nn_nb != NULL)
+      List_destroy(nn_nb);
+
+  } /* if (nn_nb != NULL) */
 
   /*--------------------------------------------------------
   | Check if new node is not placed too close to any 
@@ -331,7 +337,7 @@ tmBool tmFront_advance(tmMesh *mesh, tmEdge *e_ad)
     {
       tmFront_update(mesh, nn, e_ad);
 
-      printf(" NT%d (%d, %d, %d)\n",
+      tmPrint(" NT%d (%d, %d, %d)",
           nt->index,
           nt->n1->index, nt->n2->index, nt->n3->index);
 

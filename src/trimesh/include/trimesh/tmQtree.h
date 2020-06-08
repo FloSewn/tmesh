@@ -17,6 +17,7 @@ typedef struct tmQtree {
   | Qtree layer starts at 0
   -------------------------------------------------------*/
   tmIndex layer;
+  tmIndex max_layer;
 
   /*-------------------------------------------------------
   | Maximum number of objects the Qtree can contain

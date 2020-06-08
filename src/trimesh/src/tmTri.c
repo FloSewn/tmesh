@@ -322,12 +322,16 @@ void tmTri_destroy(tmTri *tri)
 **********************************************************/
 tmBool tmTri_isValid(tmTri *tri)
 {
-  tmDouble minAngle = 15.0 * PI_D / 180.;
-  tmDouble maxAngle = 160.0 * PI_D / 180.;
+  tmDouble minAngle = TM_TRI_MIN_ANGLE;
+  tmDouble maxAngle = TM_TRI_MAX_ANGLE;
 
   tmMesh   *mesh    = tri->mesh;
   tmSizeFun sizeFun = mesh->sizeFun;
-  tmDouble  r       = sizeFun( tri->xy );
+  tmDouble  r       = TM_TRI_RANGE_FAC * tri->circ_r;
+
+  tmDouble  fac     = TM_NODE_EDGE_DIST_FAC;
+  tmDouble  dist    = sizeFun( tri->xy ) * fac;
+  tmDouble  dist2   = dist * dist;
 
   List     *inCirc;
   ListNode *cur, *cur_bdry;
@@ -337,11 +341,27 @@ tmBool tmTri_isValid(tmTri *tri)
   tmNode   *n2 = tri->n2;
   tmNode   *n3 = tri->n3;
 
+  tmPrint("FORMING POT. TRIANGLE: (%d, %d, %d)",
+      n1->index, n2->index, n3->index);
+
   /*-------------------------------------------------------
   | 0) Check if triangle is within the domain
   -------------------------------------------------------*/
   if ( tmMesh_objInside(mesh, tri, TM_TRI) == FALSE )
+  {
+    tmPrint(" -> REJECTED: TRIANGLE OUTSIDE OF DOMAIN");
     return FALSE;
+  }
+
+  /*-------------------------------------------------------
+  | 0) Check correct orientation of triangle
+  -------------------------------------------------------*/
+  if (ORIENTATION(n1->xy, n2->xy, n3->xy) != 1)
+  {
+    tmPrint(" -> REJECTED: WRONG TRI-ORIENTATION");
+    return FALSE;
+  }
+
 
   /*-------------------------------------------------------
   | 1) Check if new triangle edges intersect with 
@@ -360,17 +380,24 @@ tmBool tmTri_isValid(tmTri *tri)
 
       if ( tmTri_triIntersect(tri,t) == TRUE )
       {
+        tmPrint(" -> REJECTED: TRIANGLE INTERSECTS TRI-EDGE");
         List_destroy(inCirc);
         return FALSE;
       }
+
+      /*
+      tmPrint("NO INTERSECTION (%d, %d, %d) AND (%d, %d, %d)",
+          tri->n1->index, tri->n2->index, tri->n3->index,
+          t->n1->index, t->n2->index, t->n3->index);
+      */
     }
 
   if (inCirc != NULL)
     List_destroy(inCirc);
 
   /*-------------------------------------------------------
-  | 2) Check if new triangle edges intersect  
-  |    with any existing boundary edge in its vicinity
+  | 2) Check if new triangle or its edges intersect  
+  |    with any existing node in its vicinity
   -------------------------------------------------------*/
   cur_qtree = mesh->nodes_qtree;
   inCirc    = tmQtree_getObjCirc(cur_qtree, tri->xy, r);
@@ -380,11 +407,48 @@ tmBool tmTri_isValid(tmTri *tri)
     {
       tmNode *n = (tmNode*)cur->value;
 
+      /* Neglect nodes that are not set active */
+      if (n->is_active == FALSE)
+        continue;
+
+      if ( n == n1 || n == n2 || n == n3 )
+        continue;
+
       if ( tmTri_nodeIntersect(tri, n) == TRUE )
       {
+        tmPrint(" -> REJECTED: TRIANGLE INTERSECTS NODE %d",
+            n->index);
         List_destroy(inCirc);
         return FALSE;
       }
+
+      /* Check that points on the front are not too close to
+       * triangle edges */
+      if (n->on_front == FALSE)
+        continue;
+
+      if ( EDGE_NODE_DIST2(n1->xy, n2->xy, n->xy) < dist2 )
+      {
+        tmPrint(" -> REJECTED: TRI-EDGE TOO CLOSE TO NODE %d",
+            n->index);
+        List_destroy(inCirc);
+        return FALSE;
+      }
+      if ( EDGE_NODE_DIST2(n2->xy, n3->xy, n->xy) < dist2 )
+      {
+        tmPrint(" -> REJECTED: TRI-EDGE TOO CLOSE TO NODE %d",
+            n->index);
+        List_destroy(inCirc);
+        return FALSE;
+      }
+      if ( EDGE_NODE_DIST2(n3->xy, n1->xy, n->xy) < dist2 )
+      {
+        tmPrint(" -> REJECTED: TRI-EDGE TOO CLOSE TO NODE %d",
+            n->index);
+        List_destroy(inCirc);
+        return FALSE;
+      }
+
     }
 
   if (inCirc != NULL)
@@ -396,21 +460,20 @@ tmBool tmTri_isValid(tmTri *tri)
   -------------------------------------------------------*/
 
   /*-------------------------------------------------------
-  | 4) Check if new triangle edges intersect  
-  |    with any existing node in its vicinity
+  | 2) Check if new triangle edges intersect  
+  |    with any existing boundary edge in its vicinity
   -------------------------------------------------------*/
 
   /*-------------------------------------------------------
   | 3) Check if triangle quality is good enough
   -------------------------------------------------------*/
-  if (tri->minAngle >= minAngle && tri->maxAngle <= maxAngle)
-    return TRUE;
+  if (tri->minAngle <= minAngle || tri->maxAngle >= maxAngle)
+  {
+    tmPrint(" -> REJECTED: INVALID TRIANGLE QUALITY");
+    return FALSE;
+  }
 
-  tmPrint(" REJECTING T%d: (%d, %d, %d)",
-      tri->index, tri->n1->index, tri->n2->index, tri->n3->index);
-  tmPrint(" ANGLES: %.3f, %.3f", tri->minAngle, tri->maxAngle);
-
-  return FALSE;
+  return TRUE;
 
 } /* tmTri_isValid() */
 

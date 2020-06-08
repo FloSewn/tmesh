@@ -31,6 +31,7 @@ tmNode *tmNode_create(tmMesh *mesh, tmDouble xy[2])
   node->xy[0]     = xy[0];
   node->xy[1]     = xy[1];
   node->index     = mesh->no_nodes;
+  node->is_active = TRUE;
 
   /*-------------------------------------------------------
   | Init node properties
@@ -351,7 +352,7 @@ tmEdge *tmNode_getAdjFrontEdge(tmNode *n, tmNode *m)
 **********************************************************/
 tmBool tmNode_isValid(tmNode *node)
 {
-  tmDouble fac = 0.25;
+  tmDouble fac = TM_NODE_EDGE_DIST_FAC;
 
   tmMesh   *mesh    = node->mesh;
   tmSizeFun sizeFun = mesh->sizeFun;
@@ -368,7 +369,10 @@ tmBool tmNode_isValid(tmNode *node)
   | 0) Check if node is within the domain
   -------------------------------------------------------*/
   if ( tmMesh_objInside(mesh, node, TM_NODE) == FALSE )
+  {
+    tmPrint(" -> REJECTED: NEW-NODE OUTSIDE OF DOMAIN");
     return FALSE;
+  }
 
   /*-------------------------------------------------------
   | 1) Get boundary edges in vicinity of node
@@ -379,10 +383,7 @@ tmBool tmNode_isValid(tmNode *node)
        cur_bdry != NULL; cur_bdry = cur_bdry->next)
   {
     cur_qtree = ((tmBdry*)cur_bdry->value)->edges_qtree;
-
-    inCirc = tmQtree_getObjCirc(cur_qtree,
-                                node->xy,
-                                r);
+    inCirc    = tmQtree_getObjCirc(cur_qtree, node->xy, r);
 
     if ( inCirc != NULL )
     {
@@ -393,6 +394,7 @@ tmBool tmNode_isValid(tmNode *node)
 
         if ( EDGE_NODE_DIST2(n1->xy, n2->xy, node->xy) < dist2 )
         {
+          tmPrint(" -> REJECTED: NODE TOO CLOSE TO BOUNDARY");
           List_destroy(inCirc);
           return FALSE;
         }
@@ -409,10 +411,7 @@ tmBool tmNode_isValid(tmNode *node)
   |    is larger than fac*d
   -------------------------------------------------------*/
   cur_qtree = mesh->front->edges_qtree;
-
-  inCirc = tmQtree_getObjCirc(cur_qtree,
-                              node->xy,
-                              r);
+  inCirc    = tmQtree_getObjCirc(cur_qtree, node->xy, r);
 
   if ( inCirc != NULL)
   {
@@ -423,6 +422,7 @@ tmBool tmNode_isValid(tmNode *node)
 
       if ( EDGE_NODE_DIST2(n1->xy, n2->xy, node->xy) < dist2 )
       {
+        tmPrint(" -> REJECTED: NODE TOO CLOSE TO FRONT");
         List_destroy(inCirc);
         return FALSE;
       }
@@ -442,10 +442,7 @@ tmBool tmNode_isValid(tmNode *node)
   |       Not implemented yet
   -------------------------------------------------------*/
   cur_qtree = mesh->tris_qtree;
-
-  inCirc = tmQtree_getObjCirc(cur_qtree,
-                              node->xy,
-                              r);
+  inCirc    = tmQtree_getObjCirc(cur_qtree, node->xy, r);
 
   if ( inCirc != NULL )
   {
@@ -457,21 +454,58 @@ tmBool tmNode_isValid(tmNode *node)
 
       if ( EDGE_NODE_DIST2(n1->xy, n2->xy, node->xy) < dist2 )
       {
+        tmPrint(" -> REJECTED: NODE TOO CLOSE TO TRI-EDGE");
         List_destroy(inCirc);
         return FALSE;
       }
 
       if ( EDGE_NODE_DIST2(n2->xy, n3->xy, node->xy) < dist2 )
       {
+        tmPrint(" -> REJECTED: NODE TOO CLOSE TO TRI-EDGE");
         List_destroy(inCirc);
         return FALSE;
       }
 
       if ( EDGE_NODE_DIST2(n3->xy, n1->xy, node->xy) < dist2 )
       {
+        tmPrint(" -> REJECTED: NODE TOO CLOSE TO TRI-EDGE");
         List_destroy(inCirc);
         return FALSE;
       }
+    }
+  }
+
+  if ( inCirc != NULL )
+    List_destroy(inCirc);
+
+  /*-------------------------------------------------------
+  | 4) Get nodes in vicinity of node
+  |    Check that normal distance of node to all nodes
+  |    is larger than fac*d
+  -------------------------------------------------------*/
+  cur_qtree = mesh->nodes_qtree;
+  inCirc    = tmQtree_getObjCirc(cur_qtree, node->xy, r);
+
+  if ( inCirc != NULL )
+  {
+    for (cur = inCirc->first; cur != NULL; cur = cur->next)
+    {
+      tmNode *n = (tmNode*)cur->value;
+
+      if (n == node)
+        continue;
+
+      tmDouble nn_dx = n->xy[0] - node->xy[0];
+      tmDouble nn_dy = n->xy[1] - node->xy[1];
+      tmDouble nn_dist2 = nn_dx*nn_dx + nn_dy*nn_dy;
+
+      if ( nn_dist2 < dist2 )
+      {
+        tmPrint(" -> REJECTED: NODE TOO CLOSE TO NODE");
+        List_destroy(inCirc);
+        return FALSE;
+      }
+
     }
   }
 

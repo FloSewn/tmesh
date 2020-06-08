@@ -67,7 +67,18 @@ typedef tmDouble (*tmSizeFun) (tmDouble xy[2]);
 * Constants used in code
 ***********************************************************/
 #define PI_D 3.1415926535897932384626433832795
-#define TM_MIN_SIZE 1.0E-8
+#define TM_MIN_SIZE        1.0E-8
+#define TM_QTREE_MAX_LAYER 10
+
+
+/***********************************************************
+* MESHING PARAMETERS
+***********************************************************/
+#define TM_NEW_NODE_DIST_FAC  ( 0.75 )
+#define TM_NODE_EDGE_DIST_FAC ( 0.25 )
+#define TM_TRI_RANGE_FAC      ( 1.00 )
+#define TM_TRI_MIN_ANGLE      ( ( 15.0*PI_D)/180.0 )
+#define TM_TRI_MAX_ANGLE      ( (165.0*PI_D)/180.0 )
 
 /***********************************************************
 * Minimum and maximum allowed coordinates

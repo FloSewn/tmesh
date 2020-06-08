@@ -388,7 +388,8 @@ tmNode *tmEdge_createNode(tmEdge *edge)
 
   tmSizeFun sizeFun = edge->mesh->sizeFun;
 
-  tmDouble d      = sizeFun(xy_e);
+  tmDouble fac    = TM_NEW_NODE_DIST_FAC;
+  tmDouble d      = fac * sizeFun(xy_e);
 
   tmDouble xy_n[2]  = { xy_e[0] + d * dxy_n[0], 
                         xy_e[1] + d * dxy_n[1] };

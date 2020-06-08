@@ -319,6 +319,7 @@ tmQtree *tmQtree_create(tmMesh *mesh, int obj_type)
   qtree->is_splitted = FALSE;
   qtree->layer       = 0;
   qtree->max_obj     = 0;
+  qtree->max_layer   = TM_QTREE_MAX_LAYER;
 
   /*-------------------------------------------------------
   | Qtree geometric properties
@@ -551,7 +552,15 @@ tmBool tmQtree_remObj(tmQtree *qtree, void *obj)
     if ( removed == FALSE )
       removed = tmQtree_remObj(qtree->child_SE, obj);
     if ( removed == FALSE )
-      log_err("Failed to remove object from tmQtree.");
+    {
+      int obj_id = -1;
+      if ( qtree->obj_type == TM_NODE)
+        obj_id = ((tmNode*)obj)->index;
+      else if ( qtree->obj_type == TM_TRI)
+        obj_id = ((tmTri*)obj)->index;
+      log_err("Failed to remove object from tmQtree.\nObject-type %d - Object-index %d",
+          qtree->obj_type, obj_id);
+    }
 
     /*-----------------------------------------------------
     | Get number of objects contained in all children

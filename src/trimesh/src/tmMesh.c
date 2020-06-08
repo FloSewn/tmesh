@@ -452,7 +452,8 @@ void tmMesh_ADFMeshing(tmMesh *mesh)
     tmEdge *curEdge = (tmEdge*)cur->value;
     
     tmPrint("-----------------------------------");
-    tmPrint(" E: (%d -> %d)", 
+    tmPrint("FRONT-EDGE (%d/%d): (%d -> %d)", 
+        n, front->no_edges,
         curEdge->n1->index, curEdge->n2->index);
 
     /*-----------------------------------------------------

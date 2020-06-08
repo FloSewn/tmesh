@@ -95,8 +95,7 @@ def main():
     export_path = sys.argv[2]
 
 
-
-    for step in range(len(tris), -1, -1):
+    for step in range(len(tris), len(tris)-1, -1):
 
         fig, ax = plt.subplots(1,1,figsize=(10,10))
 
@@ -123,11 +122,12 @@ def main():
         ax.set_xlim((nodes[:,0].min(),nodes[:,0].max()))
         ax.set_ylim((nodes[:,1].min(),nodes[:,1].max()))
 
-        fig_path = os.path.join( export_path, 'mesh_step_{:}'.format(step))
+        fig_path = os.path.join( export_path, 'mesh_step_{:}'.format(len(tris)-step))
         print("Exporting {:}".format(fig_path))
         plt.tight_layout()
         fig.savefig(fig_path + '.png', dpi=300)
         plt.close(fig)
+        print("Done")
 
 
 

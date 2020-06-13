@@ -20,6 +20,14 @@ char *test_tmBdry_refine();
 ************************************************************/
 char *test_tmQtree();
 
+/************************************************************
+* Unit test function to handle the tmQtree structure
+*
+* Maximum number of qtree-objects must be set to 2  
+* in order to get this test running
+************************************************************/
+char *test_tmQtree_2();
+
 /*************************************************************
 * Unit test function to handle the tmQtree performance
 ************************************************************/

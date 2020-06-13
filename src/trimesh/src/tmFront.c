@@ -242,8 +242,10 @@ tmBool tmFront_advance(tmMesh *mesh, tmEdge *e_ad)
   tmNode *nn    = tmEdge_createNode(e_ad);
   nn->is_active = FALSE;
 
+#if (TM_DEBUG > 1)
   tmPrint("NEW NODE %d: (%.3f, %.3f)",
       nn->index, nn->xy[0], nn->xy[1]);
+#endif
 
   /*--------------------------------------------------------
   | Get nodes in vicinity of nn
@@ -262,9 +264,11 @@ tmBool tmFront_advance(tmMesh *mesh, tmEdge *e_ad)
     while (cur != NULL)
     {
       iter += 1;
+#if (TM_DEBUG > 1)
       tmPrint("CHECKING POT. NEIGHBOR: %d/%d - NODE %d", 
           iter, nn_nb->count,
           ((tmNode*)cur->value)->index);
+#endif
 
       nxt = cur->next;
       cn  = (tmNode*)cur->value;
@@ -275,7 +279,9 @@ tmBool tmFront_advance(tmMesh *mesh, tmEdge *e_ad)
       ----------------------------------------------------*/
       if ( cn->on_front == FALSE || cn == nn )
       {
+#if (TM_DEBUG > 1)
         tmPrint(" -> REJECTED: NEIGHBOR ON FRONT");
+#endif
         cur = nxt;
         continue;
       }
@@ -285,7 +291,9 @@ tmBool tmFront_advance(tmMesh *mesh, tmEdge *e_ad)
       ----------------------------------------------------*/
       if (ORIENTATION(e_ad->n1->xy,e_ad->n2->xy,cn->xy) == 0) 
       {
+#if (TM_DEBUG > 1)
         tmPrint(" -> REJECTED: NEIGHBOR IS COLLINEAR");
+#endif
         cur = nxt;
         continue;
       }
@@ -308,9 +316,11 @@ tmBool tmFront_advance(tmMesh *mesh, tmEdge *e_ad)
         if (nn_nb != NULL)
           List_destroy(nn_nb);
 
+#if (TM_DEBUG > 1)
         tmPrint(" -> NEW TRIANGLE %d: (%d, %d, %d)",
             nt->index,
             nt->n1->index, nt->n2->index, nt->n3->index);
+#endif
 
         return TRUE;
       }
@@ -329,7 +339,9 @@ tmBool tmFront_advance(tmMesh *mesh, tmEdge *e_ad)
   } /* if (nn_nb != NULL) */
 
 
+#if (TM_DEBUG > 1)
   tmPrint("CHECKING NEW-NODE-TRIANGLE");  
+#endif
 
   /*--------------------------------------------------------
   | New node is now set as active
@@ -349,9 +361,11 @@ tmBool tmFront_advance(tmMesh *mesh, tmEdge *e_ad)
     {
       tmFront_update(mesh, nn, e_ad);
 
+#if (TM_DEBUG > 1)
       tmPrint(" -> NEW TRIANGLE %d: (%d, %d, %d)",
           nt->index,
           nt->n1->index, nt->n2->index, nt->n3->index);
+#endif
 
       return TRUE;
     }
@@ -361,8 +375,10 @@ tmBool tmFront_advance(tmMesh *mesh, tmEdge *e_ad)
 
   tmNode_destroy(nn);
 
+#if (TM_DEBUG > 1)
   tmPrint("FRONT-EDGE: (%d -> %d) FAILED", 
       e_ad->n1->index, e_ad->n2->index);
+#endif
 
   return FALSE;
 

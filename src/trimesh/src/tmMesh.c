@@ -101,13 +101,17 @@ void tmMesh_destroy(tmMesh *mesh)
     tmBdry_destroy(cur->value);
     cur = nxt;
   }
-  tmPrint(" MESH BOUNDARIES FREE");
+#if (TM_DEBUG > 0)
+  tmPrint("MESH BOUNDARIES FREE");
+#endif
 
   /*-------------------------------------------------------
   | Free advancing front structure
   -------------------------------------------------------*/
   tmFront_destroy(mesh->front);
-  tmPrint(" MESH FRONT FREE");
+#if (TM_DEBUG > 0)
+  tmPrint("MESH FRONT FREE");
+#endif
 
   /*-------------------------------------------------------
   | Free all tris on the stack
@@ -119,7 +123,9 @@ void tmMesh_destroy(tmMesh *mesh)
     tmTri_destroy(cur->value);
     cur = nxt;
   }
-  tmPrint(" MESH TRIS DESTROYED");
+#if (TM_DEBUG > 0)
+  tmPrint("MESH TRIS DESTROYED");
+#endif
 
   /*-------------------------------------------------------
   | Free all nodes on the stack
@@ -131,15 +137,22 @@ void tmMesh_destroy(tmMesh *mesh)
     tmNode_destroy(cur->value);
     cur = nxt;
   }
-  tmPrint(" MESH NODES DESTROYED");
+#if (TM_DEBUG > 0)
+  tmPrint("MESH NODES DESTROYED");
+#endif
 
   /*-------------------------------------------------------
   | Free all quadtree structures
   -------------------------------------------------------*/
   tmQtree_destroy(mesh->nodes_qtree);
-  tmPrint(" MESH NODES_QTREE FREE");
+#if (TM_DEBUG > 0)
+  tmPrint("MESH NODES_QTREE FREE");
+#endif
+
   tmQtree_destroy(mesh->tris_qtree);
-  tmPrint(" MESH TRIS_QTREE FREE");
+#if (TM_DEBUG > 0)
+  tmPrint("MESH TRIS_QTREE FREE");
+#endif
 
   /*-------------------------------------------------------
   | Free all list structures
@@ -451,10 +464,12 @@ void tmMesh_ADFMeshing(tmMesh *mesh)
     nxt = cur->next;
     tmEdge *curEdge = (tmEdge*)cur->value;
     
+#if (TM_DEBUG > 1)
     tmPrint("-----------------------------------");
     tmPrint("FRONT-EDGE (%d/%d): (%d -> %d)", 
         n, front->no_edges,
         curEdge->n1->index, curEdge->n2->index);
+#endif
 
     /*-----------------------------------------------------
     | Try to form new triangle with current base segment

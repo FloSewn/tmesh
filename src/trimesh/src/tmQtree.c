@@ -33,6 +33,14 @@ static tmBool tmQtree_merge(tmQtree *qtree);
 **********************************************************/
 static void tmQtree_split(tmQtree *qtree)
 {
+  
+#if (TM_DEBUG > 2)
+  if ( qtree->obj_type == TM_NODE)
+    tmPrint("DISTRIBUTING OBJECTS FROM QTREE %d LAYER %d (%d/%d)", 
+        qtree->obj_type, qtree->layer,
+        qtree->n_obj, qtree->n_obj_tot);
+#endif
+
   /*-------------------------------------------------------
   | Create new children structures
   -------------------------------------------------------*/
@@ -150,6 +158,13 @@ static void tmQtree_split(tmQtree *qtree)
   -------------------------------------------------------*/
   qtree->is_splitted = TRUE;
 
+#if (TM_DEBUG > 2)
+  if ( qtree->obj_type == TM_NODE)
+    tmPrint("QTREE %d LAYER %d HAS BEEN SPLITTED (%d,%d)", 
+        qtree->obj_type, qtree->layer,
+        qtree->n_obj, qtree->n_obj_tot);
+#endif
+
 } /* tmQtree_split() */
 
 /**********************************************************
@@ -162,6 +177,13 @@ static void tmQtree_split(tmQtree *qtree)
 static tmBool tmQtree_merge(tmQtree *qtree)
 {
   ListNode *cur;
+
+#if (TM_DEBUG > 2)
+  if ( qtree->obj_type == TM_NODE)
+    tmPrint("MERGING QTREE %d LAYER %d (%d/%d)", 
+        qtree->obj_type, qtree->layer,
+        qtree->n_obj, qtree->n_obj_tot);
+#endif
   
   /*-------------------------------------------------------
   | Get sure, that children are not splitted too
@@ -503,6 +525,23 @@ tmBool tmQtree_addObj(tmQtree *qtree, void *obj)
     if (qtree->n_obj > qtree->max_obj)
       tmQtree_split(qtree);
 
+#if (TM_DEBUG > 2)
+    if ( qtree->obj_type == TM_NODE)
+      tmPrint("ADD OBJECT %d TO LAYER %d OF QTREE %d (%d,%d)", 
+          ((tmNode*)obj)->index, qtree->layer, 
+          qtree->obj_type, qtree->n_obj, qtree->n_obj_tot);
+    else if ( qtree->obj_type == TM_EDGE)
+      tmPrint("ADD OBJECT %d TO LAYER %d OF QTREE %d (%d,%d)", 
+          ((tmEdge*)obj)->index, qtree->layer, 
+          qtree->obj_type, qtree->n_obj, qtree->n_obj_tot);
+    else if ( qtree->obj_type == TM_TRI)
+      tmPrint("ADD OBJECT %d TO LAYER %d OF QTREE %d (%d,%d)", 
+          ((tmTri*)obj)->index, qtree->layer, 
+          qtree->obj_type, qtree->n_obj, qtree->n_obj_tot);
+    else
+      log_err("Wrong type provied for tmQtree_addObj()");
+#endif
+
     return TRUE;
   }
 
@@ -551,15 +590,15 @@ tmBool tmQtree_remObj(tmQtree *qtree, void *obj)
       removed = tmQtree_remObj(qtree->child_SW, obj);
     if ( removed == FALSE )
       removed = tmQtree_remObj(qtree->child_SE, obj);
-    if ( removed == FALSE )
+    if ( removed == FALSE && qtree->layer == 0 )
     {
       int obj_id = -1;
       if ( qtree->obj_type == TM_NODE)
         obj_id = ((tmNode*)obj)->index;
       else if ( qtree->obj_type == TM_TRI)
         obj_id = ((tmTri*)obj)->index;
-      log_err("Failed to remove object from tmQtree.\nObject-type %d - Object-index %d",
-          qtree->obj_type, obj_id);
+      log_err("Failed to remove object from tmQtree.\nObject-type %d - Object-index %d - Layer %d",
+          qtree->obj_type, obj_id, qtree->layer);
     }
 
     /*-----------------------------------------------------
@@ -621,6 +660,23 @@ tmBool tmQtree_remObj(tmQtree *qtree, void *obj)
       p = p->parent;
     }
 
+#if (TM_DEBUG > 2)
+    if ( qtree->obj_type == TM_NODE)
+      tmPrint("REMOVE OBJECT %d FROM LAYER %d OF QTREE %d (%d,%d)", 
+          ((tmNode*)obj)->index, qtree->layer, 
+          qtree->obj_type, qtree->n_obj, qtree->n_obj_tot);
+    else if ( qtree->obj_type == TM_EDGE)
+      tmPrint("REMOVE OBJECT %d TO LAYER %d OF QTREE %d (%d,%d)", 
+          ((tmEdge*)obj)->index, qtree->layer, 
+          qtree->obj_type, qtree->n_obj, qtree->n_obj_tot);
+    else if ( qtree->obj_type == TM_TRI)
+      tmPrint("REMOVE OBJECT %d TO LAYER %d OF QTREE %d (%d,%d)", 
+          ((tmTri*)obj)->index, qtree->layer, 
+          qtree->obj_type, qtree->n_obj, qtree->n_obj_tot);
+    else
+      log_err("Wrong type provied for tmQtree_addObj()");
+#endif
+
     return TRUE;
   }
 
@@ -680,7 +736,7 @@ tmBool tmQtree_containsObj(tmQtree *qtree,
   else if ( qtree->obj_type == TM_TRI)
     xy = ((tmTri*)obj)->xy;
   else
-    log_err("Wrong type provied for tmQtree_addObj()");
+    log_err("Wrong type provied for tmQtree_containsObj()");
 
   in_bbox = IN_ON_BBOX(xy, qtree->xy_min, qtree->xy_max);
 
@@ -951,3 +1007,32 @@ List *tmQtree_getObjCirc(tmQtree *qtree,
     return obj_found;
 
 } /* tmQtree_getObjCirc() */
+
+/**********************************************************
+* Function: tmQtree_printQtree()
+*----------------------------------------------------------
+* Function to print out the qtree data
+*----------------------------------------------------------
+* @param qtree: tmQtree structure to initialize
+*
+**********************************************************/
+void tmQtree_printQtree(tmQtree *qtree)
+{
+  /*-------------------------------------------------------
+  | Set node indices and print node coordinates
+  -------------------------------------------------------*/
+  if (qtree->is_splitted == TRUE) 
+  {
+    tmQtree_printQtree(qtree->child_NE);
+    tmQtree_printQtree(qtree->child_NW);
+    tmQtree_printQtree(qtree->child_SW);
+    tmQtree_printQtree(qtree->child_SE);
+  }
+  else
+  {
+    fprintf(stdout, "%d\t%9.5f\t%9.5f\t%9.5f\t%9.5f\n", 
+        qtree->layer, qtree->xy_min[0], qtree->xy_min[1],
+        qtree->xy_max[0], qtree->xy_max[1]);
+  }
+
+} /* tQtree_printQtree() */

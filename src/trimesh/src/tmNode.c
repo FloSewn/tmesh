@@ -370,7 +370,9 @@ tmBool tmNode_isValid(tmNode *node)
   -------------------------------------------------------*/
   if ( tmMesh_objInside(mesh, node, TM_NODE) == FALSE )
   {
+#if (TM_DEBUG > 1)
     tmPrint(" -> REJECTED: NEW-NODE OUTSIDE OF DOMAIN");
+#endif
     return FALSE;
   }
 
@@ -394,7 +396,9 @@ tmBool tmNode_isValid(tmNode *node)
 
         if ( EDGE_NODE_DIST2(n1->xy, n2->xy, node->xy) < dist2 )
         {
+#if (TM_DEBUG > 1)
           tmPrint(" -> REJECTED: NODE TOO CLOSE TO BOUNDARY");
+#endif
           List_destroy(inCirc);
           return FALSE;
         }
@@ -422,7 +426,9 @@ tmBool tmNode_isValid(tmNode *node)
 
       if ( EDGE_NODE_DIST2(n1->xy, n2->xy, node->xy) < dist2 )
       {
+#if (TM_DEBUG > 1)
         tmPrint(" -> REJECTED: NODE TOO CLOSE TO FRONT");
+#endif
         List_destroy(inCirc);
         return FALSE;
       }
@@ -454,21 +460,27 @@ tmBool tmNode_isValid(tmNode *node)
 
       if ( EDGE_NODE_DIST2(n1->xy, n2->xy, node->xy) < dist2 )
       {
+#if (TM_DEBUG > 1)
         tmPrint(" -> REJECTED: NODE TOO CLOSE TO TRI-EDGE");
+#endif
         List_destroy(inCirc);
         return FALSE;
       }
 
       if ( EDGE_NODE_DIST2(n2->xy, n3->xy, node->xy) < dist2 )
       {
+#if (TM_DEBUG > 1)
         tmPrint(" -> REJECTED: NODE TOO CLOSE TO TRI-EDGE");
+#endif
         List_destroy(inCirc);
         return FALSE;
       }
 
       if ( EDGE_NODE_DIST2(n3->xy, n1->xy, node->xy) < dist2 )
       {
+#if (TM_DEBUG > 1)
         tmPrint(" -> REJECTED: NODE TOO CLOSE TO TRI-EDGE");
+#endif
         List_destroy(inCirc);
         return FALSE;
       }
@@ -501,7 +513,9 @@ tmBool tmNode_isValid(tmNode *node)
 
       if ( nn_dist2 < dist2 )
       {
+#if (TM_DEBUG > 1)
         tmPrint(" -> REJECTED: NODE TOO CLOSE TO NODE");
+#endif
         List_destroy(inCirc);
         return FALSE;
       }

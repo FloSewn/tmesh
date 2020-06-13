@@ -341,15 +341,19 @@ tmBool tmTri_isValid(tmTri *tri)
   tmNode   *n2 = tri->n2;
   tmNode   *n3 = tri->n3;
 
+#if (TM_DEBUG > 1)
   tmPrint("FORMING POT. TRIANGLE: (%d, %d, %d)",
       n1->index, n2->index, n3->index);
+#endif
 
   /*-------------------------------------------------------
   | 0) Check if triangle is within the domain
   -------------------------------------------------------*/
   if ( tmMesh_objInside(mesh, tri, TM_TRI) == FALSE )
   {
+#if (TM_DEBUG > 1)
     tmPrint(" -> REJECTED: TRIANGLE OUTSIDE OF DOMAIN");
+#endif
     return FALSE;
   }
 
@@ -358,7 +362,9 @@ tmBool tmTri_isValid(tmTri *tri)
   -------------------------------------------------------*/
   if (ORIENTATION(n1->xy, n2->xy, n3->xy) != 1)
   {
+#if (TM_DEBUG > 1)
     tmPrint(" -> REJECTED: WRONG TRI-ORIENTATION");
+#endif
     return FALSE;
   }
 
@@ -380,16 +386,18 @@ tmBool tmTri_isValid(tmTri *tri)
 
       if ( tmTri_triIntersect(tri,t) == TRUE )
       {
+#if (TM_DEBUG > 1)
         tmPrint(" -> REJECTED: TRIANGLE INTERSECTS TRI-EDGE");
+#endif
         List_destroy(inCirc);
         return FALSE;
       }
 
-      /*
+#if (TM_DEBUG > 1)
       tmPrint("NO INTERSECTION (%d, %d, %d) AND (%d, %d, %d)",
           tri->n1->index, tri->n2->index, tri->n3->index,
           t->n1->index, t->n2->index, t->n3->index);
-      */
+#endif
     }
 
   if (inCirc != NULL)
@@ -416,8 +424,10 @@ tmBool tmTri_isValid(tmTri *tri)
 
       if ( tmTri_nodeIntersect(tri, n) == TRUE )
       {
+#if (TM_DEBUG > 1)
         tmPrint(" -> REJECTED: TRIANGLE INTERSECTS NODE %d",
             n->index);
+#endif
         List_destroy(inCirc);
         return FALSE;
       }
@@ -429,22 +439,28 @@ tmBool tmTri_isValid(tmTri *tri)
 
       if ( EDGE_NODE_DIST2(n1->xy, n2->xy, n->xy) < dist2 )
       {
+#if (TM_DEBUG > 1)
         tmPrint(" -> REJECTED: TRI-EDGE TOO CLOSE TO NODE %d",
             n->index);
+#endif
         List_destroy(inCirc);
         return FALSE;
       }
       if ( EDGE_NODE_DIST2(n2->xy, n3->xy, n->xy) < dist2 )
       {
+#if (TM_DEBUG > 1)
         tmPrint(" -> REJECTED: TRI-EDGE TOO CLOSE TO NODE %d",
             n->index);
+#endif
         List_destroy(inCirc);
         return FALSE;
       }
       if ( EDGE_NODE_DIST2(n3->xy, n1->xy, n->xy) < dist2 )
       {
+#if (TM_DEBUG > 1)
         tmPrint(" -> REJECTED: TRI-EDGE TOO CLOSE TO NODE %d",
             n->index);
+#endif
         List_destroy(inCirc);
         return FALSE;
       }
@@ -469,7 +485,9 @@ tmBool tmTri_isValid(tmTri *tri)
   -------------------------------------------------------*/
   if (tri->minAngle <= minAngle || tri->maxAngle >= maxAngle)
   {
+#if (TM_DEBUG > 1)
     tmPrint(" -> REJECTED: INVALID TRIANGLE QUALITY");
+#endif
     return FALSE;
   }
 

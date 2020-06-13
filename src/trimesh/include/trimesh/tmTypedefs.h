@@ -51,9 +51,10 @@ typedef struct tmMesh  tmMesh;
 typedef tmDouble (*tmSizeFun) (tmDouble xy[2]);
 
 /***********************************************************
-* Debugging
+* Debugging Layers
+* 0 -> No output
 ***********************************************************/
-#define TM_DEBUG
+#define TM_DEBUG 2
 
 #ifdef TM_DEBUG 
 #define tmPrint(M, ...) fprintf(stdout, "> " M "\n",\
@@ -74,9 +75,9 @@ typedef tmDouble (*tmSizeFun) (tmDouble xy[2]);
 /***********************************************************
 * MESHING PARAMETERS
 ***********************************************************/
-#define TM_NEW_NODE_DIST_FAC  ( 0.75 )
+#define TM_NEW_NODE_DIST_FAC  ( 1.00 )
 #define TM_NODE_EDGE_DIST_FAC ( 0.25 )
-#define TM_TRI_RANGE_FAC      ( 1.00 )
+#define TM_TRI_RANGE_FAC      ( 2.00 )
 #define TM_TRI_MIN_ANGLE      ( ( 15.0*PI_D)/180.0 )
 #define TM_TRI_MAX_ANGLE      ( (165.0*PI_D)/180.0 )
 

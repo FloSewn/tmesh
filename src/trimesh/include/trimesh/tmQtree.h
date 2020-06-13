@@ -169,4 +169,14 @@ List *tmQtree_getObjCirc(tmQtree *qtree,
                          tmDouble xy[2], 
                          tmDouble r);
 
+/**********************************************************
+* Function: tmQtree_printQtree()
+*----------------------------------------------------------
+* Function to print out the qtree data
+*----------------------------------------------------------
+* @param qtree: tmQtree structure to initialize
+*
+**********************************************************/
+void tmQtree_printQtree(tmQtree *qtree);
+
 #endif

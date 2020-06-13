@@ -37,8 +37,11 @@ static inline tmDouble size_fun_3( tmDouble xy[2] )
   tmDouble dx = x0 - xy[0];
   tmDouble dy = x0 - xy[1];
   tmDouble r2 = dx*dx + dy*dy;
-  
   return 1.75 - 1.6 * exp(-0.01*r2);
+}
+static inline tmDouble size_fun_4( tmDouble xy[2] )
+{
+  return 0.4;
 }
 
 
@@ -246,7 +249,7 @@ char *test_tmBdry_refine()
 {
   tmDouble xy_min[2] = {  -5.0, -5.0 };
   tmDouble xy_max[2] = {  15.0, 15.0 };
-  tmMesh *mesh = tmMesh_create(xy_min, xy_max, 3, size_fun_1);
+  tmMesh *mesh = tmMesh_create(xy_min, xy_max, 3, size_fun_4);
 
   /*--------------------------------------------------------
   | exterior nodes
@@ -308,6 +311,47 @@ char *test_tmBdry_refine()
 
 } /* test_tmBdry_refine() */
 
+
+/************************************************************
+* Unit test function to handle the tmQtree structure
+*
+* Maximum number of qtree-objects must be set to 2  
+* in order to get this test running
+************************************************************/
+char *test_tmQtree_2()
+{
+  tmDouble xy_min[2] = {  0.0,  0.0 };
+  tmDouble xy_max[2] = { 10.0, 10.0 };
+  tmMesh *mesh = tmMesh_create(xy_min, xy_max, 2, size_fun_1);
+
+  /*--------------------------------------------------------
+  | Add new nodes 
+  --------------------------------------------------------*/
+  tmDouble xy_0[2]  = {  0.00,  0.00};
+  tmDouble xy_1[2]  = { 10.00,  0.00};
+  tmDouble xy_2[2]  = {  5.00,  0.00};
+  tmDouble xy_3[2]  = {  2.50,  0.00};
+  tmDouble xy_4[2]  = {  7.50,  0.00};
+  tmDouble xy_5[2]  = {  1.25,  0.00};
+  tmDouble xy_6[2]  = {  3.75,  0.00};
+  tmDouble xy_7[2]  = {  6.25,  0.00};
+
+  tmNode *n_0  = tmNode_create(mesh, xy_0);
+  tmNode *n_1  = tmNode_create(mesh, xy_1);
+  tmNode *n_2  = tmNode_create(mesh, xy_2);
+  tmNode *n_3  = tmNode_create(mesh, xy_3);
+  tmNode *n_4  = tmNode_create(mesh, xy_4);
+  tmNode *n_5  = tmNode_create(mesh, xy_5);
+  tmNode *n_6  = tmNode_create(mesh, xy_6);
+  tmNode *n_7  = tmNode_create(mesh, xy_7);
+
+  tmQtree_printQtree(mesh->nodes_qtree);
+
+  tmMesh_destroy(mesh);
+
+  return NULL;
+
+} /* test_tmQtree_2() */
 
 /*************************************************************
 * Unit test function to handle the tmQtree structure
@@ -595,7 +639,7 @@ char *test_tmQtree_performance()
   tmDouble xy_max[2] = {  55.0,  50.0 };
   tmMesh *mesh = tmMesh_create(xy_min, xy_max, 10, size_fun_1);
 
-  int n_nodes = 100;
+  int n_nodes = 1000;
 
   tmDouble a = 2.5;
   tmDouble b =-3.4;
@@ -626,6 +670,11 @@ char *test_tmQtree_performance()
     n_xy[1] = (a + b * t) * sin(t) + c * cos(40. * t);
     n = tmNode_create(mesh, n_xy); 
   }
+
+  /*--------------------------------------------------------
+  | Print out qtree
+  --------------------------------------------------------*/
+  tmQtree_printQtree(mesh->nodes_qtree);
 
   clock_t tic_1 = clock();
 
@@ -993,9 +1042,9 @@ char *test_tmFront_advance()
 ************************************************************/
 char *test_tmFront_simpleMesh()
 {
-  tmDouble xy_min[2] = {   0.0,  0.0 };
+  tmDouble xy_min[2] = {  -0.0,  0.0 };
   tmDouble xy_max[2] = {  20.0, 20.0 };
-  tmMesh *mesh = tmMesh_create(xy_min, xy_max, 10, size_fun_3);
+  tmMesh *mesh = tmMesh_create(xy_min, xy_max, 10, size_fun_4);
 
   /*--------------------------------------------------------
   | exterior nodes

@@ -265,9 +265,27 @@ tmBool tmBdry_isRightOn(tmBdry *bdry, void *obj, int obj_type)
 **********************************************************/
 tmEdge *tmBdry_splitEdge(tmBdry *bdry, tmEdge *edge)
 {
+  tmSizeFun sizeFun = bdry->mesh->sizeFun;
+
   tmNode *n1 = edge->n1;
   tmNode *n2 = edge->n2;
-  tmNode *nn = tmNode_create(edge->mesh, edge->xy);
+
+  /*-------------------------------------------------------
+  | Move new node according to size function
+  -------------------------------------------------------*/
+  tmDouble rho_1 = sizeFun( edge->n1->xy );
+  tmDouble rho_m = sizeFun( edge->xy );
+  tmDouble *xy_t = edge->dxy_t;
+  tmDouble *xy_1 = edge->n1->xy;
+
+  tmDouble ln      =  0.5 * (rho_1 + rho_m); 
+  tmDouble xy_n[2] = { xy_1[0] + ln * xy_t[0],
+                       xy_1[1] + ln * xy_t[1] };
+
+  /*-------------------------------------------------------
+  | Create new node and edges
+  -------------------------------------------------------*/
+  tmNode *nn = tmNode_create(edge->mesh, xy_n);
 
   tmBdry_remEdge(bdry, edge);
 
@@ -301,7 +319,9 @@ void tmBdry_refine(tmBdry *bdry)
   {
     nxt = cur->next;
 
-    tmDouble rho = sizeFun( ((tmEdge*)cur->value)->xy );
+    tmDouble rho_1 = sizeFun( ((tmEdge*)cur->value)->n1->xy );
+    tmDouble rho_m = sizeFun( ((tmEdge*)cur->value)->xy );
+    tmDouble rho   = rho_1 + rho_m;
     check( rho > TM_MIN_SIZE,
         "Size function return value lower than defined minimum scale.");
 

@@ -94,7 +94,7 @@ def main():
     nodes, boundaries, front_edges, tris = read_meshdata(sys.argv[1])
     export_path = sys.argv[2]
 
-    i_plts = 100
+    i_plts = 0
 
     for step in range(len(tris), len(tris)-1-i_plts, -1):
 
@@ -105,8 +105,10 @@ def main():
                 ax.plot(nodes[e,0], nodes[e,1], c='k',
                         lw=2.0, ls='-',marker='o')
 
+        '''
         for i, n in enumerate(nodes):
             ax.text(n[0],n[1],i)
+        '''
 
         if step == len(tris):
             for e in front_edges:

@@ -32,16 +32,16 @@ static inline tmDouble size_fun_2( tmDouble xy[2] )
 }
 static inline tmDouble size_fun_3( tmDouble xy[2] )
 {
-  tmDouble x0 = 10.0;
-  tmDouble y0 = 10.0;
+  tmDouble x0 = 14.0;
+  tmDouble y0 = 15.0;
   tmDouble dx = x0 - xy[0];
-  tmDouble dy = x0 - xy[1];
+  tmDouble dy = y0 - xy[1];
   tmDouble r2 = dx*dx + dy*dy;
-  return 1.75 - 1.6 * exp(-0.01*r2);
+  return 2.75 - 2.7 * exp(-0.005*r2);
 }
 static inline tmDouble size_fun_4( tmDouble xy[2] )
 {
-  return 1.4;
+  return 2.5;
 }
 
 
@@ -1043,16 +1043,16 @@ char *test_tmFront_advance()
 char *test_tmFront_simpleMesh()
 {
   tmDouble xy_min[2] = {  -0.0,  0.0 };
-  tmDouble xy_max[2] = {  20.0, 20.0 };
-  tmMesh *mesh = tmMesh_create(xy_min, xy_max, 10, size_fun_3);
+  tmDouble xy_max[2] = { 120.0,120.0 };
+  tmMesh *mesh = tmMesh_create(xy_min, xy_max, 10, size_fun_4);
 
   /*--------------------------------------------------------
   | exterior nodes
   --------------------------------------------------------*/
   tmDouble xy0[2] = {  0.0,  0.0 };
-  tmDouble xy1[2] = { 20.0,  0.0 };
-  tmDouble xy2[2] = { 20.0, 20.0 };
-  tmDouble xy3[2] = {  0.0, 20.0 };
+  tmDouble xy1[2] = {120.0,  0.0 };
+  tmDouble xy2[2] = {120.0,120.0 };
+  tmDouble xy3[2] = {  0.0,120.0 };
 
   tmNode *n0 = tmNode_create(mesh, xy0);
   tmNode *n1 = tmNode_create(mesh, xy1);

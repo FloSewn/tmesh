@@ -66,6 +66,18 @@ static void tmTri_calcShapeFac(tmTri *tri);
 **********************************************************/
 static void tmTri_calcAngles(tmTri *tri);
 
+/**********************************************************
+* Function: tmTri_calcTriQuality()
+*----------------------------------------------------------
+* Compute the overall optimality coefficient of a potential
+* triangle
+* factor -> 1: Good Triangle 
+* factor -> 0: Bad Triangle
+*----------------------------------------------------------
+* @param tri: triangle structure
+**********************************************************/
+static void tmTri_calcTriQuality(tmTri *tri);
+
 
 /**********************************************************
 *
@@ -206,6 +218,47 @@ static void tmTri_calcAngles(tmTri *tri)
 } /* tmTri_calcAngles() */
 
 
+/**********************************************************
+* Function: tmTri_calcTriQuality()
+*----------------------------------------------------------
+* Compute the overall optimality coefficient of a potential
+* triangle
+* factor -> 1: Good Triangle 
+* factor -> 0: Bad Triangle
+*----------------------------------------------------------
+* @param tri: triangle structure
+**********************************************************/
+static void tmTri_calcTriQuality(tmTri *tri)
+{
+  tmDouble e1 = tri->edgeLen[0];
+  tmDouble e2 = tri->edgeLen[1];
+  tmDouble e3 = tri->edgeLen[2];
+
+  tmDouble d1 = tri->mesh->sizeFun(tri->n1->xy);
+  tmDouble d2 = tri->mesh->sizeFun(tri->n2->xy);
+  tmDouble d3 = tri->mesh->sizeFun(tri->n3->xy);
+
+  tmDouble delta_1 = 0.5 * (d1+d2);
+  tmDouble delta_2 = 0.5 * (d2+d3);
+  tmDouble delta_3 = 0.5 * (d3+d1);
+
+  tmDouble f1_1 = e1 / (delta_1 + SMALL);
+  tmDouble f1_2 = e2 / (delta_2 + SMALL);
+  tmDouble f1_3 = e3 / (delta_3 + SMALL);
+
+  tmDouble f2_1 = delta_1 / (e1 + SMALL);
+  tmDouble f2_2 = delta_2 / (e2 + SMALL);
+  tmDouble f2_3 = delta_3 / (e3 + SMALL);
+
+  tmDouble q_1  = MIN(f1_1, f2_1);
+  tmDouble q_2  = MIN(f1_2, f2_2);
+  tmDouble q_3  = MIN(f1_3, f2_3);
+
+  tri->quality = q_1 * q_2 * q_3 * tri->shapeFac;
+
+} /* tmTri_calcTriQuality() */
+
+
 
 /**********************************************************
 * Function: tmTri_create()
@@ -250,6 +303,7 @@ tmTri *tmTri_create(tmMesh *mesh,
   tri->angles[2]  = 0.0;
   tri->minAngle   = 0.0;
   tri->maxAngle   = 0.0;
+  tri->quality    = 0.0;
   tri->edgeLen[0] = 0.0;
   tri->edgeLen[1] = 0.0;
   tri->edgeLen[2] = 0.0;
@@ -280,6 +334,7 @@ tmTri *tmTri_create(tmMesh *mesh,
   tmTri_calcEdgeLen(tri);
   tmTri_calcShapeFac(tri);
   tmTri_calcAngles(tri);
+  tmTri_calcTriQuality(tri);
 
   /*-------------------------------------------------------
   | Add tri to qtree
@@ -367,7 +422,6 @@ tmBool tmTri_isValid(tmTri *tri)
 #endif
     return FALSE;
   }
-
 
   /*-------------------------------------------------------
   | 1) Check if new triangle edges intersect with 
@@ -481,12 +535,25 @@ tmBool tmTri_isValid(tmTri *tri)
   -------------------------------------------------------*/
 
   /*-------------------------------------------------------
-  | 3) Check if triangle quality is good enough
+  | 3) Check if triangle angles is good enough
   -------------------------------------------------------*/
   if (tri->minAngle <= minAngle || tri->maxAngle >= maxAngle)
   {
 #if (TM_DEBUG > 1)
+    tmPrint(" -> REJECTED: INVALID TRIANGLE ANGLES");
+#endif
+    return FALSE;
+  }
+
+  /*-------------------------------------------------------
+  | 4) Check if triangle quality is good enough
+  -------------------------------------------------------*/
+  if (tri->quality <= TM_TRI_MIN_QUALITY )
+  {
+#if (TM_DEBUG > 1)
     tmPrint(" -> REJECTED: INVALID TRIANGLE QUALITY");
+    if ( tri->quality < 0.0 )
+      tmPrint(" -> ERROR: NEGAITE TRI-QUALITY OBTAINED");
 #endif
     return FALSE;
   }

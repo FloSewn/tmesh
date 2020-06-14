@@ -420,6 +420,9 @@ void tmQtree_init(tmQtree *qtree,
   qtree->layer  = layer;
   qtree->parent = parent;
 
+  check(qtree->layer < qtree->max_layer, 
+      "Qtree reached maximum number of layers");
+
   qtree->max_obj = qtree->mesh->qtree_max_obj;
 
   qtree->xy_min[0] = xy_min[0];
@@ -432,6 +435,10 @@ void tmQtree_init(tmQtree *qtree,
 
   qtree->xy[0]  = 0.5 * (xy_max[0] + xy_min[0]);
   qtree->xy[1]  = 0.5 * (xy_max[1] + xy_min[1]);
+
+  return;
+error:
+  exit(1);
 
 } /* tmQtree_init() */
 

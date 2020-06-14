@@ -54,7 +54,7 @@ typedef tmDouble (*tmSizeFun) (tmDouble xy[2]);
 * Debugging Layers
 * 0 -> No output
 ***********************************************************/
-#define TM_DEBUG 2
+#define TM_DEBUG 1
 
 #ifdef TM_DEBUG 
 #define tmPrint(M, ...) fprintf(stdout, "> " M "\n",\
@@ -69,17 +69,20 @@ typedef tmDouble (*tmSizeFun) (tmDouble xy[2]);
 ***********************************************************/
 #define PI_D 3.1415926535897932384626433832795
 #define TM_MIN_SIZE        1.0E-8
-#define TM_QTREE_MAX_LAYER 10
+#define TM_QTREE_MAX_LAYER 100
 
 
 /***********************************************************
 * MESHING PARAMETERS
 ***********************************************************/
-#define TM_NEW_NODE_DIST_FAC  ( 1.00 )
-#define TM_NODE_EDGE_DIST_FAC ( 0.25 )
-#define TM_TRI_RANGE_FAC      ( 2.00 )
-#define TM_TRI_MIN_ANGLE      ( ( 15.0*PI_D)/180.0 )
-#define TM_TRI_MAX_ANGLE      ( (165.0*PI_D)/180.0 )
+#define TM_NEW_NODE_DIST_FAC  ( 1.25 )
+#define TM_NODE_EDGE_DIST_FAC ( 0.40 )
+#define TM_TRI_RANGE_FAC      ( 1.50 )
+#define TM_BDRY_REFINE_FAC    ( 1.00 )
+#define TM_NODE_NBR_DIST_FAC  ( 0.90 )
+#define TM_TRI_MIN_ANGLE      ( ( 10.0*PI_D)/180.0 )
+#define TM_TRI_MAX_ANGLE      ( (170.0*PI_D)/180.0 )
+#define TM_TRI_MIN_QUALITY    ( 0.05 )
 
 /***********************************************************
 * Minimum and maximum allowed coordinates

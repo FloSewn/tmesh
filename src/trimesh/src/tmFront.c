@@ -280,7 +280,7 @@ tmBool tmFront_advance(tmMesh *mesh, tmEdge *e_ad)
       if ( cn->on_front == FALSE || cn == nn )
       {
 #if (TM_DEBUG > 1)
-        tmPrint(" -> REJECTED: NEIGHBOR ON FRONT");
+        tmPrint(" -> REJECTED: NEIGHBOR NOT ON FRONT");
 #endif
         cur = nxt;
         continue;

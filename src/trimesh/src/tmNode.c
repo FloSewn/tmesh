@@ -248,7 +248,7 @@ int tmNode_compareDblBuf(tmNode *n1, tmNode *n2)
 List *tmNode_getNbrsFromSizeFun(tmNode *node)
 {
   tmSizeFun sizeFun = node->mesh->sizeFun;
-  tmDouble        r = sizeFun( node->xy );
+  tmDouble        r = TM_NODE_NBR_DIST_FAC*sizeFun(node->xy);
 
   List *inCirc = tmQtree_getObjCirc(node->mesh->nodes_qtree,
                                     node->xy,
@@ -446,7 +446,9 @@ tmBool tmNode_isValid(tmNode *node)
   |    -> Pontential Delaunay check here:
   |       Is node in circumradius of triangle? 
   |       Not implemented yet
-  -------------------------------------------------------*/
+  |
+  | THIS SHOULD NOT BE NECESSARY - KEEP CODE BUT COMMENT
+  -------------------------------------------------------*
   cur_qtree = mesh->tris_qtree;
   inCirc    = tmQtree_getObjCirc(cur_qtree, node->xy, r);
 
@@ -489,6 +491,7 @@ tmBool tmNode_isValid(tmNode *node)
 
   if ( inCirc != NULL )
     List_destroy(inCirc);
+  */
 
   /*-------------------------------------------------------
   | 4) Get nodes in vicinity of node

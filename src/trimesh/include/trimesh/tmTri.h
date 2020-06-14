@@ -57,6 +57,7 @@ typedef struct tmTri {
   tmDouble angles[3];
   tmDouble minAngle;
   tmDouble maxAngle;
+  tmDouble quality;
   
   /*-------------------------------------------------------
   | Circumcenter und circumradius

@@ -113,7 +113,7 @@ def main():
         if step == len(tris):
             for e in front_edges:
                 ax.plot(nodes[e,0], nodes[e,1], c='r',
-                        lw=3.0, ls='-',marker='o')
+                        lw=1.0, ls='-') #,marker='o')
 
         tri_patches = []
         for i_tri, tri in enumerate(tris[:step]):

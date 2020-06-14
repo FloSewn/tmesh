@@ -439,61 +439,6 @@ tmBool tmNode_isValid(tmNode *node)
     List_destroy(inCirc);
 
   /*-------------------------------------------------------
-  | 3) Get triangles in vicinity of node
-  |    Check that normal distance of node to all tri edges
-  |    is larger than fac*d
-  | 
-  |    -> Pontential Delaunay check here:
-  |       Is node in circumradius of triangle? 
-  |       Not implemented yet
-  |
-  | THIS SHOULD NOT BE NECESSARY - KEEP CODE BUT COMMENT
-  -------------------------------------------------------*
-  cur_qtree = mesh->tris_qtree;
-  inCirc    = tmQtree_getObjCirc(cur_qtree, node->xy, r);
-
-  if ( inCirc != NULL )
-  {
-    for (cur = inCirc->first; cur != NULL; cur = cur->next)
-    {
-      tmNode *n1 = ((tmTri*)cur->value)->n1;
-      tmNode *n2 = ((tmTri*)cur->value)->n2;
-      tmNode *n3 = ((tmTri*)cur->value)->n3;
-
-      if ( EDGE_NODE_DIST2(n1->xy, n2->xy, node->xy) < dist2 )
-      {
-#if (TM_DEBUG > 1)
-        tmPrint(" -> REJECTED: NODE TOO CLOSE TO TRI-EDGE");
-#endif
-        List_destroy(inCirc);
-        return FALSE;
-      }
-
-      if ( EDGE_NODE_DIST2(n2->xy, n3->xy, node->xy) < dist2 )
-      {
-#if (TM_DEBUG > 1)
-        tmPrint(" -> REJECTED: NODE TOO CLOSE TO TRI-EDGE");
-#endif
-        List_destroy(inCirc);
-        return FALSE;
-      }
-
-      if ( EDGE_NODE_DIST2(n3->xy, n1->xy, node->xy) < dist2 )
-      {
-#if (TM_DEBUG > 1)
-        tmPrint(" -> REJECTED: NODE TOO CLOSE TO TRI-EDGE");
-#endif
-        List_destroy(inCirc);
-        return FALSE;
-      }
-    }
-  }
-
-  if ( inCirc != NULL )
-    List_destroy(inCirc);
-  */
-
-  /*-------------------------------------------------------
   | 4) Get nodes in vicinity of node
   |    Check that normal distance of node to all nodes
   |    is larger than fac*d

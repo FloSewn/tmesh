@@ -103,7 +103,7 @@ def main():
         for i_bdry, edges in boundaries.items():
             for e in edges:
                 ax.plot(nodes[e,0], nodes[e,1], c='k',
-                        lw=2.0, ls='-',marker='o')
+                        lw=2.0, ls='-') #,marker='o')
 
         '''
         for i, n in enumerate(nodes):

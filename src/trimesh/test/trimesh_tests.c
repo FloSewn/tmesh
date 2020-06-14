@@ -32,12 +32,12 @@ static inline tmDouble size_fun_2( tmDouble xy[2] )
 }
 static inline tmDouble size_fun_3( tmDouble xy[2] )
 {
-  tmDouble x0 = 14.0;
-  tmDouble y0 = 15.0;
+  tmDouble x0 = 64.0;
+  tmDouble y0 = 55.0;
   tmDouble dx = x0 - xy[0];
   tmDouble dy = y0 - xy[1];
   tmDouble r2 = dx*dx + dy*dy;
-  return 2.75 - 2.7 * exp(-0.005*r2);
+  return 1.75 - 1.6 * exp(-0.003*r2);
 }
 static inline tmDouble size_fun_4( tmDouble xy[2] )
 {
@@ -1082,4 +1082,91 @@ char *test_tmFront_simpleMesh()
   tmMesh_destroy(mesh);
 
   return NULL;
+
 } /* test_tmFront_simpleMesh() */
+
+/************************************************************
+* Unit test function for the advancing front algorithm
+************************************************************/
+char *test_tmFront_innerOuterMesh()
+{
+  tmDouble xy_min[2] = {  -0.0,  0.0 };
+  tmDouble xy_max[2] = { 120.0,120.0 };
+  tmMesh *mesh = tmMesh_create(xy_min, xy_max, 10, size_fun_3);
+
+  /*--------------------------------------------------------
+  | exterior nodes
+  --------------------------------------------------------*/
+  tmDouble xy0[2] = {  0.0,  0.0 };
+  tmDouble xy1[2] = {120.0,  0.0 };
+  tmDouble xy2[2] = {120.0,120.0 };
+  tmDouble xy3[2] = {  0.0,120.0 };
+
+  tmNode *n0 = tmNode_create(mesh, xy0);
+  tmNode *n1 = tmNode_create(mesh, xy1);
+  tmNode *n2 = tmNode_create(mesh, xy2);
+  tmNode *n3 = tmNode_create(mesh, xy3);
+
+  tmBdry *bdry_ext = tmMesh_addBdry(mesh, FALSE, 0);
+  tmEdge *e0 = tmBdry_addEdge(bdry_ext, n0, n1);
+  tmEdge *e1 = tmBdry_addEdge(bdry_ext, n1, n2);
+  tmEdge *e2 = tmBdry_addEdge(bdry_ext, n2, n3);
+  tmEdge *e3 = tmBdry_addEdge(bdry_ext, n3, n0);
+
+  /*--------------------------------------------------------
+  | interior nodes
+  --------------------------------------------------------*/
+  tmDouble xy4[2]  = { 40.0, 100.0 };
+  tmDouble xy5[2]  = { 90.0, 100.0 };
+  tmDouble xy6[2]  = { 90.0,  85.0 };
+  tmDouble xy7[2]  = { 60.0,  85.0 };
+  tmDouble xy8[2]  = { 60.0,  65.0 };
+  tmDouble xy9[2]  = { 80.0,  65.0 };
+  tmDouble xy10[2] = { 80.0,  50.0 };
+  tmDouble xy11[2] = { 60.0,  50.0 };
+  tmDouble xy12[2] = { 60.0,  10.0 };
+  tmDouble xy13[2] = { 40.0,  10.0 };
+
+  tmNode *n4  = tmNode_create(mesh, xy4);
+  tmNode *n5  = tmNode_create(mesh, xy5);
+  tmNode *n6  = tmNode_create(mesh, xy6);
+  tmNode *n7  = tmNode_create(mesh, xy7);
+  tmNode *n8  = tmNode_create(mesh, xy8);
+  tmNode *n9  = tmNode_create(mesh, xy9);
+  tmNode *n10 = tmNode_create(mesh, xy10);
+  tmNode *n11 = tmNode_create(mesh, xy11);
+  tmNode *n12 = tmNode_create(mesh, xy12);
+  tmNode *n13 = tmNode_create(mesh, xy13);
+
+  tmBdry *bdry_int = tmMesh_addBdry(mesh, TRUE, 1);
+  tmEdge *e4  = tmBdry_addEdge(bdry_int, n4, n5);
+  tmEdge *e5  = tmBdry_addEdge(bdry_int, n5, n6);
+  tmEdge *e6  = tmBdry_addEdge(bdry_int, n6, n7);
+  tmEdge *e7  = tmBdry_addEdge(bdry_int, n7, n8);
+  tmEdge *e8  = tmBdry_addEdge(bdry_int, n8, n9);
+  tmEdge *e9  = tmBdry_addEdge(bdry_int, n9, n10);
+  tmEdge *e10 = tmBdry_addEdge(bdry_int, n10, n11);
+  tmEdge *e11 = tmBdry_addEdge(bdry_int, n11, n12);
+  tmEdge *e12 = tmBdry_addEdge(bdry_int, n12, n13);
+  tmEdge *e13 = tmBdry_addEdge(bdry_int, n13, n4);
+
+  /*--------------------------------------------------------
+  | Refine whole boundary according to size function
+  --------------------------------------------------------*/
+  tmBdry_refine(bdry_ext);
+  tmBdry_refine(bdry_int);
+
+  /*--------------------------------------------------------
+  | Create mesh
+  --------------------------------------------------------*/
+  tmMesh_ADFMeshing(mesh);
+
+  /*--------------------------------------------------------
+  | Print the mesh data 
+  --------------------------------------------------------*/
+  tmMesh_printMesh(mesh);
+  tmMesh_destroy(mesh);
+
+  return NULL;
+
+} /* test_tmFront_innerOuterMesh() */

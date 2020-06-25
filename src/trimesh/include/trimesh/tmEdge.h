@@ -20,6 +20,7 @@ typedef struct tmEdge {
   -------------------------------------------------------*/
   tmDouble xy[2];
   tmIndex  index; /* Only used for the mesh-output       */       
+  tmIndex  bdry_marker;
 
   /*-------------------------------------------------------
   | Properties of this edge

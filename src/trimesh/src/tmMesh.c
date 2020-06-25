@@ -389,8 +389,10 @@ void tmMesh_printMesh(tmMesh *mesh)
     {
       tmIndex ind1 = ((tmEdge*)cur->value)->n1->index;
       tmIndex ind2 = ((tmEdge*)cur->value)->n2->index;
+      tmIndex marker = ((tmEdge*)cur->value)->bdry_marker;
       ((tmEdge*)cur->value)->index = edge_index;
-      fprintf(stdout,"%d\t%9d\t%9d\n", edge_index, ind1, ind2);
+      fprintf(stdout,"%d\t%9d\t%9d\t%9d\n", edge_index, 
+          ind1, ind2, marker);
       edge_index += 1;
     }
   }

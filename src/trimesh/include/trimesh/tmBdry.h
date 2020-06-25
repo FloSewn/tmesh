@@ -63,7 +63,8 @@ void tmBdry_destroy(tmBdry *bdry);
 **********************************************************/
 tmEdge *tmBdry_addEdge(tmBdry *bdry, 
                        tmNode *n1, 
-                       tmNode *n2);
+                       tmNode *n2,
+                       tmIndex marker);
 
 /**********************************************************
 * Function: tmBdry_remEdge()

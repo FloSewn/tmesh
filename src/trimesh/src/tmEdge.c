@@ -37,6 +37,7 @@ tmEdge *tmEdge_create(tmMesh *mesh,
 
   edge->is_on_bdry  = FALSE;
   edge->is_on_front = FALSE;
+  edge->bdry_marker = -1;
 
   /*-------------------------------------------------------
   | Init nodes 

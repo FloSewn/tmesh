@@ -51,6 +51,5 @@ char *test_tmFront_init();
 char *test_tmFront_advance();
 char *test_tmFront_simpleMesh();
 char *test_tmFront_innerOuterMesh();
-char *test_tmFront_multiBdryMesh();
 
 #endif

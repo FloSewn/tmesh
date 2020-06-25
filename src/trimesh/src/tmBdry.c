@@ -100,7 +100,8 @@ void tmBdry_destroy(tmBdry *bdry)
 **********************************************************/
 tmEdge *tmBdry_addEdge(tmBdry *bdry, 
                        tmNode *n1, 
-                       tmNode *n2)
+                       tmNode *n2,
+                       tmIndex marker)
 {
   tmEdge *edge = tmEdge_create( bdry->mesh, n1, n2, bdry );
 
@@ -110,6 +111,7 @@ tmEdge *tmBdry_addEdge(tmBdry *bdry,
   List_push(bdry->edges_stack, edge);
   tmQtree_addObj(bdry->edges_qtree, edge);
   edge->stack_pos = List_last_node(bdry->edges_stack);
+  edge->bdry_marker = marker;
   
   return edge;
 
@@ -348,10 +350,12 @@ tmEdge *tmBdry_splitEdge(tmBdry *bdry, tmEdge *edge)
   -------------------------------------------------------*/
   tmNode *nn = tmNode_create(edge->mesh, edge->xy);
 
+  tmIndex marker = edge->bdry_marker;
+
   tmBdry_remEdge(bdry, edge);
 
-  tmEdge *ne1 = tmBdry_addEdge(bdry, n1, nn);
-  tmEdge *ne2 = tmBdry_addEdge(bdry, nn, n2);
+  tmEdge *ne1 = tmBdry_addEdge(bdry, n1, nn, marker);
+  tmEdge *ne2 = tmBdry_addEdge(bdry, nn, n2, marker);
 
   return ne1;
 

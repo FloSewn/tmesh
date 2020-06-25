@@ -35,6 +35,7 @@ def read_meshdata(mesh_file):
 
         nodes       = np.zeros( (n_nodes, 2) )
         boundaries  = {}
+        bdry_marker = {}
         front_edges = []
         tris        = []
 
@@ -57,8 +58,14 @@ def read_meshdata(mesh_file):
 
             for i in range(1, n_bdry_edges+1):
                 line = lines[i].replace('\n','').split('\t')
-                edge = (int(line[1]), int(line[2]))
+                edge   = (int(line[1]), int(line[2]))
+                marker =  int(line[3])
                 edges.append(edge)
+
+                if (marker in bdry_marker.keys()):
+                    bdry_marker[marker].append(edge)
+                else:
+                    bdry_marker.update({marker : [edge]})
 
             lines = lines[n_bdry_edges+1:]
 
@@ -82,7 +89,7 @@ def read_meshdata(mesh_file):
             tris.append(tri)
 
 
-    return nodes, boundaries, front_edges, tris
+    return nodes, boundaries, bdry_marker, front_edges, tris
 
 
 def main():
@@ -91,7 +98,7 @@ def main():
         print("plot_boundary.py <mesh>.dat <export_path>")
         sys.exit(1)
 
-    nodes, boundaries, front_edges, tris = read_meshdata(sys.argv[1])
+    nodes, boundaries, bdry_marker, front_edges, tris = read_meshdata(sys.argv[1])
     export_path = sys.argv[2]
 
     i_plts = 0

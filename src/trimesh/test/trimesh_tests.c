@@ -28,7 +28,7 @@ static inline tmDouble size_fun_1( tmDouble xy[2] )
 }
 static inline tmDouble size_fun_2( tmDouble xy[2] )
 {
-  return 5.0;
+  return 0.5;
 }
 static inline tmDouble size_fun_3( tmDouble xy[2] )
 {
@@ -41,7 +41,14 @@ static inline tmDouble size_fun_3( tmDouble xy[2] )
 }
 static inline tmDouble size_fun_4( tmDouble xy[2] )
 {
-  return 2.5;
+  return 3.0;
+}
+
+static inline tmDouble size_fun_5( tmDouble xy[2] )
+{
+  tmDouble y0 = 10.0;
+  tmDouble dy = y0 - xy[1];
+  return 2.50 - 2.00 * exp(-0.03*dy*dy);
 }
 
 
@@ -232,7 +239,7 @@ char *test_mesh_create_destroy()
       "tmMesh_objInside() failed.");
   mu_assert( tmMesh_objInside(mesh, n_2, TM_NODE) == TRUE,
       "tmMesh_objInside() failed.");
-  mu_assert( tmMesh_objInside(mesh, n_12, TM_NODE) == TRUE,
+  mu_assert( tmMesh_objInside(mesh, n_12, TM_NODE) == FALSE,
       "tmMesh_objInside() failed.");
 
 
@@ -241,6 +248,119 @@ char *test_mesh_create_destroy()
   return NULL;
 } /* test_mesh_create_destroy() */
 
+
+/************************************************************
+* Unit test function to test if an object can be located
+* within the domain
+************************************************************/
+char *test_tmMesh_objInside()
+{
+
+  tmDouble xy_min[2] = {  -5.0, -5.0 };
+  tmDouble xy_max[2] = {  20.0, 20.0 };
+  tmMesh *mesh = tmMesh_create(xy_min, xy_max, 10, size_fun_2);
+
+  /*--------------------------------------------------------
+  | exterior nodes
+  --------------------------------------------------------*/
+  tmDouble xy0[2] = {   0.0,   0.0 };
+  tmDouble xy1[2] = {   8.0,   0.0 };
+  tmDouble xy2[2] = {  11.0,  11.0 };
+  tmDouble xy3[2] = {   7.0,   7.0 };
+  tmDouble xy4[2] = {   3.0,   8.0 };
+  tmDouble xy5[2] = {  -2.0,   5.0 };
+
+  tmNode *n0 = tmNode_create(mesh, xy0);
+  tmNode *n1 = tmNode_create(mesh, xy1);
+  tmNode *n2 = tmNode_create(mesh, xy2);
+  tmNode *n3 = tmNode_create(mesh, xy3);
+  tmNode *n4 = tmNode_create(mesh, xy4);
+  tmNode *n5 = tmNode_create(mesh, xy5);
+
+  tmBdry *bdry_ext = tmMesh_addBdry(mesh, FALSE, 0);
+
+  tmEdge *e0 = tmBdry_addEdge(bdry_ext, n0, n1);
+  tmEdge *e1 = tmBdry_addEdge(bdry_ext, n1, n2);
+  tmEdge *e2 = tmBdry_addEdge(bdry_ext, n2, n3);
+  tmEdge *e3 = tmBdry_addEdge(bdry_ext, n3, n4);
+  tmEdge *e4 = tmBdry_addEdge(bdry_ext, n4, n5);
+  tmEdge *e5 = tmBdry_addEdge(bdry_ext, n5, n0);
+
+  /*--------------------------------------------------------
+  | interior nodes
+  --------------------------------------------------------*/
+  tmDouble xy6[2]  = {   5.0,    2.0 };
+  tmDouble xy7[2]  = {   1.0,    2.0 };
+  tmDouble xy8[2]  = {   2.0,    3.0 };
+  tmDouble xy9[2]  = {   1.0,    5.0 };
+  tmDouble xy10[2] = {   4.0,    5.0 };
+  tmDouble xy11[2] = {   7.0,    6.0 };
+  tmDouble xy12[2] = {   5.0,    4.0 };
+
+  tmNode *n6  = tmNode_create(mesh, xy6);
+  tmNode *n7  = tmNode_create(mesh, xy7);
+  tmNode *n8  = tmNode_create(mesh, xy8);
+  tmNode *n9  = tmNode_create(mesh, xy9);
+  tmNode *n10 = tmNode_create(mesh, xy10);
+  tmNode *n11 = tmNode_create(mesh, xy11);
+  tmNode *n12 = tmNode_create(mesh, xy12);
+
+  tmBdry *bdry_int = tmMesh_addBdry(mesh, TRUE, 1);
+
+  tmEdge *e6  = tmBdry_addEdge(bdry_int, n6, n7);
+  tmEdge *e7  = tmBdry_addEdge(bdry_int, n7, n8);
+  tmEdge *e8  = tmBdry_addEdge(bdry_int, n8, n9);
+  tmEdge *e9  = tmBdry_addEdge(bdry_int, n9, n10);
+  tmEdge *e10 = tmBdry_addEdge(bdry_int, n10, n11);
+  tmEdge *e11 = tmBdry_addEdge(bdry_int, n11, n12);
+  tmEdge *e12 = tmBdry_addEdge(bdry_int, n12, n6);
+
+  /*--------------------------------------------------------
+  | Test if point outside of the domain works
+  --------------------------------------------------------*/
+  tmDouble xyt0[2]  = {   7.0,    4.0 };
+  tmDouble xyt1[2]  = {   4.0,    7.0 };
+  tmDouble xyt2[2]  = {   0.0,    2.0 };
+  tmDouble xyt3[2]  = {   3.0,    0.0 };
+  tmDouble xyt4[2]  = {   3.0,    2.0 };
+  tmDouble xyt5[2]  = {   2.0,    4.0 };
+
+  tmNode *t0  = tmNode_create(mesh, xyt0);
+  tmNode *t1  = tmNode_create(mesh, xyt1);
+  tmNode *t2  = tmNode_create(mesh, xyt2);
+  tmNode *t3  = tmNode_create(mesh, xyt3);
+  tmNode *t4  = tmNode_create(mesh, xyt4);
+  tmNode *t5  = tmNode_create(mesh, xyt5);
+
+  tmBdry_refine(bdry_ext);
+  tmBdry_refine(bdry_int);
+
+
+  mu_assert( tmMesh_objInside(mesh, t0, TM_NODE) == TRUE,
+      "tmMesh_objInside() failed.");
+  mu_assert( tmMesh_objInside(mesh, t1, TM_NODE) == TRUE,
+      "tmMesh_objInside() failed.");
+  mu_assert( tmMesh_objInside(mesh, t2, TM_NODE) == TRUE,
+      "tmMesh_objInside() failed.");
+  mu_assert( tmMesh_objInside(mesh, t3, TM_NODE) == TRUE,
+      "tmMesh_objInside() failed.");
+  mu_assert( tmMesh_objInside(mesh, t4, TM_NODE) == FALSE,
+      "tmMesh_objInside() failed.");
+  mu_assert( tmMesh_objInside(mesh, t5, TM_NODE) == FALSE,
+      "tmMesh_objInside() failed.");
+
+
+  /*--------------------------------------------------------
+  | Print the mesh data 
+  --------------------------------------------------------*/
+  //tmMesh_printMesh(mesh);
+  tmMesh_destroy(mesh);
+
+  return NULL;
+
+
+
+} /* test_tmMesh_objInside() */
 
 /*************************************************************
 * Unit test function to the boundary refinement
@@ -1043,16 +1163,16 @@ char *test_tmFront_advance()
 char *test_tmFront_simpleMesh()
 {
   tmDouble xy_min[2] = {  -0.0,  0.0 };
-  tmDouble xy_max[2] = { 120.0,120.0 };
-  tmMesh *mesh = tmMesh_create(xy_min, xy_max, 10, size_fun_4);
+  tmDouble xy_max[2] = { 120.0, 20.0 };
+  tmMesh *mesh = tmMesh_create(xy_min, xy_max, 10, size_fun_5);
 
   /*--------------------------------------------------------
   | exterior nodes
   --------------------------------------------------------*/
   tmDouble xy0[2] = {  0.0,  0.0 };
   tmDouble xy1[2] = {120.0,  0.0 };
-  tmDouble xy2[2] = {120.0,120.0 };
-  tmDouble xy3[2] = {  0.0,120.0 };
+  tmDouble xy2[2] = {120.0, 20.0 };
+  tmDouble xy3[2] = {  0.0, 20.0 };
 
   tmNode *n0 = tmNode_create(mesh, xy0);
   tmNode *n1 = tmNode_create(mesh, xy1);
@@ -1108,6 +1228,8 @@ char *test_tmFront_innerOuterMesh()
   tmNode *n3 = tmNode_create(mesh, xy3);
 
   tmBdry *bdry_ext = tmMesh_addBdry(mesh, FALSE, 0);
+  tmBdry *bdry_int = tmMesh_addBdry(mesh, TRUE, 1);
+
   tmEdge *e0 = tmBdry_addEdge(bdry_ext, n0, n1);
   tmEdge *e1 = tmBdry_addEdge(bdry_ext, n1, n2);
   tmEdge *e2 = tmBdry_addEdge(bdry_ext, n2, n3);
@@ -1138,7 +1260,6 @@ char *test_tmFront_innerOuterMesh()
   tmNode *n12 = tmNode_create(mesh, xy12);
   tmNode *n13 = tmNode_create(mesh, xy13);
 
-  tmBdry *bdry_int = tmMesh_addBdry(mesh, TRUE, 1);
   tmEdge *e4  = tmBdry_addEdge(bdry_int, n4, n5);
   tmEdge *e5  = tmBdry_addEdge(bdry_int, n5, n6);
   tmEdge *e6  = tmBdry_addEdge(bdry_int, n6, n7);
@@ -1170,3 +1291,61 @@ char *test_tmFront_innerOuterMesh()
   return NULL;
 
 } /* test_tmFront_innerOuterMesh() */
+
+
+/************************************************************
+* Unit test function for the advancing front algorithm
+************************************************************/
+char *test_tmFront_multiBdryMesh()
+{
+  tmDouble xy_min[2] = {  -0.0,  0.0 };
+  tmDouble xy_max[2] = { 120.0, 20.0 };
+  tmMesh *mesh = tmMesh_create(xy_min, xy_max, 10, size_fun_5);
+
+  /*--------------------------------------------------------
+  | exterior nodes
+  --------------------------------------------------------*/
+  tmDouble xy0[2] = {  0.0,  0.0 };
+  tmDouble xy1[2] = {120.0,  0.0 };
+  tmDouble xy2[2] = {120.0, 20.0 };
+  tmDouble xy3[2] = {  0.0, 20.0 };
+
+  tmNode *n0 = tmNode_create(mesh, xy0);
+  tmNode *n1 = tmNode_create(mesh, xy1);
+  tmNode *n2 = tmNode_create(mesh, xy2);
+  tmNode *n3 = tmNode_create(mesh, xy3);
+
+  tmBdry *bdry_1 = tmMesh_addBdry(mesh, FALSE, 1);
+  tmEdge *e0 = tmBdry_addEdge(bdry_1, n0, n1);
+
+  tmBdry *bdry_2 = tmMesh_addBdry(mesh, FALSE, 2);
+  tmEdge *e1 = tmBdry_addEdge(bdry_2, n1, n2);
+
+  tmBdry *bdry_3 = tmMesh_addBdry(mesh, FALSE, 3);
+  tmEdge *e2 = tmBdry_addEdge(bdry_3, n2, n3);
+
+  tmBdry *bdry_4 = tmMesh_addBdry(mesh, FALSE, 4);
+  tmEdge *e3 = tmBdry_addEdge(bdry_4, n3, n0);
+
+  /*--------------------------------------------------------
+  | Refine whole boundary according to size function
+  --------------------------------------------------------*/
+  tmBdry_refine(bdry_1);
+  tmBdry_refine(bdry_2);
+  tmBdry_refine(bdry_3);
+  tmBdry_refine(bdry_4);
+
+  /*--------------------------------------------------------
+  | Create mesh
+  --------------------------------------------------------*/
+  tmMesh_ADFMeshing(mesh);
+
+  /*--------------------------------------------------------
+  | Print the mesh data 
+  --------------------------------------------------------*/
+  tmMesh_printMesh(mesh);
+  tmMesh_destroy(mesh);
+
+  return NULL;
+
+} /* test_tmFront_mulitBrdyMesh() */

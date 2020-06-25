@@ -7,6 +7,12 @@
 *************************************************************/
 char *test_mesh_create_destroy();
 
+/************************************************************
+* Unit test function to test if an object can be located
+* within the domain
+************************************************************/
+char *test_tmMesh_objInside();
+
 /*************************************************************
 * Unit test function to the boundary refinement
 ************************************************************/
@@ -45,5 +51,6 @@ char *test_tmFront_init();
 char *test_tmFront_advance();
 char *test_tmFront_simpleMesh();
 char *test_tmFront_innerOuterMesh();
+char *test_tmFront_multiBdryMesh();
 
 #endif

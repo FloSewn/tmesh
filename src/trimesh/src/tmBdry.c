@@ -5,6 +5,7 @@
 #include "trimesh/tmBdry.h"
 #include "trimesh/tmQtree.h"
 #include "trimesh/tmFront.h"
+#include "trimesh/tmTri.h"
 
 
 /**********************************************************
@@ -230,7 +231,7 @@ tmBool tmBdry_isRight(tmBdry *bdry, void *obj, int obj_type)
 *----------------------------------------------------------
 * Check if an object is right of all boundary edges
 *----------------------------------------------------------
-* @param *edge: pointer to a tmEdge 
+* @param *bdry: pointer to a tmBdry 
 * @param *obj:  pointer to object to check for
 * @param  obj_type: object type specifier
 * @return boolean if object is located on the left of bdry
@@ -249,6 +250,78 @@ tmBool tmBdry_isRightOn(tmBdry *bdry, void *obj, int obj_type)
   return is_right;
 
 } /* tmBdry_isRightOn() */
+
+/**********************************************************
+* Function: tmBdry_isInside()
+*----------------------------------------------------------
+* Check if an object is inside of a boundary
+* which is enclosed by at least three edges,
+* using the Ray-Method.
+* If the object is located on the boundary edges,
+* it is treated as lying inside.
+* 
+* Check out this source:
+* http://alienryderflex.com/polygon/
+*----------------------------------------------------------
+* @param *bdry: pointer to a tmBdry 
+* @param *obj:  pointer to object to check for
+* @param  obj_type: object type specifier
+* @return boolean if object is located on the left of bdry
+**********************************************************/
+tmBool tmBdry_isInside(tmBdry *bdry, void *obj, int obj_type)
+{
+  ListNode *cur;
+  tmDouble *xy;
+  tmBool    is_inside = TRUE;
+  tmMesh   *mesh      = bdry->mesh;
+  int      count      = 0;
+
+  if (bdry->no_edges < 3)
+    log_err("tmBdry_isInside() can not be called for boundaries with less than three segments.");
+
+  if ( obj_type == TM_NODE)
+    xy = ((tmNode*)obj)->xy;
+  else if ( obj_type == TM_EDGE)
+    xy = ((tmEdge*)obj)->xy;
+  else if ( obj_type == TM_TRI)
+    xy = ((tmTri*)obj)->xy;
+  else
+    log_err("Wrong type provied for tmBdry_isInside()");
+
+
+  /*-------------------------------------------------------
+  | Loop over all boundary edges
+  -------------------------------------------------------*/
+  for (cur = bdry->edges_stack->first; 
+       cur != NULL; cur = cur->next)
+  {
+    tmDouble *e0 = ((tmEdge*)cur->value)->n1->xy;
+    tmDouble *e1 = ((tmEdge*)cur->value)->n2->xy;
+
+    /*-----------------------------------------------------
+    | Lines cross
+    -----------------------------------------------------*/
+    if (  (xy[1]>e1[1] && xy[1]<=e0[1])
+       || (xy[1]>e0[1] && xy[1]<=e1[1]) )
+    {
+      if (e1[0] + (xy[1]-e1[1])/(e0[1]-e1[1])*(e0[0]-e1[0]) < xy[0])
+        count++;
+    }
+
+    /*-----------------------------------------------------
+    | Point is on line
+    -----------------------------------------------------*/
+    if ( EQ(xy[1],e1[1]) && EQ(xy[1],e0[1]) )
+    {
+      if (IN_ON_SEGMENT(e0, e1, xy))
+        return TRUE;
+    }
+
+  }
+
+  return count&1; /* Same as (count%2 == 1) */
+
+} /* tmBdry_isInside() */
 
 /**********************************************************
 * Function: tmBdry_splitEdge()

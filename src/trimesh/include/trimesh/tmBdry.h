@@ -123,6 +123,22 @@ tmBool tmBdry_isRight(tmBdry *bdry, void *obj, int obj_type);
 tmBool tmBdry_isRightOn(tmBdry *bdry, void *obj, int obj_type);
 
 /**********************************************************
+* Function: tmBdry_isInside()
+*----------------------------------------------------------
+* Check if an object is inside of a boundary
+* which is enclosed by at least three edges,
+* using the Ray-Method.
+* If the object is located on the boundary edges,
+* it is treated as lying inside.
+*----------------------------------------------------------
+* @param *bdry: pointer to a tmBdry 
+* @param *obj:  pointer to object to check for
+* @param  obj_type: object type specifier
+* @return boolean if object is located on the left of bdry
+**********************************************************/
+tmBool tmBdry_isInside(tmBdry *bdry, void *obj, int obj_type);
+
+/**********************************************************
 * Function: tmBdry_splitEdge()
 *----------------------------------------------------------
 * Split an edge by inserting a new node on its centroid

@@ -329,12 +329,12 @@ tmBool tmMesh_objInside(tmMesh *mesh,
 
     if (cur_bdry->is_interior == TRUE)
     {
-      is_inside &= !(tmBdry_isRight(cur_bdry, 
-                                    obj, obj_type));
+      is_inside &= !(tmBdry_isInside(cur_bdry, 
+                                     obj, obj_type));
     }
     else
     {
-      is_inside &= tmBdry_isLeftOn(cur_bdry, 
+      is_inside &= tmBdry_isInside(cur_bdry, 
                                    obj, obj_type);
     }
   }

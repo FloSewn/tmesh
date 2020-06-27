@@ -78,6 +78,36 @@ static void tmTri_calcAngles(tmTri *tri);
 **********************************************************/
 static void tmTri_calcTriQuality(tmTri *tri);
 
+/**********************************************************
+* Function: tmTri_findNbrTriFromEdge()
+*----------------------------------------------------------
+* Searches for a neighboring triangle, which is adjacent
+* to an edge defined by two vertices (n1, n2)
+* The arrangement of n1 and n2 plays no role.
+*----------------------------------------------------------
+* @param n1,n2: nodes defining an edge, for which a
+*               triangle must be found
+* @param tri:   triangle for which a neighbor will be found
+*               if one has been found, it will be included
+*               to its neighbors
+**********************************************************/
+static tmTri *tmTri_findNbrTriFromEdge(tmNode *n1, 
+                                       tmNode *n2,
+                                       tmTri  *tri);
+
+/**********************************************************
+* Function: tmTri_splitTriangle()
+*----------------------------------------------------------
+* Splits a triangle into subtriangles. Different split
+* variations are possible, according to a given split-type
+*
+*----------------------------------------------------------
+* @param tri:   triangle to split
+* @param type:  splitting type
+**********************************************************/
+static tmTri *tmTri_splitTriangle(tmTri *tri,
+                                  int    type);
+
 
 /**********************************************************
 *
@@ -219,14 +249,7 @@ static void tmTri_calcAngles(tmTri *tri)
 
 
 /**********************************************************
-* Function: tmTri_calcTriQuality()
-*----------------------------------------------------------
-* Compute the overall optimality coefficient of a potential
-* triangle
-* factor -> 1: Good Triangle 
-* factor -> 0: Bad Triangle
-*----------------------------------------------------------
-* @param tri: triangle structure
+*
 **********************************************************/
 static void tmTri_calcTriQuality(tmTri *tri)
 {
@@ -257,6 +280,65 @@ static void tmTri_calcTriQuality(tmTri *tri)
   tri->quality = q_1 * q_2 * q_3 * tri->shapeFac;
 
 } /* tmTri_calcTriQuality() */
+
+/**********************************************************
+*
+**********************************************************/
+static tmTri *tmTri_findNbrTriFromEdge(tmNode *n1, 
+                                       tmNode *n2,
+                                       tmTri  *tri)
+{
+  ListNode *cur1,  *cur2;
+  tmTri *t1, *t2;
+
+  List *tris1 = n1->tris;
+  List *tris2 = n2->tris;
+  
+  if (tris2->count == 0)
+    return NULL;
+
+  for (cur1 = tris1->first; cur1 != NULL; cur1 = cur1->next)
+  {
+    t1 = (tmTri*)cur1->value;
+
+    for (cur2 = tris2->first; cur2 != NULL; cur2 = cur2->next)
+    {
+      t2 = (tmTri*)cur2->value;
+
+      if (t1 == t2)
+      {
+        tmNode *tn1 = ((tmTri*)cur1->value)->n1;
+        tmNode *tn2 = ((tmTri*)cur1->value)->n2;
+        tmNode *tn3 = ((tmTri*)cur1->value)->n3;
+
+        if (   (n1 == tn1) && (n2 == tn2) 
+            || (n1 == tn2) && (n2 == tn1) )
+        {
+          t1->t3   = tri;
+        }
+        else if (   (n1 == tn2) && (n2 == tn3) 
+                 || (n1 == tn3) && (n2 == tn2) )
+        {
+          t1->t1   = tri;
+        }
+        else if (   (n1 == tn3) && (n2 == tn1) 
+                 || (n1 == tn1) && (n2 == tn3) )
+        {
+          t1->t2   = tri;
+        }
+        else
+        {
+          log_err("Something went wrong during search for triangle neighbor.");
+        }
+
+        return t1;
+      }
+    }
+  }
+
+  return NULL;
+
+} /* tmTri_findNbrTriFromEdge() */
 
 
 
@@ -292,6 +374,36 @@ tmTri *tmTri_create(tmMesh *mesh,
   tri->n3 = n3;
 
   /*-------------------------------------------------------
+  | Find tri neighbors
+  |
+  |                  n3
+  |                 /  \
+  |             T2 /    \ T1
+  |               /      \
+  |              n1-------n2
+  |                  T3
+  |
+  -------------------------------------------------------*/
+  tri->t1 = tmTri_findNbrTriFromEdge(n2, n3, tri);
+  tri->t2 = tmTri_findNbrTriFromEdge(n3, n1, tri);
+  tri->t3 = tmTri_findNbrTriFromEdge(n1, n2, tri);
+
+  /*-------------------------------------------------------
+  | Add this triangle to the nodes triangle lists
+  -------------------------------------------------------*/
+  List_push(n1->tris, tri);
+  tri->n1_pos = List_last_node(n1->tris);
+  n1->n_tris += 1;
+
+  List_push(n2->tris, tri);
+  tri->n2_pos = List_last_node(n2->tris);
+  n2->n_tris += 1;
+
+  List_push(n3->tris, tri);
+  tri->n3_pos = List_last_node(n3->tris);
+  n3->n_tris += 1;
+
+  /*-------------------------------------------------------
   | Init tri properties
   -------------------------------------------------------*/
   tri->xy[0]      = 0.0;
@@ -311,13 +423,6 @@ tmTri *tmTri_create(tmMesh *mesh,
   tri->circ_xy[1] = 0.0;
   tri->circ_r     = 0.0;
 
-
-  /*-------------------------------------------------------
-  | Init tri neighbors
-  -------------------------------------------------------*/
-  tri->t1 = NULL;
-  tri->t2 = NULL;
-  tri->t3 = NULL;
 
   /*-------------------------------------------------------
   | Init buffer variables ( e.g. for sorting )
@@ -356,6 +461,18 @@ error:
 **********************************************************/
 void tmTri_destroy(tmTri *tri)
 {
+  /*-------------------------------------------------------
+  | Remove triangle from its adjacent nodes 
+  -------------------------------------------------------*/
+  List_remove(tri->n1->tris, tri->n1_pos);
+  tri->n1->n_tris -= 1;
+
+  List_remove(tri->n2->tris, tri->n2_pos);
+  tri->n2->n_tris -= 1;
+
+  List_remove(tri->n3->tris, tri->n3_pos);
+  tri->n3->n_tris -= 1;
+
   /*-------------------------------------------------------
   | Remove triangle from qtree 
   -------------------------------------------------------*/

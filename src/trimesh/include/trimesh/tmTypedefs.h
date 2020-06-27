@@ -54,7 +54,7 @@ typedef tmDouble (*tmSizeFun) (tmDouble xy[2]);
 * Debugging Layers
 * 0 -> No output
 ***********************************************************/
-#define TM_DEBUG 2
+#define TM_DEBUG 1
 
 #ifdef TM_DEBUG 
 #define tmPrint(M, ...) fprintf(stdout, "> " M "\n",\

@@ -124,6 +124,8 @@ def main():
         tri_patches = []
         for i_tri, tri in enumerate(tris[:step]):
             tri_patches.append(Polygon([nodes[tri[i]] for i in range(3)]))
+            tri_centr = np.mean([nodes[tri[i]] for i in range(3)], axis=0)
+            ax.text(tri_centr[0], tri_centr[1], i_tri)
 
         tri_col = PatchCollection(tri_patches, **TRI_PATCH)
         ax.add_collection(tri_col)

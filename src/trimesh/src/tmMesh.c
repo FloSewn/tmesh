@@ -431,6 +431,38 @@ void tmMesh_printMesh(tmMesh *mesh)
     tri_index += 1;
   }
 
+  /*-------------------------------------------------------
+  | print triangles neighbors
+  -------------------------------------------------------*/
+  fprintf(stdout,"NEIGHBORS %d\n", mesh->no_tris);
+  tri_index = 0;
+  for (cur = mesh->tris_stack->first; 
+       cur != NULL; cur = cur->next)
+  {
+    tmTri *curTri = (tmTri*)cur->value;
+
+    tmTri *t1 = ((tmTri*)cur->value)->t1;
+    tmTri *t2 = ((tmTri*)cur->value)->t2;
+    tmTri *t3 = ((tmTri*)cur->value)->t3;
+
+    tmIndex i1 = -1;
+    tmIndex i2 = -1;
+    tmIndex i3 = -1;
+
+    if (t1 != NULL)
+      i1 = t1->index;
+    if (t2 != NULL)
+      i2 = t2->index;
+    if (t3 != NULL)
+      i3 = t3->index;
+
+    fprintf(stdout,"%d\t%d\t%d\t%d\n", 
+        tri_index, i1, i2, i3);
+    
+    tri_index += 1;
+
+  }
+
 } /* tmMesh_printMesh() */
 
 

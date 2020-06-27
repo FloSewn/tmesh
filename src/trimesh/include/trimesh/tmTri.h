@@ -29,6 +29,16 @@ typedef struct tmTri {
   tmNode *n3;
 
   /*-------------------------------------------------------
+  | Position of this triangle in its nodes triangle-lists
+  | -> Every node has a list with its adjacent triangles,
+  |    These references recover the position of this 
+  |    triangle in the lists of its nodes
+  -------------------------------------------------------*/
+  ListNode *n1_pos;
+  ListNode *n2_pos;
+  ListNode *n3_pos;
+
+  /*-------------------------------------------------------
   | Triangle neighbors
   | Aligned in counter-clockwise orientation
   | t1: located opposite of n1

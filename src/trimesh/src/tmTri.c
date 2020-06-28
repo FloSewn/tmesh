@@ -340,6 +340,22 @@ static tmTri *tmTri_findNbrTriFromEdge(tmNode *n1,
 
 } /* tmTri_findNbrTriFromEdge() */
 
+/**********************************************************
+* Function: tmTri_splitTriangle()
+*----------------------------------------------------------
+* Splits a triangle into subtriangles. Different split
+* variations are possible, according to a given split-type
+*
+*----------------------------------------------------------
+* @param tri:   triangle to split
+* @param type:  splitting type
+**********************************************************/
+static tmTri *tmTri_splitTriangle(tmTri *tri,
+                                  int    type)
+{
+
+} /* tmTri_splitTriangle() */
+
 
 
 /**********************************************************
@@ -422,6 +438,7 @@ tmTri *tmTri_create(tmMesh *mesh,
   tri->circ_xy[0] = 0.0;
   tri->circ_xy[1] = 0.0;
   tri->circ_r     = 0.0;
+  tri->is_delaunay = FALSE;
 
 
   /*-------------------------------------------------------
@@ -582,17 +599,26 @@ tmBool tmTri_isValid(tmTri *tri)
   inCirc    = tmQtree_getObjCirc(cur_qtree, tri->xy, r);
 
   if ( inCirc != NULL)
+  {
     for (cur = inCirc->first; cur != NULL; cur = cur->next)
     {
       tmNode *n = (tmNode*)cur->value;
 
-      /* Neglect nodes that are not set active */
-      if (n->is_active == FALSE)
-        continue;
-
+      /* Neglect nodes that are part of the triangle */
       if ( n == n1 || n == n2 || n == n3 )
         continue;
 
+      /* Neglect nodes that are not set active 
+       * -> used to filter out potential new node 
+       *    from advancing front                     */
+      if (n->is_active == FALSE)
+        continue;
+
+      /* Neglect nodes that are not on the front */
+      if (n->on_front == FALSE)
+        continue;
+
+      /* Check that current node is not within the triangle */
       if ( tmTri_nodeIntersect(tri, n) == TRUE )
       {
 #if (TM_DEBUG > 1)
@@ -605,9 +631,6 @@ tmBool tmTri_isValid(tmTri *tri)
 
       /* Check that points on the front are not too close to
        * triangle edges */
-      if (n->on_front == FALSE)
-        continue;
-
       if ( EDGE_NODE_DIST2(n1->xy, n2->xy, n->xy) < dist2 )
       {
 #if (TM_DEBUG > 1)
@@ -635,24 +658,14 @@ tmBool tmTri_isValid(tmTri *tri)
         List_destroy(inCirc);
         return FALSE;
       }
-
     }
+  }
 
   if (inCirc != NULL)
     List_destroy(inCirc);
 
   /*-------------------------------------------------------
-  | 3) Check if new triangle edges intersect  
-  |    with any existing front edge in its vicinity
-  -------------------------------------------------------*/
-
-  /*-------------------------------------------------------
-  | 2) Check if new triangle edges intersect  
-  |    with any existing boundary edge in its vicinity
-  -------------------------------------------------------*/
-
-  /*-------------------------------------------------------
-  | 3) Check if triangle angles is good enough
+  | 4) Check if triangle angles is good enough
   -------------------------------------------------------*/
   if (tri->minAngle <= minAngle || tri->maxAngle >= maxAngle)
   {
@@ -663,7 +676,7 @@ tmBool tmTri_isValid(tmTri *tri)
   }
 
   /*-------------------------------------------------------
-  | 4) Check if triangle quality is good enough
+  | 5) Check if triangle quality is good enough
   -------------------------------------------------------*/
   if (tri->quality <= TM_TRI_MIN_QUALITY )
   {
@@ -771,3 +784,49 @@ tmBool tmTri_nodeIntersect(tmTri *t, tmNode *n)
 
 
 } /* tmTri_nodeIntersect() */
+
+/**********************************************************
+* Function: tmTri_checkTriDelaunay()
+*----------------------------------------------------------
+* Check for every triangle, if it suffices the delaunay 
+* criterion, that no node is inside its circumcenter
+*----------------------------------------------------------
+* @param *mesh: pointer to tmMesh
+**********************************************************/
+tmBool tmTri_checkTriDelaunay(tmMesh *mesh)
+{
+  List     *inCirc;
+  ListNode *cur;
+  int       no_tris_delaunay = 0;
+
+  /*-------------------------------------------------------
+  | Loop over all mesh triangles
+  -------------------------------------------------------*/
+  for (cur = mesh->tris_stack->first; 
+       cur != NULL; cur = cur->next)
+  {
+    tmDouble  r   = ((tmTri*)cur->value)->circ_r;
+    tmDouble *xy  = ((tmTri*)cur->value)->circ_xy;
+
+    inCirc    = tmQtree_getObjCirc(mesh->nodes_qtree,  
+                                   xy, r);
+
+    if (inCirc != NULL)
+    {
+      if (inCirc->count > 3)
+      {
+        ((tmTri*)cur->value)->is_delaunay = FALSE;
+      }
+      else
+      {
+        ((tmTri*)cur->value)->is_delaunay = TRUE;
+        no_tris_delaunay += 1;
+      }
+
+      List_destroy(inCirc);
+    }
+  }
+
+  mesh->no_tris_delaunay = no_tris_delaunay;
+
+} /* tmTri_checkTriDelaunay() */

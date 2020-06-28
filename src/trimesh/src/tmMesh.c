@@ -67,6 +67,7 @@ tmMesh *tmMesh_create(tmDouble  xy_min[2],
   mesh->tris_head         = NULL;
   mesh->tris_stack        = List_create();
   mesh->no_tris           = 0;
+  mesh->no_tris_delaunay  = 0;
   mesh->tris_qtree        = tmQtree_create(mesh, TM_TRI);
   tmQtree_init(mesh->tris_qtree, NULL, 0, xy_min, xy_max);
 

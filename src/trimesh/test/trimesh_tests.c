@@ -41,7 +41,7 @@ static inline tmDouble size_fun_3( tmDouble xy[2] )
 }
 static inline tmDouble size_fun_4( tmDouble xy[2] )
 {
-  return 3.0;
+  return 0.75;
 }
 
 static inline tmDouble size_fun_5( tmDouble xy[2] )
@@ -49,7 +49,10 @@ static inline tmDouble size_fun_5( tmDouble xy[2] )
   tmDouble y0 = 10.0;
   tmDouble dy = y0 - xy[1];
   //return 2.50 - 2.00 * exp(-0.02*dy*dy) + 0.02 * xy[0];
-  return 0.50 + 0.02 * xy[0];
+  tmDouble val = 0.50 
+               + 0.005 * (xy[0]-50)*(xy[0]-50) 
+               + 0.005 * (xy[1]-50)*(xy[1]-50);
+  return val;
 }
 
 
@@ -1194,13 +1197,23 @@ char *test_tmFront_simpleMesh()
   /*--------------------------------------------------------
   | Create mesh
   --------------------------------------------------------*/
+  clock_t tic_1 = clock();
   tmMesh_ADFMeshing(mesh);
+  clock_t tic_2 = clock();
+
+  printf("> ----------------------------------------------\n");
+  printf("> simple mesh performance test                \n");
+  printf("> ----------------------------------------------\n");
+  printf("> Number of elements: %d\n", mesh->no_tris);
+  printf("> Meshing time      : %e sec\n", (double) (tic_2 - tic_1) / CLOCKS_PER_SEC );
+  printf("> ----------------------------------------------\n");
 
   /*--------------------------------------------------------
   | Print the mesh data 
   --------------------------------------------------------*/
-  tmMesh_printMesh(mesh);
+  //tmMesh_printMesh(mesh);
   tmMesh_destroy(mesh);
+
 
   return NULL;
 
@@ -1287,6 +1300,14 @@ char *test_tmFront_innerOuterMesh()
   | Print the mesh data 
   --------------------------------------------------------*/
   tmMesh_printMesh(mesh);
+
+  /*--------------------------------------------------------
+  | Check delauay constraint
+  --------------------------------------------------------*/
+  tmTri_checkTriDelaunay(mesh);
+  printf("> Number of triangles: %d\n", mesh->no_tris);
+  printf("> Number of delaunay triangles: %d\n", mesh->no_tris_delaunay);
+
   tmMesh_destroy(mesh);
 
   return NULL;

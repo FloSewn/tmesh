@@ -74,6 +74,7 @@ typedef struct tmTri {
   -------------------------------------------------------*/
   tmDouble circ_xy[2];
   tmDouble circ_r;
+  tmBool   is_delaunay;
 
   /*-------------------------------------------------------
   | Buffer variables ( e.g. for sorting )
@@ -148,5 +149,15 @@ tmBool tmTri_triIntersect(tmTri *t1, tmTri *t2);
 * @param *n: pointer to tmNode
 **********************************************************/
 tmBool tmTri_nodeIntersect(tmTri *t, tmNode *n);
+
+/**********************************************************
+* Function: tmTri_checkTriDelaunay()
+*----------------------------------------------------------
+* Check for every triangle, if it suffices the delaunay 
+* criterion, that no node is inside its circumcenter
+*----------------------------------------------------------
+* @param *mesh: pointer to tmMesh
+**********************************************************/
+tmBool tmTri_checkTriDelaunay(tmMesh *mesh);
 
 #endif

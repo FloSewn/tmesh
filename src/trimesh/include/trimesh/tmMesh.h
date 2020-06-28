@@ -46,6 +46,7 @@ typedef struct tmMesh {
   List    *tris_stack;
   int      no_tris;
   tmQtree *tris_qtree;
+  int      no_tris_delaunay;
 
 } tmMesh;
 

@@ -43,6 +43,12 @@ typedef struct tmNode {
   int     n_front_edges;
 
   /*-------------------------------------------------------
+  | All mesh edges to this node 
+  -------------------------------------------------------*/
+  List   *mesh_edges;
+  int     n_mesh_edges;
+
+  /*-------------------------------------------------------
   | All adjacent triangles to this node 
   -------------------------------------------------------*/
   List *tris;

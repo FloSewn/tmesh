@@ -14,13 +14,17 @@
 *----------------------------------------------------------
 * @param mesh: parent mesh of the new edge
 * @param n1,n2: Start and ending nodes of this edge
-* @param on_bdry: flag for boundary / front edge type
+* @param type: flag for boundary / front / mesh edge
+*               boundary -> 0
+*               front    -> 1
+*               mesh     -> 2
 *
 * @return: Pointer to a new tmEdge structure
 **********************************************************/
 tmEdge *tmEdge_create(tmMesh *mesh, 
                       tmNode *n1, tmNode *n2,
-                      tmBdry *bdry)
+                      tmBdry *bdry,
+                      int     edgeType)
 {
   tmEdge *edge = (tmEdge*) calloc( 1, sizeof(tmEdge) );
   check_mem(edge);
@@ -78,7 +82,7 @@ tmEdge *tmEdge_create(tmMesh *mesh,
   /*-------------------------------------------------------
   | Specifiy boundary edge properties
   -------------------------------------------------------*/
-  if ( bdry != NULL )
+  if ( edgeType == 0 )
   {
     edge->bdry  = bdry;
     edge->is_on_bdry  = TRUE;
@@ -96,7 +100,7 @@ tmEdge *tmEdge_create(tmMesh *mesh,
   /*-------------------------------------------------------
   | Specifiy advancing front edge properties
   -------------------------------------------------------*/
-  else
+  else if ( edgeType == 1)
   {
     edge->front = mesh->front;
     edge->is_on_front = TRUE;
@@ -110,6 +114,23 @@ tmEdge *tmEdge_create(tmMesh *mesh,
     edge->n2_pos = List_last_node(edge->n2->front_edges);
     edge->n2->on_front = TRUE;
     edge->n2->n_front_edges += 1;
+  }
+  /*-------------------------------------------------------
+  | Specifiy mesh edge properties
+  -------------------------------------------------------*/
+  else if ( edgeType == 2)
+  {
+    List_push(edge->n1->mesh_edges, edge);
+    edge->n1_pos = List_last_node(edge->n1->mesh_edges);
+    edge->n1->n_mesh_edges += 1;
+
+    List_push(edge->n2->mesh_edges, edge);
+    edge->n2_pos = List_last_node(edge->n2->mesh_edges);
+    edge->n2->n_mesh_edges += 1;
+  }
+  else
+  {
+    log_err("Unknown edge type %d", edgeType);
   }
 
   return edge;

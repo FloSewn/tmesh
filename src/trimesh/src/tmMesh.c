@@ -60,6 +60,14 @@ tmMesh *tmMesh_create(tmDouble  xy_min[2],
   | Mesh size function 
   -------------------------------------------------------*/
   mesh->sizeFun           = sizeFun;
+
+  /*-------------------------------------------------------
+  | Mesh edges 
+  -------------------------------------------------------*/
+  mesh->edges_stack        = List_create();
+  mesh->no_edges           = 0;
+  mesh->edges_qtree        = tmQtree_create(mesh, TM_EDGE);
+  tmQtree_init(mesh->edges_qtree, NULL, 0, xy_min, xy_max);
   
   /*-------------------------------------------------------
   | Mesh triangles 
@@ -115,6 +123,20 @@ void tmMesh_destroy(tmMesh *mesh)
 #endif
 
   /*-------------------------------------------------------
+  | Free all edges on the stack
+  -------------------------------------------------------*/
+  cur = nxt = mesh->edges_stack->first;
+  while (nxt != NULL)
+  {
+    nxt = cur->next;
+    tmEdge_destroy(cur->value);
+    cur = nxt;
+  }
+#if (TM_DEBUG > 0)
+  tmPrint("MESH EDGES DESTROYED");
+#endif
+
+  /*-------------------------------------------------------
   | Free all tris on the stack
   -------------------------------------------------------*/
   cur = nxt = mesh->tris_stack->first;
@@ -150,6 +172,11 @@ void tmMesh_destroy(tmMesh *mesh)
   tmPrint("MESH NODES_QTREE FREE");
 #endif
 
+  tmQtree_destroy(mesh->edges_qtree);
+#if (TM_DEBUG > 0)
+  tmPrint("MESH EDGES_QTREE FREE");
+#endif
+
   tmQtree_destroy(mesh->tris_qtree);
 #if (TM_DEBUG > 0)
   tmPrint("MESH TRIS_QTREE FREE");
@@ -159,6 +186,7 @@ void tmMesh_destroy(tmMesh *mesh)
   | Free all list structures
   -------------------------------------------------------*/
   List_destroy(mesh->nodes_stack);
+  List_destroy(mesh->edges_stack);
   List_destroy(mesh->tris_stack);
   List_destroy(mesh->bdry_stack);
 
@@ -188,6 +216,79 @@ ListNode *tmMesh_addNode(tmMesh *mesh, tmNode *node)
   return node_pos;
 
 } /* tmMesh_addNode() */
+
+/**********************************************************
+* Function: tmMesh_addEdge()
+*----------------------------------------------------------
+* Function to add an edge to a tmMesh structure
+*----------------------------------------------------------
+* @param mesh: mesh for which the edge is defined
+* @param n1, n2: start/ending node of edge
+* @param t1, t2: triangle to the left / right of the edge
+**********************************************************/
+tmEdge *tmMesh_addEdge(tmMesh *mesh, 
+                       tmNode *n1, tmNode *n2,
+                       tmTri  *t1, tmTri  *t2)
+{
+  tmEdge *edge = tmEdge_create(mesh, n1, n2, NULL, 2);
+  mesh->no_edges += 1;
+  List_push(mesh->edges_stack, edge);
+  tmQtree_addObj(mesh->edges_qtree, edge);
+  edge->stack_pos = List_last_node(mesh->edges_stack);
+
+  /*--------------------------------------------------------
+  | t1: Triangle to the left of this edge
+  | t2: Triangle to the right of this edge
+  --------------------------------------------------------*/
+  edge->t1 = t1;
+  edge->t2 = t2;
+
+  /*--------------------------------------------------------
+  | Check if edge meets local Delaunay constraint
+  --------------------------------------------------------*/
+  if (t1 == NULL || t2 == NULL)
+    edge->is_local_delaunay = TRUE;
+  else
+  {
+    tmNode *nl, *nr;
+
+    if ( t1->n1 == n1 )
+      nl = t1->n3;
+    else if ( t1->n1 == n2 )
+      nl = t1->n2;
+    else
+      nl = t1->n1;
+
+    if ( t2->n1 == n2 )
+      nr = t2->n3;
+    else if ( t2->n1 == n1 )
+      nl = t2->n2;
+    else
+      nl = t2->n1;
+
+    tmDouble dx_l = nl->xy[0]-edge->xy[0];
+    tmDouble dy_l = nl->xy[1]-edge->xy[1];
+
+    tmDouble dx_r = nr->xy[0]-edge->xy[0];
+    tmDouble dy_r = nr->xy[1]-edge->xy[1];
+
+    tmDouble r2_l = dx_l*dx_l + dy_l*dy_l;
+    tmDouble r2_r = dx_r*dx_r + dy_r*dy_r;
+
+    tmDouble r_e  = 0.5 * edge->len;
+    tmDouble r2_e = r_e * r_e;
+
+    if (r2_l < r2_e || r2_r < r2_e)
+      edge->is_local_delaunay = FALSE;
+    else
+      edge->is_local_delaunay = TRUE;
+
+  }
+
+
+  return edge;
+
+} /* tmMesh_addEdge() */
 
 /**********************************************************
 * Function: tmMesh_addTri()
@@ -235,6 +336,41 @@ void tmMesh_remNode(tmMesh *mesh, tmNode *node)
   List_remove(mesh->nodes_stack, node->stack_pos);
 
 } /* tmMesh_remNode() */
+
+/**********************************************************
+* Function: tmMesh_remEdge()
+*----------------------------------------------------------
+* Function to remove an edge from a tmMesh structure
+*----------------------------------------------------------
+*
+**********************************************************/
+void tmMesh_remEdge(tmMesh *mesh, tmEdge *edge)
+{
+  tmBool    qtree_rem;
+
+  /*-------------------------------------------------------
+  | Check if object is in the mesh
+  -------------------------------------------------------*/
+  if ( edge->mesh != mesh )
+    log_warn("Can not remove edge from mesh. Edge not found.");
+
+  /*-------------------------------------------------------
+  | Remove edge from qtree
+  -------------------------------------------------------*/
+  qtree_rem = tmQtree_remObj(mesh->edges_qtree, edge);
+  mesh->no_edges -= 1;
+
+  /*-------------------------------------------------------
+  | Remove edge from stack
+  -------------------------------------------------------*/
+  List_remove(mesh->edges_stack, edge->stack_pos);
+
+  /*-------------------------------------------------------
+  | Destroy edge -> removes also adjacency to edge nodes
+  -------------------------------------------------------*/
+  tmEdge_destroy(edge);
+
+} /* tmMesh_remEdge() */
 
 /**********************************************************
 * Function: tmMesh_remTri()
@@ -433,8 +569,51 @@ void tmMesh_printMesh(tmMesh *mesh)
   }
 
   /*-------------------------------------------------------
-  | print triangles neighbors
+  | Print mesh edges
+  -------------------------------------------------------*
+  fprintf(stdout,"EDGES %d\n", mesh->no_edges);
+  edge_index = 0;
+  for (cur = mesh->edges_stack->first; 
+       cur != NULL; cur = cur->next)
+  {
+    tmIndex ind1 = ((tmEdge*)cur->value)->n1->index;
+    tmIndex ind2 = ((tmEdge*)cur->value)->n2->index;
+    ((tmEdge*)cur->value)->index = edge_index;
+    fprintf(stdout,"%d\t%9d\t%9d\n", edge_index, ind1, ind2);
+    edge_index += 1;
+  }*/
+
+  /*-------------------------------------------------------
+  | Print mesh edge NEIGHBORS
   -------------------------------------------------------*/
+  fprintf(stdout,"EDGENEIGHBORS %d\n", mesh->no_edges);
+  edge_index = 0;
+  for (cur = mesh->edges_stack->first; 
+       cur != NULL; cur = cur->next)
+  {
+    tmIndex ind1 = ((tmEdge*)cur->value)->n1->index;
+    tmIndex ind2 = ((tmEdge*)cur->value)->n2->index;
+    ((tmEdge*)cur->value)->index = edge_index;
+
+    tmTri *t1 = ((tmEdge*)cur->value)->t1;
+    tmTri *t2 = ((tmEdge*)cur->value)->t2;
+
+    tmIndex i1 = -1;
+    tmIndex i2 = -1;
+
+    if (t1 != NULL)
+      i1 = t1->index;
+    if (t2 != NULL)
+      i2 = t2->index;
+
+    fprintf(stdout,"%d\t%9d\t%9d\t%9d\t%9d\n", 
+        edge_index, ind1, ind2, i1, i2);
+    edge_index += 1;
+  }
+
+  /*-------------------------------------------------------
+  | print triangles neighbors
+  -------------------------------------------------------*
   fprintf(stdout,"NEIGHBORS %d\n", mesh->no_tris);
   tri_index = 0;
   for (cur = mesh->tris_stack->first; 
@@ -461,8 +640,7 @@ void tmMesh_printMesh(tmMesh *mesh)
         tri_index, i1, i2, i3);
     
     tri_index += 1;
-
-  }
+  }*/
 
 } /* tmMesh_printMesh() */
 

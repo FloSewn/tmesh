@@ -41,7 +41,7 @@ static inline tmDouble size_fun_3( tmDouble xy[2] )
 }
 static inline tmDouble size_fun_4( tmDouble xy[2] )
 {
-  return 0.75;
+  return 2.75;
 }
 
 static inline tmDouble size_fun_5( tmDouble xy[2] )
@@ -49,7 +49,7 @@ static inline tmDouble size_fun_5( tmDouble xy[2] )
   tmDouble y0 = 10.0;
   tmDouble dy = y0 - xy[1];
   //return 2.50 - 2.00 * exp(-0.02*dy*dy) + 0.02 * xy[0];
-  tmDouble val = 0.50 
+  tmDouble val = 0.75 
                + 0.005 * (xy[0]-50)*(xy[0]-50) 
                + 0.005 * (xy[1]-50)*(xy[1]-50);
   return val;
@@ -1125,19 +1125,19 @@ char *test_tmFront_advance()
   if ( n1_e != NULL )
   {
     tmFront_remEdge(mesh->front, n1_e);
-    tmFront_addEdge(mesh->front, winner, ne->n2);
+    tmFront_addEdge(mesh->front, winner, ne->n2, NULL);
   }
 
   if ( n2_e != NULL )
   {
     tmFront_remEdge(mesh->front, n2_e);
-    tmFront_addEdge(mesh->front, ne->n1, winner);
+    tmFront_addEdge(mesh->front, ne->n1, winner, NULL);
   }
 
   if ( n1_e == NULL && n2_e == NULL )
   {
-    tmFront_addEdge(mesh->front, ne->n1, winner);
-    tmFront_addEdge(mesh->front, winner, ne->n2);
+    tmFront_addEdge(mesh->front, ne->n1, winner, NULL);
+    tmFront_addEdge(mesh->front, winner, ne->n2, NULL);
   }
 
   tmFront_remEdge(mesh->front, ne);
@@ -1211,7 +1211,7 @@ char *test_tmFront_simpleMesh()
   /*--------------------------------------------------------
   | Print the mesh data 
   --------------------------------------------------------*/
-  //tmMesh_printMesh(mesh);
+  tmMesh_printMesh(mesh);
   tmMesh_destroy(mesh);
 
 

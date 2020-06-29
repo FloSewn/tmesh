@@ -27,6 +27,7 @@ typedef struct tmEdge {
   -------------------------------------------------------*/
   tmBool    is_on_front;
   tmBool    is_on_bdry;
+  tmBool    is_local_delaunay;
 
   ListNode *stack_pos;
   ListNode *qtree_pos;
@@ -61,8 +62,8 @@ typedef struct tmEdge {
 
   /*-------------------------------------------------------
   | Adjacent triangles to this edge
-  | t_1: left triangle
-  | t_2: right triangle
+  | t1: left triangle
+  | t2: right triangle
   -------------------------------------------------------*/
   tmTri  *t1;
   tmTri  *t2;
@@ -90,7 +91,8 @@ typedef struct tmEdge {
 tmEdge *tmEdge_create(tmMesh *mesh, 
                       tmNode *n1, 
                       tmNode *n2,
-                      tmBdry *bdry);
+                      tmBdry *bdry,
+                      int     edgeType);
 
 /**********************************************************
 * Function: tmEdge_destroy()

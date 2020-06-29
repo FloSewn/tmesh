@@ -86,14 +86,19 @@ void tmFront_destroy(tmFront *front)
 * Function to add an edge to a tmFront structure
 * This edge is the new head of the front structure
 *----------------------------------------------------------
+* @param front: advancing front structure to add edge to
+* @param n1,n2: start / ending node defining the edge
+* @param t:     triangle that is located to the right
+*               of the new edge
 * 
 **********************************************************/
 tmEdge *tmFront_addEdge(tmFront *front, 
                         tmNode  *n1, 
-                        tmNode  *n2)
+                        tmNode  *n2,
+                        tmTri   *t)
 {
 
-  tmEdge *edge = tmEdge_create( front->mesh, n1, n2, FALSE );
+  tmEdge *edge = tmEdge_create(front->mesh, n1, n2, NULL, 1);
 
   front->edges_head = edge;
   front->no_edges += 1;
@@ -101,6 +106,12 @@ tmEdge *tmFront_addEdge(tmFront *front,
   List_push(front->edges_stack, edge);
   tmQtree_addObj(front->edges_qtree, edge);
   edge->stack_pos = List_last_node(front->edges_stack);
+
+  /*--------------------------------------------------------
+  | Set triangle that is located to the right of the new 
+  | edge
+  --------------------------------------------------------*/
+  edge->t2 = t;
 
   return edge;
 
@@ -121,7 +132,7 @@ void tmFront_remEdge(tmFront *front, tmEdge *edge)
   | Check if object is in the mesh
   -------------------------------------------------------*/
   if ( edge->front != front )
-    log_warn("Can not remove edge from mesh. Edge not found.");
+    log_warn("Can not remove edge from front. Edge not found.");
 
   /*-------------------------------------------------------
   | Remove edge from qtree
@@ -172,7 +183,7 @@ void tmFront_init(tmMesh *mesh)
       tmNode *n1 = ((tmEdge*)cur->value)->n1;
       tmNode *n2 = ((tmEdge*)cur->value)->n2;
 
-      tmFront_addEdge(front, n1, n2);
+      tmFront_addEdge(front, n1, n2, NULL);
     }
   }
 
@@ -309,7 +320,7 @@ tmBool tmFront_advance(tmMesh *mesh, tmEdge *e_ad)
       ----------------------------------------------------*/
       if ( tmTri_isValid(nt) == TRUE ) 
       {
-        tmFront_update(mesh, cn, e_ad);
+        tmFront_update(mesh, cn, e_ad, nt);
 
         tmNode_destroy(nn);
 
@@ -359,7 +370,7 @@ tmBool tmFront_advance(tmMesh *mesh, tmEdge *e_ad)
 
     if ( tmTri_isValid(nt) == TRUE ) 
     {
-      tmFront_update(mesh, nn, e_ad);
+      tmFront_update(mesh, nn, e_ad, nt);
 
 #if (TM_DEBUG > 1)
       tmPrint(" -> NEW TRIANGLE %d: (%d, %d, %d)",
@@ -393,57 +404,90 @@ tmBool tmFront_advance(tmMesh *mesh, tmEdge *e_ad)
 * @param e: current edge which will be replaced
 * 
 **********************************************************/
-void tmFront_update(tmMesh *mesh, tmNode *n, tmEdge *e)
+void tmFront_update(tmMesh *mesh, 
+                    tmNode *n, 
+                    tmEdge *e, 
+                    tmTri  *t)
 {
   /*--------------------------------------------------------
   | Get advancing front edges that are adjacent to n
   --------------------------------------------------------*/
-  tmEdge *n1_e = tmNode_getAdjFrontEdge(e->n1, n);
-  tmEdge *n2_e = tmNode_getAdjFrontEdge(e->n2, n);
+  tmEdge *e_n1 = tmNode_getAdjFrontEdge(e->n1, n);
+  tmEdge *e_n2 = tmNode_getAdjFrontEdge(e->n2, n);
 
   /*--------------------------------------------------------
   | Both edge nodes are connected to new node
   | -> don't create new edge
   --------------------------------------------------------*/
-  if ( n1_e != NULL && n2_e != NULL )
+  if ( e_n1 != NULL && e_n2 != NULL )
   {
-    tmFront_remEdge(mesh->front, n1_e);
-    tmFront_remEdge(mesh->front, n2_e);
+    /*------------------------------------------------------
+    | Pass edges to mesh
+    ------------------------------------------------------*/
+    tmMesh_addEdge(mesh, e_n1->n1, e_n1->n2, t, e_n1->t2);
+    tmMesh_addEdge(mesh, e_n2->n1, e_n2->n2, t, e_n2->t2);
+
+    /*------------------------------------------------------
+    | Remove edges from front 
+    ------------------------------------------------------*/
+    tmFront_remEdge(mesh->front, e_n1);
+    tmFront_remEdge(mesh->front, e_n2);
   }
 
   /*--------------------------------------------------------
   | First edge node is connected to new node
   | -> Create new edge between last edge node and new node
   --------------------------------------------------------*/
-  if ( n1_e != NULL && n2_e == NULL )
+  if ( e_n1 != NULL && e_n2 == NULL )
   {
-    tmFront_remEdge(mesh->front, n1_e);
-    tmFront_addEdge(mesh->front, n, e->n2);
+    /*------------------------------------------------------
+    | Pass edge to mesh
+    ------------------------------------------------------*/
+    tmMesh_addEdge(mesh, e_n1->n1, e_n1->n2, t, e_n1->t2);
+
+    /*------------------------------------------------------
+    | Remove edge from front and create new front edge
+    | t is right triangle of new front edge
+    ------------------------------------------------------*/
+    tmFront_remEdge(mesh->front, e_n1);
+    tmFront_addEdge(mesh->front, n, e->n2, t);
+
   }
 
   /*--------------------------------------------------------
   | Last edge node is connected to new node
   | -> Create new edge between first edge node and new node
   --------------------------------------------------------*/
-  if ( n1_e == NULL && n2_e != NULL )
+  if ( e_n1 == NULL && e_n2 != NULL )
   {
-    tmFront_remEdge(mesh->front, n2_e);
-    tmFront_addEdge(mesh->front, e->n1, n);
+    /*------------------------------------------------------
+    | Pass edge to mesh
+    ------------------------------------------------------*/
+    tmMesh_addEdge(mesh, e_n2->n1, e_n2->n2, t, e_n2->t2);
+
+    /*------------------------------------------------------
+    | Remove edge from front and create new front edge
+    | t is right triangle of new front edge
+    ------------------------------------------------------*/
+    tmFront_remEdge(mesh->front, e_n2);
+    tmFront_addEdge(mesh->front, e->n1, n, t);
   }
 
   /*--------------------------------------------------------
   | No edge node is connected to new node
   | -> Create edges between both edge nodes and new node
   --------------------------------------------------------*/
-  if ( n1_e == NULL && n2_e == NULL )
+  if ( e_n1 == NULL && e_n2 == NULL )
   {
-    tmFront_addEdge(mesh->front, e->n1, n);
-    tmFront_addEdge(mesh->front, n, e->n2);
+    tmFront_addEdge(mesh->front, n, e->n2, t);
+    tmFront_addEdge(mesh->front, e->n1, n, t);
   }
 
   /*--------------------------------------------------------
-  | Remove base edge
+  | Pass base edge to mesh 
+  | then remove base edge from the front
   --------------------------------------------------------*/
+  tmMesh_addEdge(mesh, e->n1, e->n2, t, e->t2);
   tmFront_remEdge(mesh->front, e);
 
 } /* tmFront_update() */

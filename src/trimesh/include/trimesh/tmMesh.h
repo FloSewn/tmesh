@@ -40,6 +40,13 @@ typedef struct tmMesh {
   tmSizeFun sizeFun;
 
   /*-------------------------------------------------------
+  | Mesh edges
+  -------------------------------------------------------*/
+  List    *edges_stack;
+  int      no_edges;
+  tmQtree *edges_qtree;
+
+  /*-------------------------------------------------------
   | Mesh triangles 
   -------------------------------------------------------*/
   tmTri   *tris_head;
@@ -85,6 +92,17 @@ void tmMesh_destroy(tmMesh *mesh);
 ListNode *tmMesh_addNode(tmMesh *mesh, tmNode *node);
 
 /**********************************************************
+* Function: tmMesh_addEdge()
+*----------------------------------------------------------
+* Function to add an edge to a tmMesh structure
+*----------------------------------------------------------
+* 
+**********************************************************/
+tmEdge *tmMesh_addEdge(tmMesh *mesh, 
+                       tmNode *n1, tmNode *n2,
+                       tmTri  *t1, tmTri  *t2);
+
+/**********************************************************
 * Function: tmMesh_addTri()
 *----------------------------------------------------------
 * Function to add a tmTri to a tmMesh
@@ -101,6 +119,15 @@ ListNode *tmMesh_addTri(tmMesh *mesh, tmTri *tri);
 *          
 **********************************************************/
 void tmMesh_remNode(tmMesh *mesh, tmNode *node);
+
+/**********************************************************
+* Function: tmMesh_remEdge()
+*----------------------------------------------------------
+* Function to remove an edge from a tmMesh structure
+*----------------------------------------------------------
+*
+**********************************************************/
+void tmMesh_remEdge(tmMesh *mesh, tmEdge *edge);
 
 /**********************************************************
 * Function: tmMesh_remTri()

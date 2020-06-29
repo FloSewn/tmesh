@@ -48,6 +48,9 @@ tmNode *tmNode_create(tmMesh *mesh, tmDouble xy[2])
   node->front_edges   = List_create();
   node->n_front_edges = 0;
 
+  node->mesh_edges    = List_create();
+  node->n_mesh_edges  = 0;
+
   node->tris   = List_create();
   node->n_tris = 0;
 
@@ -87,6 +90,7 @@ void tmNode_destroy(tmNode *node)
   -------------------------------------------------------*/
   List_destroy(node->front_edges);
   List_destroy(node->bdry_edges);
+  List_destroy(node->mesh_edges);
   List_destroy(node->tris);
 
   /*-------------------------------------------------------

@@ -103,7 +103,7 @@ tmEdge *tmBdry_addEdge(tmBdry *bdry,
                        tmNode *n2,
                        tmIndex marker)
 {
-  tmEdge *edge = tmEdge_create( bdry->mesh, n1, n2, bdry );
+  tmEdge *edge = tmEdge_create( bdry->mesh, n1, n2, bdry, 0);
 
   bdry->edges_head  = edge;
   bdry->no_edges += 1;

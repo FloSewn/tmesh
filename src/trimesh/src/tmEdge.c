@@ -421,3 +421,61 @@ tmNode *tmEdge_createNode(tmEdge *edge)
   return n;
 
 } /* tmEdge_createNode() */
+
+/**********************************************************
+* Function: tmEdge_isLocalDelaunay()
+*----------------------------------------------------------
+* Check if an edge is locally delaunay
+*----------------------------------------------------------
+* @param edge: pointer to edge
+* 
+**********************************************************/
+tmBool tmEdge_isLocalDelaunay(tmEdge *edge)
+{
+  tmTri *t1 = edge->t1;
+  tmTri *t2 = edge->t2;
+
+  tmNode *n1 = edge->n1;
+  tmNode *n2 = edge->n2;
+
+  if (t1 == NULL || t2 == NULL)
+  {
+    return TRUE;
+  }
+  else
+  {
+    tmNode *nl, *nr;
+
+    if ( n1 == t1->n1 )
+      nl = t1->n3;
+    else if ( n1 == t1->n2 )
+      nl = t1->n1;
+    else
+      nl = t1->n2;
+
+    if ( n1 == t2->n1 )
+      nr = t2->n2;
+    else if ( n1 == t2->n2 )
+      nr = t2->n3;
+    else
+      nr = t2->n1;
+
+    tmDouble dx_l = nl->xy[0]-edge->xy[0];
+    tmDouble dy_l = nl->xy[1]-edge->xy[1];
+
+    tmDouble dx_r = nr->xy[0]-edge->xy[0];
+    tmDouble dy_r = nr->xy[1]-edge->xy[1];
+
+    tmDouble r2_l = dx_l*dx_l + dy_l*dy_l;
+    tmDouble r2_r = dx_r*dx_r + dy_r*dy_r;
+
+    tmDouble r_e  = 0.5 * edge->len;
+    tmDouble r2_e = r_e * r_e;
+
+    if (r2_l < r2_e || r2_r < r2_e)
+      return FALSE;
+  }
+
+  return TRUE;
+
+} /* tmEdge_isLocalDelaunay() */

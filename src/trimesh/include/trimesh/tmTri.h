@@ -51,6 +51,20 @@ typedef struct tmTri {
   tmTri  *t1;
   tmTri  *t2;
   tmTri  *t3;
+  
+  /*-------------------------------------------------------
+  | Triangle edges ( only edges of the tmMesh_edgeStack )
+  | Aligned in counter-clockwise orientation
+  | e1: located opposite of n1
+  |     adjacent to t1
+  | e2: located opposite of n2
+  |     adjacent to t2
+  | e3: located pposite of n3
+  |     adjacent to t3
+  -------------------------------------------------------*/
+  tmEdge *e1;
+  tmEdge *e2;
+  tmEdge *e3;
 
   /*-------------------------------------------------------
   | Centroid coordinates

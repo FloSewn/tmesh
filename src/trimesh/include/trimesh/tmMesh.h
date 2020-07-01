@@ -190,4 +190,14 @@ void tmMesh_printMesh(tmMesh *mesh);
 **********************************************************/
 void tmMesh_ADFMeshing(tmMesh *mesh);
 
+/**********************************************************
+* Function: tmMesh_delaunayFlip()
+*----------------------------------------------------------
+* Function to perform the flip algorithm on a triangulated
+* mesh, in order to obtain a triangulation that is delaunay
+*----------------------------------------------------------
+* 
+**********************************************************/
+void tmMesh_delaunayFlip(tmMesh *mesh);
+
 #endif

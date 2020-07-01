@@ -179,4 +179,14 @@ int tmEdge_compareLen(tmEdge *e1, tmEdge *e2);
 **********************************************************/
 tmNode *tmEdge_createNode(tmEdge *edge);
 
+/**********************************************************
+* Function: tmEdge_isLocalDelaunay()
+*----------------------------------------------------------
+* Check if an edge is locally delaunay
+*----------------------------------------------------------
+* @param edge: pointer to edge
+* 
+**********************************************************/
+tmBool tmEdge_isLocalDelaunay(tmEdge *edge);
+
 #endif

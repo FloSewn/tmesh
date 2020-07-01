@@ -244,47 +244,35 @@ tmEdge *tmMesh_addEdge(tmMesh *mesh,
   edge->t2 = t2;
 
   /*--------------------------------------------------------
-  | Check if edge meets local Delaunay constraint
+  | Connect edge to triangles
+  | t1 is located to the left of this edge
+  | t2 is located to the right of this edge
   --------------------------------------------------------*/
-  if (t1 == NULL || t2 == NULL)
-    edge->is_local_delaunay = TRUE;
-  else
+  if (t1 != NULL)
   {
-    tmNode *nl, *nr;
-
-    if ( t1->n1 == n1 )
-      nl = t1->n3;
-    else if ( t1->n1 == n2 )
-      nl = t1->n2;
+    if (n1 == t1->n1) /* -> n2 == t1->n2 */
+      t1->e3 = edge;
+    else if (n1 == t1->n2) /* -> n2 == t1->n3 */
+      t1->e1 = edge;
     else
-      nl = t1->n1;
-
-    if ( t2->n1 == n2 )
-      nr = t2->n3;
-    else if ( t2->n1 == n1 )
-      nr = t2->n2;
-    else
-      nr = t2->n1;
-
-    tmDouble dx_l = nl->xy[0]-edge->xy[0];
-    tmDouble dy_l = nl->xy[1]-edge->xy[1];
-
-    tmDouble dx_r = nr->xy[0]-edge->xy[0];
-    tmDouble dy_r = nr->xy[1]-edge->xy[1];
-
-    tmDouble r2_l = dx_l*dx_l + dy_l*dy_l;
-    tmDouble r2_r = dx_r*dx_r + dy_r*dy_r;
-
-    tmDouble r_e  = 0.5 * edge->len;
-    tmDouble r2_e = r_e * r_e;
-
-    if (r2_l < r2_e || r2_r < r2_e)
-      edge->is_local_delaunay = FALSE;
-    else
-      edge->is_local_delaunay = TRUE;
+      t1->e2 = edge;
 
   }
 
+  if (t2 != NULL)
+  {
+    if (n1 == t2->n1) /* -> n2 == t2->n3 */
+      t2->e2 = edge;
+    else if (n1 == t2->n2) /* -> n2 == t2->n1 */
+      t2->e3 = edge;
+    else
+      t2->e1 = edge;
+  }
+
+  /*--------------------------------------------------------
+  | Check if edge meets local Delaunay constraint
+  --------------------------------------------------------*/
+  edge->is_local_delaunay = tmEdge_isLocalDelaunay(edge);
 
   return edge;
 
@@ -708,3 +696,149 @@ error:
   return;
 
 } /* tmMesh_adfMeshing() */
+
+
+
+/**********************************************************
+* Function: tmMesh_delaunayFlip()
+*----------------------------------------------------------
+* Function to perform the flip algorithm on a triangulated
+* mesh, in order to obtain a triangulation that is delaunay
+*----------------------------------------------------------
+* 
+**********************************************************/
+void tmMesh_delaunayFlip(tmMesh *mesh)
+{
+  /*-------------------------------------------------------
+  | Create list of edges that are not locally delaunay
+  -------------------------------------------------------*/
+  List     *edges = List_create();
+  ListNode *cur;
+
+  for (cur = mesh->edges_stack->first; 
+       cur != NULL; cur = cur->next)
+  {
+    if ( ((tmEdge*)cur->value)->is_local_delaunay == FALSE )
+      List_push(edges, cur->value);
+  }
+
+  while ( edges->count > 0 )
+  {
+    tmEdge *curEdge = (tmEdge*)List_pop(edges);
+
+    tmTri *t1 = curEdge->t1;
+    tmTri *t2 = curEdge->t2;
+
+    tmNode *n1 = curEdge->n1;
+    tmNode *n2 = curEdge->n2;
+
+    /*-----------------------------------------------------
+    | Find quadrilateral nodes 
+    | -> p1, p2
+    | Find quadrilateral edges 
+    | -> e11, e12, e21, e22
+    | Find quadrilateral neighbor triangles 
+    | -> t11, t12, t21, t22
+    -----------------------------------------------------*/
+    tmNode *p1, *p2;
+    tmEdge *e11, *e12, *e21, *e22;
+    tmTri  *t11, *t12, *t21, *t22;
+
+    if (n1 == t1->n1) /* curEdge = t1->e3 */
+    {
+      p1   = t1->n3;
+      e11  = t1->e1;
+      e12  = t1->e2;
+      t11  = t1->t1;
+      t12  = t1->t2;
+    }
+    else if (n1 == t1->n2) /* curEdge = t1->e1 */
+    {
+      p1   = t1->n1;
+      e11  = t1->e2;
+      e12  = t1->e3;
+      t11  = t1->t2;
+      t12  = t1->t3;
+    }
+    else /* curEdge = t1->e2 */
+    {
+      p1   = t1->n2;
+      e11  = t1->e3;
+      e12  = t1->e1;
+      t11  = t1->t3;
+      t12  = t1->t1;
+    }
+
+    if (n1 == t2->n1) /* curEdge = t2->e2 */
+    {
+      p2   = t2->n2;
+      e21  = t2->e3;
+      e22  = t2->e1;
+      t21  = t2->t3;
+      t22  = t2->t1;
+    }
+    else if (n1 == t2->n2) /* curEdge = t2->e3 */
+    {
+      p2  = t2->n3;
+      e21 = t2->e1;
+      e22 = t2->e2;
+      t21 = t2->t1;
+      t22 = t2->t2;
+    }
+    else /* curEdge = t2->e1 */
+    {
+      p2  = t2->n1;
+      e21 = t2->e2;
+      e22 = t2->e3;
+      t21 = t2->t2;
+      t22 = t2->t3;
+    }
+
+    /*-----------------------------------------------------
+    | Create new triangles t1*, t2* and remove old ones
+    | t1* = (n1, p1, p2)
+    | t2* = (n2, p2, p1)
+    -----------------------------------------------------*/
+
+    /*-----------------------------------------------------
+    | Create new edge e* = (p1, p2) and remove old one
+    -----------------------------------------------------*/
+
+    /*-----------------------------------------------------
+    | Update triangles t1*, t2* in quad-edges e11, e12,...
+    -----------------------------------------------------*/
+
+    /*-----------------------------------------------------
+    | Add quad edges e11, e12,.. to triangles t1*, t2*
+    -----------------------------------------------------*/
+
+    /*-----------------------------------------------------
+    | Update t1*, t2* in quad tri-neighbors t11, t12,...
+    -----------------------------------------------------*/
+
+    /*-----------------------------------------------------
+    | Check if edges e11, e12,.. are locally delaunay
+    | if not -> add them to the list
+    -----------------------------------------------------*/
+    e11->is_local_delaunay = tmEdge_isLocalDelaunay(e11);
+    e12->is_local_delaunay = tmEdge_isLocalDelaunay(e12);
+    e21->is_local_delaunay = tmEdge_isLocalDelaunay(e21);
+    e22->is_local_delaunay = tmEdge_isLocalDelaunay(e22);
+
+    if (e11->is_local_delaunay == FALSE)
+      List_push(edges, e11);
+    if (e12->is_local_delaunay == FALSE)
+      List_push(edges, e12);
+    if (e21->is_local_delaunay == FALSE)
+      List_push(edges, e21);
+    if (e22->is_local_delaunay == FALSE)
+      List_push(edges, e22);
+
+  }
+
+
+  List_destroy(edges);
+
+
+
+} /* tmMesh_delaunayFlip() */

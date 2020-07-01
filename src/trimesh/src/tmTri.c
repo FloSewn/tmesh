@@ -405,6 +405,14 @@ tmTri *tmTri_create(tmMesh *mesh,
   tri->t3 = tmTri_findNbrTriFromEdge(n1, n2, tri);
 
   /*-------------------------------------------------------
+  | triangle edges -> are set later, during the 
+  | advancing front update (when mesh edges are created)
+  -------------------------------------------------------*/
+  tri->e1 = NULL;
+  tri->e2 = NULL;
+  tri->e3 = NULL;
+
+  /*-------------------------------------------------------
   | Add this triangle to the nodes triangle lists
   -------------------------------------------------------*/
   List_push(n1->tris, tri);

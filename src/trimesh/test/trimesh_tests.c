@@ -41,7 +41,7 @@ static inline tmDouble size_fun_3( tmDouble xy[2] )
 }
 static inline tmDouble size_fun_4( tmDouble xy[2] )
 {
-  return 2.75;
+  return 3.;
 }
 
 static inline tmDouble size_fun_5( tmDouble xy[2] )
@@ -1207,6 +1207,12 @@ char *test_tmFront_simpleMesh()
   printf("> Number of elements: %d\n", mesh->no_tris);
   printf("> Meshing time      : %e sec\n", (double) (tic_2 - tic_1) / CLOCKS_PER_SEC );
   printf("> ----------------------------------------------\n");
+
+
+  /*--------------------------------------------------------
+  | Flip edges which are not locally delaunay
+  --------------------------------------------------------*/
+  tmMesh_delaunayFlip(mesh);
 
   /*--------------------------------------------------------
   | Print the mesh data 

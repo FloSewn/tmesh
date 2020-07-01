@@ -262,9 +262,9 @@ tmEdge *tmMesh_addEdge(tmMesh *mesh,
     if ( t2->n1 == n2 )
       nr = t2->n3;
     else if ( t2->n1 == n1 )
-      nl = t2->n2;
+      nr = t2->n2;
     else
-      nl = t2->n1;
+      nr = t2->n1;
 
     tmDouble dx_l = nl->xy[0]-edge->xy[0];
     tmDouble dy_l = nl->xy[1]-edge->xy[1];

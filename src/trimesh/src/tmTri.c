@@ -78,22 +78,6 @@ static void tmTri_calcAngles(tmTri *tri);
 **********************************************************/
 static void tmTri_calcTriQuality(tmTri *tri);
 
-/**********************************************************
-* Function: tmTri_findNbrTriFromEdge()
-*----------------------------------------------------------
-* Searches for a neighboring triangle, which is adjacent
-* to an edge defined by two vertices (n1, n2)
-* The arrangement of n1 and n2 plays no role.
-*----------------------------------------------------------
-* @param n1,n2: nodes defining an edge, for which a
-*               triangle must be found
-* @param tri:   triangle for which a neighbor will be found
-*               if one has been found, it will be included
-*               to its neighbors
-**********************************************************/
-static tmTri *tmTri_findNbrTriFromEdge(tmNode *n1, 
-                                       tmNode *n2,
-                                       tmTri  *tri);
 
 /**********************************************************
 * Function: tmTri_splitTriangle()
@@ -281,64 +265,6 @@ static void tmTri_calcTriQuality(tmTri *tri)
 
 } /* tmTri_calcTriQuality() */
 
-/**********************************************************
-*
-**********************************************************/
-static tmTri *tmTri_findNbrTriFromEdge(tmNode *n1, 
-                                       tmNode *n2,
-                                       tmTri  *tri)
-{
-  ListNode *cur1,  *cur2;
-  tmTri *t1, *t2;
-
-  List *tris1 = n1->tris;
-  List *tris2 = n2->tris;
-  
-  if (tris2->count == 0)
-    return NULL;
-
-  for (cur1 = tris1->first; cur1 != NULL; cur1 = cur1->next)
-  {
-    t1 = (tmTri*)cur1->value;
-
-    for (cur2 = tris2->first; cur2 != NULL; cur2 = cur2->next)
-    {
-      t2 = (tmTri*)cur2->value;
-
-      if (t1 == t2)
-      {
-        tmNode *tn1 = ((tmTri*)cur1->value)->n1;
-        tmNode *tn2 = ((tmTri*)cur1->value)->n2;
-        tmNode *tn3 = ((tmTri*)cur1->value)->n3;
-
-        if (   (n1 == tn1) && (n2 == tn2) 
-            || (n1 == tn2) && (n2 == tn1) )
-        {
-          t1->t3   = tri;
-        }
-        else if (   (n1 == tn2) && (n2 == tn3) 
-                 || (n1 == tn3) && (n2 == tn2) )
-        {
-          t1->t1   = tri;
-        }
-        else if (   (n1 == tn3) && (n2 == tn1) 
-                 || (n1 == tn1) && (n2 == tn3) )
-        {
-          t1->t2   = tri;
-        }
-        else
-        {
-          log_err("Something went wrong during search for triangle neighbor.");
-        }
-
-        return t1;
-      }
-    }
-  }
-
-  return NULL;
-
-} /* tmTri_findNbrTriFromEdge() */
 
 /**********************************************************
 * Function: tmTri_splitTriangle()
@@ -355,6 +281,7 @@ static tmTri *tmTri_splitTriangle(tmTri *tri,
 {
 
 } /* tmTri_splitTriangle() */
+
 
 
 
@@ -390,7 +317,8 @@ tmTri *tmTri_create(tmMesh *mesh,
   tri->n3 = n3;
 
   /*-------------------------------------------------------
-  | Find tri neighbors
+  | Find tri neighbors and set current triangle as new 
+  | neighbor for them. 
   |
   |                  n3
   |                 /  \
@@ -400,9 +328,9 @@ tmTri *tmTri_create(tmMesh *mesh,
   |                  T3
   |
   -------------------------------------------------------*/
-  tri->t1 = tmTri_findNbrTriFromEdge(n2, n3, tri);
-  tri->t2 = tmTri_findNbrTriFromEdge(n3, n1, tri);
-  tri->t3 = tmTri_findNbrTriFromEdge(n1, n2, tri);
+  tri->t1 = NULL; 
+  tri->t2 = NULL; 
+  tri->t3 = NULL; 
 
   /*-------------------------------------------------------
   | triangle edges -> are set later, during the 
@@ -509,6 +437,91 @@ void tmTri_destroy(tmTri *tri)
   free(tri);
 
 } /* tmTri_destroy() */
+
+/**********************************************************
+* Function: tmTri_setTriNeighbors()
+*----------------------------------------------------------
+* Sets for every triangle the connectivity to its neigbors
+* This is done, when the advancing front meshing 
+* has finished.
+*----------------------------------------------------------
+* @param mesh: the mesh structure
+**********************************************************/
+void tmTri_setTriNeighbors(tmMesh *mesh)
+{
+  ListNode *cur; 
+
+  for (cur = mesh->tris_stack->first; 
+       cur != NULL; cur = cur->next)
+  {
+    tmTri *tri = (tmTri*)cur->value;
+
+    tri->t1 = tmTri_findTriNeighbor(tri->n2, tri->n3, tri);
+    tri->t2 = tmTri_findTriNeighbor(tri->n3, tri->n1, tri);
+    tri->t3 = tmTri_findTriNeighbor(tri->n1, tri->n2, tri);
+  }
+
+} /* tmTri_setTriNeighbors() */
+
+/**********************************************************
+* Function: tmTri_findNbrTriFromEdge()
+*----------------------------------------------------------
+* Searches for a neighboring triangle, which is adjacent
+* to an edge defined by two vertices (n1, n2)
+* The arrangement of n1 and n2 plays no role.
+*----------------------------------------------------------
+* @param n1,n2: nodes defining an edge, for which a
+*               triangle must be found
+* @param tri:   triangle for which a neighbor will be found
+*               if one has been found, it will be included
+*               to its neighbors
+**********************************************************/
+tmTri *tmTri_findTriNeighbor(tmNode *n1, 
+                             tmNode *n2,
+                             tmTri  *tri)
+{
+  ListNode *cur;
+  tmTri    *t_nb;
+  List     *tris_nb = n1->tris;
+
+  if (tris_nb->count == 0)
+    return NULL;
+
+  for (cur = tris_nb->first; cur != NULL; cur = cur->next)
+  {
+    t_nb = (tmTri*)cur->value;
+
+    if (n2 == t_nb->n1)
+    {
+      if (n1 == t_nb->n2)
+        t_nb->t3 = tri;
+      else /* n1 == t_nb->n3 */
+        t_nb->t2 = tri;
+      return t_nb;
+    }
+
+    if (n2 == t_nb->n2)
+    {
+      if (n1 == t_nb->n1)
+        t_nb->t3 = tri;
+      else /* n1 == t_nb->n3 */
+        t_nb->t1 = tri;
+      return t_nb;
+    }
+
+    if (n2 == t_nb->n3)
+    {
+      if (n1 == t_nb->n1)
+        t_nb->t2 = tri;
+      else /* n1 == t_nb->n2 */
+        t_nb->t1 = tri;
+      return t_nb;
+    }
+  }
+
+  return NULL;
+
+} /* tmTri_findNbrTriFromEdge() */
 
 /**********************************************************
 * Function: tmTri_isValid()

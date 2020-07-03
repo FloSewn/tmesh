@@ -630,7 +630,7 @@ void tmMesh_printMesh(tmMesh *mesh)
         tri_index, i1, i2, i3);
     
     tri_index += 1;
-  }
+  } 
 
 } /* tmMesh_printMesh() */
 
@@ -693,6 +693,11 @@ void tmMesh_ADFMeshing(tmMesh *mesh)
 
   if ( front->no_edges > 0 )
     log_err("The advancing front meshing was not successfull.");
+
+  /*-------------------------------------------------------
+  | Set triangle-triangle connectivity
+  -------------------------------------------------------*/
+  tmTri_setTriNeighbors(mesh);
 
 error:
   return;
@@ -940,6 +945,11 @@ void tmMesh_delaunayFlip(tmMesh *mesh)
   }
 
   List_destroy(edges);
+
+  /*-------------------------------------------------------
+  | Set triangle-triangle connectivity
+  -------------------------------------------------------*/
+  tmTri_setTriNeighbors(mesh);
 
 
 #if (TM_DEBUG > 1)

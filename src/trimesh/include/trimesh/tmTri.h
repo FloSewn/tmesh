@@ -99,6 +99,7 @@ typedef struct tmTri {
 } tmTri;
 
 
+
 /**********************************************************
 * Function: tmTri_create()
 *----------------------------------------------------------
@@ -122,6 +123,34 @@ tmTri *tmTri_create(tmMesh *mesh,
 * @param *mesh: pointer to a tmTri to destroy
 **********************************************************/
 void tmTri_destroy(tmTri *tri);
+
+/**********************************************************
+* Function: tmTri_setTriNeighbors()
+*----------------------------------------------------------
+* Sets for every triangle the connectivity to its neigbors
+* This is done, when the advancing front meshing 
+* has finished.
+*----------------------------------------------------------
+* @param mesh: the mesh structure
+**********************************************************/
+void tmTri_setTriNeighbors(tmMesh *mesh);
+
+/**********************************************************
+* Function: tmTri_findNbrTriFromEdge()
+*----------------------------------------------------------
+* Searches for a neighboring triangle, which is adjacent
+* to an edge defined by two vertices (n1, n2)
+* The arrangement of n1 and n2 plays no role.
+*----------------------------------------------------------
+* @param n1,n2: nodes defining an edge, for which a
+*               triangle must be found
+* @param tri:   triangle for which a neighbor will be found
+*               if one has been found, it will be included
+*               to its neighbors
+**********************************************************/
+tmTri *tmTri_findTriNeighbor(tmNode *n1, 
+                             tmNode *n2,
+                             tmTri  *tri);
 
 /**********************************************************
 * Function: tmTri_isValid()

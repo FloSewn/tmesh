@@ -68,7 +68,7 @@ void tmBdry_destroy(tmBdry *bdry)
   while (nxt != NULL)
   {
     nxt = cur->next;
-    tmBdry_remEdge(bdry, cur->value);
+    tmEdge_destroy(cur->value);
     cur = nxt;
   }
 
@@ -90,30 +90,44 @@ void tmBdry_destroy(tmBdry *bdry)
 
 } /* tmBdry_destroy() */
 
+
+/**********************************************************
+* Function: tmBdry_edgeCreate()
+*----------------------------------------------------------
+* Function to create a new boundary edge 
+*----------------------------------------------------------
+* 
+**********************************************************/
+tmEdge *tmBdry_edgeCreate(tmBdry *bdry, 
+                          tmNode *n1, 
+                          tmNode *n2,
+                          tmIndex marker)
+{
+  tmEdge *edge = tmEdge_create( bdry->mesh, n1, n2, bdry, 0);
+  edge->bdry_marker = marker;
+
+} /*tmBdry_edgeCreate() */
+
+
 /**********************************************************
 * Function: tmBdry_addEdge()
 *----------------------------------------------------------
 * Function to add an edge to a tmBdry structure
 * This edge is the new head of the boundary structure
 *----------------------------------------------------------
-* 
+* @return: ListNode to tmEdge on the mesh's edge stack
 **********************************************************/
-tmEdge *tmBdry_addEdge(tmBdry *bdry, 
-                       tmNode *n1, 
-                       tmNode *n2,
-                       tmIndex marker)
+ListNode *tmBdry_addEdge(tmBdry *bdry, tmEdge *edge)
 {
-  tmEdge *edge = tmEdge_create( bdry->mesh, n1, n2, bdry, 0);
-
-  bdry->edges_head  = edge;
+  ListNode *edge_pos;
   bdry->no_edges += 1;
+  bdry->edges_head  = edge;
 
   List_push(bdry->edges_stack, edge);
   tmQtree_addObj(bdry->edges_qtree, edge);
-  edge->stack_pos = List_last_node(bdry->edges_stack);
-  edge->bdry_marker = marker;
+  edge_pos = List_last_node(bdry->edges_stack);
   
-  return edge;
+  return edge_pos;
 
 } /* tmBdry_addEdge() */
 
@@ -148,7 +162,7 @@ void tmBdry_remEdge(tmBdry *bdry, tmEdge *edge)
   /*-------------------------------------------------------
   | Destroy edge
   -------------------------------------------------------*/
-  tmEdge_destroy(edge);
+  //tmEdge_destroy(edge);
 
 } /* tmBdry_remEdge() */
 
@@ -352,10 +366,10 @@ tmEdge *tmBdry_splitEdge(tmBdry *bdry, tmEdge *edge)
 
   tmIndex marker = edge->bdry_marker;
 
-  tmBdry_remEdge(bdry, edge);
+  tmEdge_destroy(edge);
 
-  tmEdge *ne1 = tmBdry_addEdge(bdry, n1, nn, marker);
-  tmEdge *ne2 = tmBdry_addEdge(bdry, nn, n2, marker);
+  tmEdge *ne1 = tmBdry_edgeCreate(bdry, n1, nn, marker);
+  tmEdge *ne2 = tmBdry_edgeCreate(bdry, nn, n2, marker);
 
   return ne1;
 

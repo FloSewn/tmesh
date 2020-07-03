@@ -62,7 +62,7 @@ void tmFront_destroy(tmFront *front)
   while (nxt != NULL)
   {
     nxt = cur->next;
-    tmFront_remEdge(front, cur->value);
+    tmEdge_destroy(cur->value);
     cur = nxt;
   }
 
@@ -79,6 +79,33 @@ void tmFront_destroy(tmFront *front)
 
 } /* tmFront_destroy() */
 
+/**********************************************************
+* Function: tmFront_edgeCreate()
+*----------------------------------------------------------
+* Function to create a new edge on the advancing front
+*----------------------------------------------------------
+* @param front: advancing front structure to add edge to
+* @param n1,n2: start / ending node defining the edge
+* @param t:     triangle that is located to the right
+*               of the new edge
+* 
+**********************************************************/
+tmEdge *tmFront_edgeCreate(tmFront *front, 
+                           tmNode  *n1, 
+                           tmNode  *n2,
+                           tmTri   *t)
+{
+  tmEdge *edge = tmEdge_create(front->mesh, n1, n2, NULL, 1);
+
+  /*--------------------------------------------------------
+  | Set triangle that is located to the right of the new 
+  | edge
+  --------------------------------------------------------*/
+  edge->t2 = t;
+
+  return edge;
+
+} /* tmFront_edgeCreate() */
 
 /**********************************************************
 * Function: tmFront_addEdge()
@@ -92,28 +119,18 @@ void tmFront_destroy(tmFront *front)
 *               of the new edge
 * 
 **********************************************************/
-tmEdge *tmFront_addEdge(tmFront *front, 
-                        tmNode  *n1, 
-                        tmNode  *n2,
-                        tmTri   *t)
+ListNode *tmFront_addEdge(tmFront *front, tmEdge *edge)
 {
-
-  tmEdge *edge = tmEdge_create(front->mesh, n1, n2, NULL, 1);
+  ListNode *edge_pos;
 
   front->edges_head = edge;
   front->no_edges += 1;
 
   List_push(front->edges_stack, edge);
   tmQtree_addObj(front->edges_qtree, edge);
-  edge->stack_pos = List_last_node(front->edges_stack);
+  edge_pos = List_last_node(front->edges_stack);
 
-  /*--------------------------------------------------------
-  | Set triangle that is located to the right of the new 
-  | edge
-  --------------------------------------------------------*/
-  edge->t2 = t;
-
-  return edge;
+  return edge_pos;
 
 } /* tmFront_addEdge() */
 
@@ -148,7 +165,7 @@ void tmFront_remEdge(tmFront *front, tmEdge *edge)
   /*-------------------------------------------------------
   | Destroy edge -> removes also adjacency to edge nodes
   -------------------------------------------------------*/
-  tmEdge_destroy(edge);
+  //tmEdge_destroy(edge);
 
 } /* tmFront_remEdge() */
 
@@ -183,7 +200,7 @@ void tmFront_init(tmMesh *mesh)
       tmNode *n1 = ((tmEdge*)cur->value)->n1;
       tmNode *n2 = ((tmEdge*)cur->value)->n2;
 
-      tmFront_addEdge(front, n1, n2, NULL);
+      tmFront_edgeCreate(front, n1, n2, NULL);
     }
   }
 
@@ -424,14 +441,14 @@ void tmFront_update(tmMesh *mesh,
     /*------------------------------------------------------
     | Pass edges to mesh
     ------------------------------------------------------*/
-    tmMesh_addEdge(mesh, e_n1->n1, e_n1->n2, t, e_n1->t2);
-    tmMesh_addEdge(mesh, e_n2->n1, e_n2->n2, t, e_n2->t2);
+    tmMesh_edgeCreate(mesh, e_n1->n1, e_n1->n2, t, e_n1->t2);
+    tmMesh_edgeCreate(mesh, e_n2->n1, e_n2->n2, t, e_n2->t2);
 
     /*------------------------------------------------------
     | Remove edges from front 
     ------------------------------------------------------*/
-    tmFront_remEdge(mesh->front, e_n1);
-    tmFront_remEdge(mesh->front, e_n2);
+    tmEdge_destroy(e_n1);
+    tmEdge_destroy(e_n2);
   }
 
   /*--------------------------------------------------------
@@ -443,14 +460,14 @@ void tmFront_update(tmMesh *mesh,
     /*------------------------------------------------------
     | Pass edge to mesh
     ------------------------------------------------------*/
-    tmMesh_addEdge(mesh, e_n1->n1, e_n1->n2, t, e_n1->t2);
+    tmMesh_edgeCreate(mesh, e_n1->n1, e_n1->n2, t, e_n1->t2);
 
     /*------------------------------------------------------
     | Remove edge from front and create new front edge
     | t is right triangle of new front edge
     ------------------------------------------------------*/
-    tmFront_remEdge(mesh->front, e_n1);
-    tmFront_addEdge(mesh->front, n, e->n2, t);
+    tmEdge_destroy(e_n1);
+    tmFront_edgeCreate(mesh->front, n, e->n2, t);
 
   }
 
@@ -463,14 +480,14 @@ void tmFront_update(tmMesh *mesh,
     /*------------------------------------------------------
     | Pass edge to mesh
     ------------------------------------------------------*/
-    tmMesh_addEdge(mesh, e_n2->n1, e_n2->n2, t, e_n2->t2);
+    tmMesh_edgeCreate(mesh, e_n2->n1, e_n2->n2, t, e_n2->t2);
 
     /*------------------------------------------------------
     | Remove edge from front and create new front edge
     | t is right triangle of new front edge
     ------------------------------------------------------*/
-    tmFront_remEdge(mesh->front, e_n2);
-    tmFront_addEdge(mesh->front, e->n1, n, t);
+    tmEdge_destroy(e_n2);
+    tmFront_edgeCreate(mesh->front, e->n1, n, t);
   }
 
   /*--------------------------------------------------------
@@ -479,16 +496,16 @@ void tmFront_update(tmMesh *mesh,
   --------------------------------------------------------*/
   if ( e_n1 == NULL && e_n2 == NULL )
   {
-    tmFront_addEdge(mesh->front, n, e->n2, t);
-    tmFront_addEdge(mesh->front, e->n1, n, t);
+    tmFront_edgeCreate(mesh->front, n, e->n2, t);
+    tmFront_edgeCreate(mesh->front, e->n1, n, t);
   }
 
   /*--------------------------------------------------------
   | Pass base edge to mesh 
   | then remove base edge from the front
   --------------------------------------------------------*/
-  tmMesh_addEdge(mesh, e->n1, e->n2, t, e->t2);
-  tmFront_remEdge(mesh->front, e);
+  tmMesh_edgeCreate(mesh, e->n1, e->n2, t, e->t2);
+  tmEdge_destroy(e);
 
 } /* tmFront_update() */
 

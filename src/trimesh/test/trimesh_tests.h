@@ -50,6 +50,7 @@ char *test_tmTri_intersection();
 char *test_tmFront_init();
 char *test_tmFront_advance();
 char *test_tmFront_simpleMesh();
+char *test_tmFront_simpleMesh2();
 char *test_tmFront_innerOuterMesh();
 
 #endif

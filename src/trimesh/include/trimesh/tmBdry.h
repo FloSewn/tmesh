@@ -55,16 +55,26 @@ tmBdry *tmBdry_create(tmMesh *mesh,
 void tmBdry_destroy(tmBdry *bdry);
 
 /**********************************************************
+* Function: tmBdry_edgeCreate()
+*----------------------------------------------------------
+* Function to create a new boundary edge 
+*----------------------------------------------------------
+* 
+**********************************************************/
+tmEdge *tmBdry_edgeCreate(tmBdry *bdry, 
+                          tmNode *n1, 
+                          tmNode *n2,
+                          tmIndex marker);
+
+/**********************************************************
 * Function: tmBdry_addEdge()
 *----------------------------------------------------------
 * Function to add an edge to a tmBdry structure
+* This edge is the new head of the boundary structure
 *----------------------------------------------------------
 * @return: ListNode to tmEdge on the mesh's edge stack
 **********************************************************/
-tmEdge *tmBdry_addEdge(tmBdry *bdry, 
-                       tmNode *n1, 
-                       tmNode *n2,
-                       tmIndex marker);
+ListNode *tmBdry_addEdge(tmBdry *bdry, tmEdge *edge);
 
 /**********************************************************
 * Function: tmBdry_remEdge()

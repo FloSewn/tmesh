@@ -92,15 +92,27 @@ void tmMesh_destroy(tmMesh *mesh);
 ListNode *tmMesh_addNode(tmMesh *mesh, tmNode *node);
 
 /**********************************************************
+* Function: tmMesh_edgeCreate()
+*----------------------------------------------------------
+* Function to create a new edge for a tmMesh structure
+*----------------------------------------------------------
+* @param mesh: mesh for which the edge is defined
+* @param n1, n2: start/ending node of edge
+* @param t1, t2: triangle to the left / right of the edge
+**********************************************************/
+tmEdge *tmMesh_edgeCreate(tmMesh *mesh, 
+                          tmNode *n1, tmNode *n2,
+                          tmTri  *t1, tmTri  *t2);
+
+/**********************************************************
 * Function: tmMesh_addEdge()
 *----------------------------------------------------------
 * Function to add an edge to a tmMesh structure
 *----------------------------------------------------------
-* 
+* @param mesh: mesh for which the edge is defined
+* @param edge: edge to add 
 **********************************************************/
-tmEdge *tmMesh_addEdge(tmMesh *mesh, 
-                       tmNode *n1, tmNode *n2,
-                       tmTri  *t1, tmTri  *t2);
+ListNode *tmMesh_addEdge(tmMesh *mesh, tmEdge *edge);
 
 /**********************************************************
 * Function: tmMesh_addTri()

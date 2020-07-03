@@ -3,6 +3,7 @@
 #include "trimesh/tmEdge.h"
 #include "trimesh/tmNode.h"
 #include "trimesh/tmBdry.h"
+#include "trimesh/tmFront.h"
 #include "trimesh/tmTri.h"
 
 
@@ -39,9 +40,11 @@ tmEdge *tmEdge_create(tmMesh *mesh,
   edge->qtree_pos = NULL;
   edge->stack_pos = NULL;
 
-  edge->is_on_bdry  = FALSE;
-  edge->is_on_front = FALSE;
-  edge->bdry_marker = -1;
+  edge->is_on_bdry        = FALSE;
+  edge->is_on_front       = FALSE;
+  edge->is_on_mesh        = FALSE;
+  edge->is_local_delaunay = FALSE;
+  edge->bdry_marker       = -1;
 
   /*-------------------------------------------------------
   | Init nodes 
@@ -96,6 +99,8 @@ tmEdge *tmEdge_create(tmMesh *mesh,
     edge->n2_pos = List_last_node(edge->n2->bdry_edges);
     edge->n2->on_bdry = TRUE;
     edge->n2->n_bdry_edges += 1;
+
+    edge->stack_pos = tmBdry_addEdge(bdry, edge);
   }
   /*-------------------------------------------------------
   | Specifiy advancing front edge properties
@@ -114,12 +119,16 @@ tmEdge *tmEdge_create(tmMesh *mesh,
     edge->n2_pos = List_last_node(edge->n2->front_edges);
     edge->n2->on_front = TRUE;
     edge->n2->n_front_edges += 1;
+
+    edge->stack_pos = tmFront_addEdge(mesh->front, edge);
   }
   /*-------------------------------------------------------
   | Specifiy mesh edge properties
   -------------------------------------------------------*/
   else if ( edgeType == 2)
   {
+    edge->is_on_mesh = TRUE;
+
     List_push(edge->n1->mesh_edges, edge);
     edge->n1_pos = List_last_node(edge->n1->mesh_edges);
     edge->n1->n_mesh_edges += 1;
@@ -127,6 +136,8 @@ tmEdge *tmEdge_create(tmMesh *mesh,
     List_push(edge->n2->mesh_edges, edge);
     edge->n2_pos = List_last_node(edge->n2->mesh_edges);
     edge->n2->n_mesh_edges += 1;
+
+    edge->stack_pos = tmMesh_addEdge(mesh, edge);
   }
   else
   {
@@ -150,10 +161,12 @@ error:
 void tmEdge_destroy(tmEdge *edge)
 {
   /*-------------------------------------------------------
-  | Remove edge from its adjacent boundary nodes
+  | Handle boundary edge
   -------------------------------------------------------*/
-  if ( edge->bdry != NULL )
+  if ( edge->is_on_bdry == TRUE )
   {
+    tmBdry_remEdge(edge->bdry, edge);
+
     /* Remove edge from node 1 edge list                 */
     List_remove(edge->n1->bdry_edges, edge->n1_pos);
     edge->n1->n_bdry_edges -= 1;
@@ -166,12 +179,13 @@ void tmEdge_destroy(tmEdge *edge)
     if (edge->n2->n_bdry_edges <= 0)
       edge->n2->on_bdry = FALSE;
   }
-
   /*-------------------------------------------------------
-  | Remove edge from its adjacent front nodes
+  | Handle front edge
   -------------------------------------------------------*/
-  if ( edge->front != NULL )
+  else if ( edge->is_on_front == TRUE )
   {
+    tmFront_remEdge(edge->front, edge);
+
     /* Remove edge from node 1 edge list                 */
     List_remove(edge->n1->front_edges, edge->n1_pos);
     edge->n1->n_front_edges -= 1;
@@ -184,6 +198,22 @@ void tmEdge_destroy(tmEdge *edge)
     if (edge->n2->n_front_edges <= 0)
       edge->n2->on_front = FALSE;
   }
+  /*-------------------------------------------------------
+  | Handle mesh edge
+  -------------------------------------------------------*/
+  else if ( edge->is_on_mesh == TRUE )
+  {
+    tmMesh_remEdge(edge->mesh, edge);
+
+    List_remove(edge->n1->mesh_edges, edge->n1_pos);
+    edge->n1->n_mesh_edges -= 1;
+
+    List_remove(edge->n2->mesh_edges, edge->n2_pos);
+    edge->n2->n_mesh_edges -= 1;
+
+  }
+  else
+    log_err("Removing edge of unknown type.");
 
   /*-------------------------------------------------------
   | Finally free edge structure memory
@@ -432,50 +462,85 @@ tmNode *tmEdge_createNode(tmEdge *edge)
 **********************************************************/
 tmBool tmEdge_isLocalDelaunay(tmEdge *edge)
 {
-  tmTri *t1 = edge->t1;
-  tmTri *t2 = edge->t2;
+  tmNode *nl, *nr;
+
+  tmTri *tl = edge->t1;
+  tmTri *tr = edge->t2;
 
   tmNode *n1 = edge->n1;
   tmNode *n2 = edge->n2;
 
-  if (t1 == NULL || t2 == NULL)
+
+  if (tl == NULL || tr == NULL)
+    return TRUE;
+
+  if ( n1 == tl->n1 )
+  {
+    nl = tl->n3;
+    check( n2 == tl->n2, "Wrong triangle-node connectivity");
+  }
+  else if ( n1 == tl->n2 )
+  {
+    nl = tl->n1;
+    check( n2 == tl->n3, "Wrong triangle-node connectivity");
+  }
+  else if ( n1 == tl->n3 )
+  {
+    nl = tl->n2;
+    check( n2 == tl->n1, "Wrong triangle-node connectivity");
+  }
+  else
+    log_err("Wrong triangle-edge connectivity");
+
+
+
+  if ( n1 == tr->n1 )
+  {
+    nr = tr->n2;
+    check( n2 == tr->n3, "Wrong triangle-node connectivity");
+  }
+  else if ( n1 == tr->n2 )
+  {
+    nr = tr->n3;
+    check( n2 == tr->n1, "Wrong triangle-node connectivity");
+  }
+  else if ( n1 == tr->n3 )
+  {
+    nr = tr->n1;
+    check( n2 == tr->n2, "Wrong triangle-node connectivity");
+  }
+  else
+    log_err("Wrong triangle-edge connectivity");
+
+
+
+  tmDouble dx_l = nl->xy[0] - tr->circ_xy[0];
+  tmDouble dy_l = nl->xy[1] - tr->circ_xy[1];
+
+  tmDouble dx_r = nr->xy[0] - tl->circ_xy[0];
+  tmDouble dy_r = nr->xy[1] - tl->circ_xy[1];
+
+  tmDouble r2_l = dx_l*dx_l + dy_l*dy_l;
+  tmDouble r2_r = dx_r*dx_r + dy_r*dy_r;
+
+  tmDouble circ2_l = tl->circ_r * tl->circ_r;
+  tmDouble circ2_r = tr->circ_r * tr->circ_r;
+
+  if (r2_l >= circ2_r && r2_r >= circ2_l)
   {
     return TRUE;
   }
-  else
-  {
-    tmNode *nl, *nr;
+#if (TM_DEBUG > 1)
+    tmPrint("EDGE (%d,%d) IS NOT DELAUNAY -> (%.4f,%.4f|%.4f,%.4f) -> (%.4f,%.4f|%.4f,%.4f)",
+        n1->index, n2->index, 
+        tl->circ_xy[0], tl->circ_xy[1], circ2_l, r2_r,
+        tr->circ_xy[0], tr->circ_xy[1], circ2_r, r2_l
+        );
+#endif
 
-    if ( n1 == t1->n1 )
-      nl = t1->n3;
-    else if ( n1 == t1->n2 )
-      nl = t1->n1;
-    else
-      nl = t1->n2;
+  return FALSE;
 
-    if ( n1 == t2->n1 )
-      nr = t2->n2;
-    else if ( n1 == t2->n2 )
-      nr = t2->n3;
-    else
-      nr = t2->n1;
-
-    tmDouble dx_l = nl->xy[0]-edge->xy[0];
-    tmDouble dy_l = nl->xy[1]-edge->xy[1];
-
-    tmDouble dx_r = nr->xy[0]-edge->xy[0];
-    tmDouble dy_r = nr->xy[1]-edge->xy[1];
-
-    tmDouble r2_l = dx_l*dx_l + dy_l*dy_l;
-    tmDouble r2_r = dx_r*dx_r + dy_r*dy_r;
-
-    tmDouble r_e  = 0.5 * edge->len;
-    tmDouble r2_e = r_e * r_e;
-
-    if (r2_l < r2_e || r2_r < r2_e)
-      return FALSE;
-  }
-
+error:
   return TRUE;
 
 } /* tmEdge_isLocalDelaunay() */

@@ -27,6 +27,7 @@ typedef struct tmEdge {
   -------------------------------------------------------*/
   tmBool    is_on_front;
   tmBool    is_on_bdry;
+  tmBool    is_on_mesh;
   tmBool    is_local_delaunay;
 
   ListNode *stack_pos;

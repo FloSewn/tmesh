@@ -162,8 +162,8 @@ static void tmTri_calcCircumcenter(tmTri *tri)
   tmDouble Uy = ( Bx*(Cx*Cx + Cy*Cy) 
                 - Cx*(Bx*Bx + By*By) ) / D;
 
-  tri->circ_xy[0] = Ux;
-  tri->circ_xy[1] = Uy;
+  tri->circ_xy[0] = Ux + p[0];
+  tri->circ_xy[1] = Uy + p[1];
   tri->circ_r     = sqrt(Ux*Ux + Uy*Uy);
 
 } /* tmTri_calcCircumcenter() */

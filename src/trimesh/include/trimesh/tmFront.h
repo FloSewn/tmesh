@@ -50,6 +50,22 @@ tmFront *tmFront_create(tmMesh *mesh);
 void tmFront_destroy(tmFront *front);
 
 /**********************************************************
+* Function: tmFront_edgeCreate()
+*----------------------------------------------------------
+* Function to create a new edge on the advancing front
+*----------------------------------------------------------
+* @param front: advancing front structure to add edge to
+* @param n1,n2: start / ending node defining the edge
+* @param t:     triangle that is located to the right
+*               of the new edge
+* 
+**********************************************************/
+tmEdge *tmFront_edgeCreate(tmFront *front, 
+                           tmNode  *n1, 
+                           tmNode  *n2,
+                           tmTri   *t);
+
+/**********************************************************
 * Function: tmFront_addEdge()
 *----------------------------------------------------------
 * Function to add an edge to a tmFront structure
@@ -61,10 +77,7 @@ void tmFront_destroy(tmFront *front);
 *               of the new edge
 * 
 **********************************************************/
-tmEdge *tmFront_addEdge(tmFront *front, 
-                        tmNode  *n1, 
-                        tmNode  *n2,
-                        tmTri   *t);
+ListNode *tmFront_addEdge(tmFront *front, tmEdge *edge);
 
 /**********************************************************
 * Function: tmFront_remEdge()

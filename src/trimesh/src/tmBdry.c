@@ -31,6 +31,8 @@ tmBdry *tmBdry_create(tmMesh *mesh,
   bdry->is_interior = is_interior;
   bdry->index       = index;
   bdry->mesh_pos    = NULL;
+  bdry->area        = 0.0;
+
 
   /*-------------------------------------------------------
   | Boundary edges
@@ -419,3 +421,51 @@ error:
   return;
 
 } /* tmBdry_refine() */
+
+/**********************************************************
+* Function: tmBdry_calcArea()
+*----------------------------------------------------------
+* Computes the area enclosed by the boundary and sets
+* it in the boundaries properties
+*
+* Reference:
+* https://www.wikihow.com/Calculate-the-Area-of-a-Polygon
+*----------------------------------------------------------
+* @param *bdry: pointer to bdry
+* @return: 
+**********************************************************/
+void tmBdry_calcArea(tmBdry *bdry)
+{
+  ListNode *cur;
+
+  tmDouble p1 = 0.0;
+  tmDouble p2 = 0.0;
+
+  /*-------------------------------------------------------
+  | Loop over all boundary edges
+  -------------------------------------------------------*/
+  for (cur = bdry->edges_stack->first; 
+       cur != NULL; cur = cur->next)
+  {
+    tmNode *n1 = ((tmEdge*)cur->value)->n1;
+    tmNode *n2 = ((tmEdge*)cur->value)->n2;
+
+    p1 += n1->xy[0] * n2->xy[1];
+    p2 += n1->xy[1] * n2->xy[0];
+  }
+
+  bdry->area = 0.5 * (p1 - p2);
+
+  if (bdry->is_interior == TRUE)
+  {
+    check(bdry->area <= 0.0, "Interior boundary seems to have a counter-clockwise orientation.");
+  }
+  else
+  {
+    check(bdry->area >= 0.0, "Exterior boundary seems to have a clockwise orientation.");
+  }
+
+error:
+  return;
+
+} /* tmBdry_calcArea() */

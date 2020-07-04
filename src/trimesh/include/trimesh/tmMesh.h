@@ -14,6 +14,7 @@ typedef struct tmMesh {
   int      qtree_max_obj;
   tmDouble xy_min[2];
   tmDouble xy_max[2];
+  tmDouble area;
 
   /*-------------------------------------------------------
   | Mesh nodes 
@@ -211,5 +212,26 @@ void tmMesh_ADFMeshing(tmMesh *mesh);
 * 
 **********************************************************/
 void tmMesh_delaunayFlip(tmMesh *mesh);
+
+/**********************************************************
+* Function: tmMesh_setTriNeighbors()
+*----------------------------------------------------------
+* Sets for every triangle the connectivity to its neigbors
+* This is done, when the advancing front meshing 
+* has finished.
+*----------------------------------------------------------
+* @param mesh: the mesh structure
+**********************************************************/
+void tmMesh_setTriNeighbors(tmMesh *mesh);
+
+/**********************************************************
+* Function: tmMesh_calcArea()
+*----------------------------------------------------------
+* Function to compute the area enclosed by the entire
+* mesh domain
+*----------------------------------------------------------
+* @param mesh: mesh for which the edge is defined
+**********************************************************/
+void tmMesh_calcArea(tmMesh *mesh);
 
 #endif

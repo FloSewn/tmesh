@@ -531,11 +531,8 @@ tmBool tmEdge_isLocalDelaunay(tmEdge *edge)
     return TRUE;
   }
 #if (TM_DEBUG > 1)
-    tmPrint("EDGE (%d,%d) IS NOT DELAUNAY -> (%.4f,%.4f|%.4f,%.4f) -> (%.4f,%.4f|%.4f,%.4f)",
-        n1->index, n2->index, 
-        tl->circ_xy[0], tl->circ_xy[1], circ2_l, r2_r,
-        tr->circ_xy[0], tr->circ_xy[1], circ2_r, r2_l
-        );
+    tmPrint("EDGE (%d,%d) IS NOT DELAUNAY",
+        n1->index, n2->index);
 #endif
 
   return FALSE;

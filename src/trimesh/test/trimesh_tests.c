@@ -47,11 +47,11 @@ static inline tmDouble size_fun_5( tmDouble xy[2] )
 {
   tmDouble y0 = 10.0;
   tmDouble dy = y0 - xy[1];
-  //return 2.50 - 2.00 * exp(-0.02*dy*dy) + 0.02 * xy[0];
-  tmDouble val = 0.75 
-               + 0.005 * (xy[0]-50)*(xy[0]-50) 
-               + 0.005 * (xy[1]-50)*(xy[1]-50);
-  return val;
+  return 2.50 - 2.00 * exp(-0.02*dy*dy) + 0.02 * xy[0];
+  //tmDouble val = 0.05
+  //             + 0.001 * (xy[0]-50)*(xy[0]-50) 
+  //             + 0.001 * (xy[1]-50)*(xy[1]-50);
+  //return val;
 }
 static inline tmDouble size_fun_6( tmDouble xy[2] )
 {
@@ -382,9 +382,9 @@ char *test_tmBdry_refine()
   | exterior nodes
   --------------------------------------------------------*/
   tmDouble xy0[2] = {  0.0,  0.0 };
-  tmDouble xy1[2] = { 11.0,  0.0 };
-  tmDouble xy2[2] = { 11.0,  7.0 };
-  tmDouble xy3[2] = {  0.0,  7.0 };
+  tmDouble xy1[2] = { 10.0,  0.0 };
+  tmDouble xy2[2] = { 10.0,  5.0 };
+  tmDouble xy3[2] = {  0.0,  5.0 };
 
   tmNode *n0 = tmNode_create(mesh, xy0);
   tmNode *n1 = tmNode_create(mesh, xy1);
@@ -397,9 +397,40 @@ char *test_tmBdry_refine()
   tmEdge *e2 = tmBdry_edgeCreate(bdry_ext, n2, n3, 0);
   tmEdge *e3 = tmBdry_edgeCreate(bdry_ext, n3, n0, 0);
 
+  tmBdry_calcArea(bdry_ext);
+  tmPrint("bdry_ext area: %.5f", bdry_ext->area);
+  mu_assert( EQ(bdry_ext->area, 50.0), 
+      "Wrong area for exterior boundary.");
+
+  /*--------------------------------------------------------
+  | interior nodes
+  --------------------------------------------------------*/
+  tmDouble xy4[2] = {  2.0,  2.0 };
+  tmDouble xy5[2] = {  3.0,  3.0 };
+  tmDouble xy6[2] = {  5.0,  2.0 };
+
+  tmNode *n4 = tmNode_create(mesh, xy4);
+  tmNode *n5 = tmNode_create(mesh, xy5);
+  tmNode *n6 = tmNode_create(mesh, xy6);
+
+  tmBdry *bdry_int = tmMesh_addBdry(mesh, TRUE, 1);
+  tmEdge *e4 = tmBdry_edgeCreate(bdry_int, n4, n5, 1);
+  tmEdge *e5 = tmBdry_edgeCreate(bdry_int, n5, n6, 1);
+  tmEdge *e6 = tmBdry_edgeCreate(bdry_int, n6, n4, 1);
+
+  tmBdry_calcArea(bdry_int);
+  tmPrint("bdry_int area: %.5f", bdry_int->area);
+  mu_assert( EQ(bdry_int->area, -1.5), 
+      "Wrong area for interior boundary.");
+
+  tmMesh_calcArea(mesh);
+  tmPrint("mesh area: %.5f", mesh->area);
+  mu_assert( EQ(mesh->area, 48.5),
+      "Wrong area for mesh domain.");
+
   /*--------------------------------------------------------
   | Split edge e_0
-  --------------------------------------------------------*/
+  --------------------------------------------------------*
   e0 = tmBdry_splitEdge(bdry_ext, e0);
 
   tmNode *n4 = e0->n2;
@@ -421,6 +452,7 @@ char *test_tmBdry_refine()
       "tmBdry_splitEdge() failed.");
   mu_assert( e4->n2 == n1,
       "tmBdry_splitEdge() failed.");
+  */
 
   /*--------------------------------------------------------
   | Refine whole boundary according to size function
@@ -1235,7 +1267,7 @@ char *test_tmFront_innerOuterMesh()
 {
   tmDouble xy_min[2] = {  -0.0,  0.0 };
   tmDouble xy_max[2] = { 120.0,120.0 };
-  tmMesh *mesh = tmMesh_create(xy_min, xy_max, 10, size_fun_5);
+  tmMesh *mesh = tmMesh_create(xy_min, xy_max, 10, size_fun_4);
 
   /*--------------------------------------------------------
   | exterior nodes

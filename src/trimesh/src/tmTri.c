@@ -439,31 +439,6 @@ void tmTri_destroy(tmTri *tri)
 } /* tmTri_destroy() */
 
 /**********************************************************
-* Function: tmTri_setTriNeighbors()
-*----------------------------------------------------------
-* Sets for every triangle the connectivity to its neigbors
-* This is done, when the advancing front meshing 
-* has finished.
-*----------------------------------------------------------
-* @param mesh: the mesh structure
-**********************************************************/
-void tmTri_setTriNeighbors(tmMesh *mesh)
-{
-  ListNode *cur; 
-
-  for (cur = mesh->tris_stack->first; 
-       cur != NULL; cur = cur->next)
-  {
-    tmTri *tri = (tmTri*)cur->value;
-
-    tri->t1 = tmTri_findTriNeighbor(tri->n2, tri->n3, tri);
-    tri->t2 = tmTri_findTriNeighbor(tri->n3, tri->n1, tri);
-    tri->t3 = tmTri_findTriNeighbor(tri->n1, tri->n2, tri);
-  }
-
-} /* tmTri_setTriNeighbors() */
-
-/**********************************************************
 * Function: tmTri_findNbrTriFromEdge()
 *----------------------------------------------------------
 * Searches for a neighboring triangle, which is adjacent

@@ -20,6 +20,8 @@ typedef struct tmBdry {
   int    is_interior;
   int    index;
 
+  tmDouble area;
+
   /*-------------------------------------------------------
   | Boundary edges
   -------------------------------------------------------*/
@@ -174,5 +176,19 @@ tmEdge *tmBdry_splitEdge(tmBdry *bdry, tmEdge *edge);
 * @return: 
 **********************************************************/
 void tmBdry_refine(tmBdry *bdry);
+
+/**********************************************************
+* Function: tmBdry_calcArea()
+*----------------------------------------------------------
+* Computes the area enclosed by the boundary and sets
+* it in the boundaries properties
+*
+* Reference:
+* https://www.wikihow.com/Calculate-the-Area-of-a-Polygon
+*----------------------------------------------------------
+* @param *bdry: pointer to bdry
+* @return: 
+**********************************************************/
+void tmBdry_calcArea(tmBdry *bdry);
 
 #endif

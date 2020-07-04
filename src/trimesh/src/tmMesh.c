@@ -36,6 +36,8 @@ tmMesh *tmMesh_create(tmDouble  xy_min[2],
   mesh->xy_max[0] = xy_max[0];
   mesh->xy_max[1] = xy_max[1];
 
+  mesh->area = 0.0;
+
   /*-------------------------------------------------------
   | Mesh nodes 
   -------------------------------------------------------*/
@@ -659,6 +661,11 @@ void tmMesh_ADFMeshing(tmMesh *mesh)
   tmFront_sortEdges(mesh);
 
   /*-------------------------------------------------------
+  | Compute mesh area
+  -------------------------------------------------------*/
+  tmMesh_calcArea(mesh);
+
+  /*-------------------------------------------------------
   | Main loop for finding creating triangles
   -------------------------------------------------------*/
   cur = nxt = front->edges_stack->first;
@@ -691,13 +698,31 @@ void tmMesh_ADFMeshing(tmMesh *mesh)
     }
   }
 
+  /*-------------------------------------------------------
+  | Compare mesh area to triangle areas
+  -------------------------------------------------------*/
   if ( front->no_edges > 0 )
     log_err("The advancing front meshing was not successfull.");
+  else
+  {
+    tmDouble area_tot = 0.0;
+
+    for (cur = mesh->tris_stack->first; 
+         cur != NULL; cur = cur->next)
+    {
+      tmDouble area = ((tmTri*)cur->value)->area;
+      area_tot += area;
+    }
+
+    check( EQ(area_tot, mesh->area),
+        "Mesh area %.5f does not equal to sum of triangle area %.5f", mesh->area, area_tot);
+
+  }
 
   /*-------------------------------------------------------
   | Set triangle-triangle connectivity
   -------------------------------------------------------*/
-  tmTri_setTriNeighbors(mesh);
+  tmMesh_setTriNeighbors(mesh);
 
 error:
   return;
@@ -745,7 +770,8 @@ void tmMesh_delaunayFlip(tmMesh *mesh)
   /*-------------------------------------------------------
   | Flip edges 
   -------------------------------------------------------*/
-  int flip_max = 100;
+  int n_edges  = mesh->edges_stack->count;
+  int flip_max = n_edges * n_edges;
   while ( edges->count > 0 && n_flip < flip_max)
   {
     n_flip   += 1;
@@ -949,7 +975,7 @@ void tmMesh_delaunayFlip(tmMesh *mesh)
   /*-------------------------------------------------------
   | Set triangle-triangle connectivity
   -------------------------------------------------------*/
-  tmTri_setTriNeighbors(mesh);
+  tmMesh_setTriNeighbors(mesh);
 
 
 #if (TM_DEBUG > 1)
@@ -959,5 +985,55 @@ void tmMesh_delaunayFlip(tmMesh *mesh)
 error:
   return;
 
-
 } /* tmMesh_delaunayFlip() */
+
+/**********************************************************
+* Function: tmMesh_setTriNeighbors()
+*----------------------------------------------------------
+* Sets for every triangle the connectivity to its neigbors
+* This is done, when the advancing front meshing 
+* has finished.
+*----------------------------------------------------------
+* @param mesh: the mesh structure
+**********************************************************/
+void tmMesh_setTriNeighbors(tmMesh *mesh)
+{
+  ListNode *cur; 
+
+  for (cur = mesh->tris_stack->first; 
+       cur != NULL; cur = cur->next)
+  {
+    tmTri *tri = (tmTri*)cur->value;
+
+    tri->t1 = tmTri_findTriNeighbor(tri->n2, tri->n3, tri);
+    tri->t2 = tmTri_findTriNeighbor(tri->n3, tri->n1, tri);
+    tri->t3 = tmTri_findTriNeighbor(tri->n1, tri->n2, tri);
+  }
+
+} /* tmMesh_setTriNeighbors() */
+
+/**********************************************************
+* Function: tmMesh_calcArea()
+*----------------------------------------------------------
+* Function to compute the area enclosed by the entire
+* mesh domain
+*----------------------------------------------------------
+* @param mesh: mesh for which the edge is defined
+**********************************************************/
+void tmMesh_calcArea(tmMesh *mesh)
+{
+  ListNode *cur_bdry;
+
+  tmDouble area = 0.0;
+
+  for (cur_bdry = mesh->bdry_stack->first; 
+       cur_bdry != NULL; cur_bdry = cur_bdry->next)
+  {
+    tmBdry *bdry = (tmBdry*)cur_bdry->value;
+    tmBdry_calcArea(bdry);
+    area += bdry->area;
+  }
+
+  mesh->area = area;
+
+} /* tmMesh_calcArea() */

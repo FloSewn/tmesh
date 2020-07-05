@@ -36,7 +36,8 @@ tmMesh *tmMesh_create(tmDouble  xy_min[2],
   mesh->xy_max[0] = xy_max[0];
   mesh->xy_max[1] = xy_max[1];
 
-  mesh->area = 0.0;
+  mesh->areaBdry = 0.0;
+  mesh->areaTris = 0.0;
 
   /*-------------------------------------------------------
   | Mesh nodes 
@@ -70,6 +71,11 @@ tmMesh *tmMesh_create(tmDouble  xy_min[2],
   mesh->no_edges           = 0;
   mesh->edges_qtree        = tmQtree_create(mesh, TM_EDGE);
   tmQtree_init(mesh->edges_qtree, NULL, 0, xy_min, xy_max);
+
+  /*-------------------------------------------------------
+  | Stack to keep track of non-Delaunay edges
+  -------------------------------------------------------*/
+  mesh->delaunay_stack     = List_create();
   
   /*-------------------------------------------------------
   | Mesh triangles 
@@ -191,6 +197,7 @@ void tmMesh_destroy(tmMesh *mesh)
   List_destroy(mesh->edges_stack);
   List_destroy(mesh->tris_stack);
   List_destroy(mesh->bdry_stack);
+  List_destroy(mesh->delaunay_stack);
 
   /*-------------------------------------------------------
   | Finally free mesh structure memory
@@ -307,7 +314,10 @@ ListNode *tmMesh_addEdge(tmMesh *mesh, tmEdge *edge)
 ListNode *tmMesh_addTri(tmMesh *mesh, tmTri *tri)
 {
   ListNode *tri_pos;
-  mesh->no_tris += 1;
+
+  mesh->no_tris  += 1;
+  mesh->areaTris += tri->area;
+
   List_push(mesh->tris_stack, tri);
   tmQtree_addObj(mesh->tris_qtree, tri);
   tri_pos = List_last_node(mesh->tris_stack);
@@ -400,7 +410,9 @@ void tmMesh_remTri(tmMesh *mesh, tmTri *tri)
   | Remove node from qtree
   -------------------------------------------------------*/
   qtree_rem = tmQtree_remObj(mesh->tris_qtree, tri);
-  mesh->no_tris -= 1;
+
+  mesh->no_tris  -= 1;
+  mesh->areaTris -= tri->area;
 
   /*-------------------------------------------------------
   | Remove node from stack
@@ -648,11 +660,13 @@ void tmMesh_printMesh(tmMesh *mesh)
 **********************************************************/
 void tmMesh_ADFMeshing(tmMesh *mesh)
 {
-  int n = 0;
+  int      n            = 0;
+  int      progress     = 0;
+  int      oldProgress  = 0;
+  tmDouble area_inv     = 0.0;
 
   ListNode *cur, *nxt;
-
-  tmFront *front = mesh->front;
+  tmFront  *front = mesh->front;
 
   /*-------------------------------------------------------
   | Initialize the front from mesh boundaries
@@ -664,6 +678,9 @@ void tmMesh_ADFMeshing(tmMesh *mesh)
   | Compute mesh area
   -------------------------------------------------------*/
   tmMesh_calcArea(mesh);
+  check(mesh->areaBdry > 0.0, 
+      "Invalid mesh boundary. Domain area <= zero.");
+  area_inv = 100. / mesh->areaBdry;
 
   /*-------------------------------------------------------
   | Main loop for finding creating triangles
@@ -671,6 +688,19 @@ void tmMesh_ADFMeshing(tmMesh *mesh)
   cur = nxt = front->edges_stack->first;
   while (n < front->no_edges && front->no_edges > 0)
   {
+    /*-----------------------------------------------------
+    | Print meshing progress
+    -----------------------------------------------------*/
+    progress = (int) (mesh->areaTris  * area_inv);
+    if (((progress % 10) == 0) && (progress > oldProgress))
+    {
+      oldProgress = progress;
+      tmPrint("ADVANCING FRONT PROGRESS: %2d%%", progress);
+    }
+
+    /*-----------------------------------------------------
+    | Choose new base segment
+    -----------------------------------------------------*/
     nxt = cur->next;
     tmEdge *curEdge = (tmEdge*)cur->value;
     
@@ -705,18 +735,8 @@ void tmMesh_ADFMeshing(tmMesh *mesh)
     log_err("The advancing front meshing was not successfull.");
   else
   {
-    tmDouble area_tot = 0.0;
-
-    for (cur = mesh->tris_stack->first; 
-         cur != NULL; cur = cur->next)
-    {
-      tmDouble area = ((tmTri*)cur->value)->area;
-      area_tot += area;
-    }
-
-    check( EQ(area_tot, mesh->area),
-        "Mesh area %.5f does not equal to sum of triangle area %.5f", mesh->area, area_tot);
-
+    check( EQ(mesh->areaTris, mesh->areaBdry),
+        "Mesh area %.5f does not equal to sum of triangle area %.5f", mesh->areaBdry, mesh->areaTris);
   }
 
   /*-------------------------------------------------------
@@ -966,8 +986,6 @@ void tmMesh_delaunayFlip(tmMesh *mesh)
 #endif
     }
 
-    tmPrint("EDGE-FLIP LIST COUNT: %d", edges->count);
-
   }
 
   List_destroy(edges);
@@ -1034,6 +1052,6 @@ void tmMesh_calcArea(tmMesh *mesh)
     area += bdry->area;
   }
 
-  mesh->area = area;
+  mesh->areaBdry = area;
 
 } /* tmMesh_calcArea() */

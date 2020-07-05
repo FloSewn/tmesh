@@ -424,8 +424,8 @@ char *test_tmBdry_refine()
       "Wrong area for interior boundary.");
 
   tmMesh_calcArea(mesh);
-  tmPrint("mesh area: %.5f", mesh->area);
-  mu_assert( EQ(mesh->area, 48.5),
+  tmPrint("mesh area: %.5f", mesh->areaBdry);
+  mu_assert( EQ(mesh->areaBdry, 48.5),
       "Wrong area for mesh domain.");
 
   /*--------------------------------------------------------
@@ -1346,13 +1346,6 @@ char *test_tmFront_innerOuterMesh()
   | Print the mesh data 
   --------------------------------------------------------*/
   tmMesh_printMesh(mesh);
-
-  /*--------------------------------------------------------
-  | Check delauay constraint
-  --------------------------------------------------------*/
-  tmTri_checkTriDelaunay(mesh);
-  printf("> Number of triangles: %d\n", mesh->no_tris);
-  printf("> Number of delaunay triangles: %d\n", mesh->no_tris_delaunay);
 
   tmMesh_destroy(mesh);
 

@@ -14,7 +14,9 @@ typedef struct tmMesh {
   int      qtree_max_obj;
   tmDouble xy_min[2];
   tmDouble xy_max[2];
-  tmDouble area;
+
+  tmDouble areaBdry; /* Mesh domain area defined by bdry */
+  tmDouble areaTris; /* Mesh domain area defined by tris */
 
   /*-------------------------------------------------------
   | Mesh nodes 
@@ -46,6 +48,11 @@ typedef struct tmMesh {
   List    *edges_stack;
   int      no_edges;
   tmQtree *edges_qtree;
+
+  /*-------------------------------------------------------
+  | Stack to keep track of non-Delaunay edges
+  -------------------------------------------------------*/
+  List    *delaunay_stack;
 
   /*-------------------------------------------------------
   | Mesh triangles 

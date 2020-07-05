@@ -1,4 +1,4 @@
-# TriMesh
+# TMesh
 ------------------------------------------------------------
 
 <img src="doc/images/qtree.png" alt="Background-Qtree" width="500"/>

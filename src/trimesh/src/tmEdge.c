@@ -456,11 +456,13 @@ tmNode *tmEdge_createNode(tmEdge *edge)
 * Function: tmEdge_isLocalDelaunay()
 *----------------------------------------------------------
 * Check if an edge is locally delaunay
+* If yes, put edge on the non-delaunay edge stack of the
+* mesh
 *----------------------------------------------------------
 * @param edge: pointer to edge
 * 
 **********************************************************/
-tmBool tmEdge_isLocalDelaunay(tmEdge *edge)
+void tmEdge_isDelaunay(tmEdge *edge)
 {
   tmNode *nl, *nr;
 
@@ -470,9 +472,14 @@ tmBool tmEdge_isLocalDelaunay(tmEdge *edge)
   tmNode *n1 = edge->n1;
   tmNode *n2 = edge->n2;
 
-
+  /*-------------------------------------------------------
+  | Get neighbor node from left triangle
+  -------------------------------------------------------*/
   if (tl == NULL || tr == NULL)
-    return TRUE;
+  {
+    edge->is_local_delaunay = TRUE;
+    return;
+  }
 
   if ( n1 == tl->n1 )
   {
@@ -492,8 +499,9 @@ tmBool tmEdge_isLocalDelaunay(tmEdge *edge)
   else
     log_err("Wrong triangle-edge connectivity");
 
-
-
+  /*-------------------------------------------------------
+  | Get neighbor node from right triangle
+  -------------------------------------------------------*/
   if ( n1 == tr->n1 )
   {
     nr = tr->n2;
@@ -512,8 +520,9 @@ tmBool tmEdge_isLocalDelaunay(tmEdge *edge)
   else
     log_err("Wrong triangle-edge connectivity");
 
-
-
+  /*-------------------------------------------------------
+  | Check if adjacent triangles are delaunay
+  -------------------------------------------------------*/
   tmDouble dx_l = nl->xy[0] - tr->circ_xy[0];
   tmDouble dy_l = nl->xy[1] - tr->circ_xy[1];
 
@@ -526,20 +535,228 @@ tmBool tmEdge_isLocalDelaunay(tmEdge *edge)
   tmDouble circ2_l = tl->circ_r * tl->circ_r;
   tmDouble circ2_r = tr->circ_r * tr->circ_r;
 
+  /*-------------------------------------------------------
+  | Both triangles are delauany
+  -------------------------------------------------------*/
   if (r2_l >= circ2_r && r2_r >= circ2_l)
   {
-    return TRUE;
+    edge->is_local_delaunay = TRUE;
+    return;
   }
-#if (TM_DEBUG > 1)
-    tmPrint("EDGE (%d,%d) IS NOT DELAUNAY",
-        n1->index, n2->index);
-#endif
 
-  return FALSE;
+#if (TM_DEBUG > 1)
+  tmPrint("EDGE (%d,%d) IS NOT DELAUNAY",
+      n1->index, n2->index);
+#endif
+  
+  /*-------------------------------------------------------
+  | Mark edge als non-delaunay and add it to the stack
+  -------------------------------------------------------*/
+  edge->is_local_delaunay = FALSE;
+  List_push(edge->mesh->delaunay_stack, edge);
+
+  return;
 
 error:
-  return TRUE;
+  return;
 
 } /* tmEdge_isLocalDelaunay() */
 
+
+/**********************************************************
+* Function: tmEdge_flipEdge()
+*----------------------------------------------------------
+* Perform an edge flip, in order to get a new edge
+* which satisfies the delaunay constraint.
+* Definition:
+*
+*                    n2
+*                   /^^
+*                  / | \
+*                 /  |  \
+*            e11 /   |   \ e22
+*               /    |    \
+*              /     |     \
+*             /      |      \
+*         p2 v   t1  |  t2   \ p1
+*            \       |       ^
+*             \      |e     /
+*              \     |     /
+*               \    |    /
+*            e12 \   |   / e21
+*                 \  |  /
+*                  \ | / 
+*                   v|/
+*                    n1
+*               
+*  e:   (n1, n2)      -> Flip to e*: (p1, p2)
+*  t1:  (n1, n2, p2)  -> Flip to t1* : (n1, p1, p2)
+*  t2:  (n1, p1, n2)  -> Flip to t2* : (n2, p2, p1)
+*
+*  e11: (n2, p2)  e12: (p2, n2)
+*  e21: (n1, p1)  e22: (p1, n2)
+*            
+*----------------------------------------------------------
+* @param edge: pointer to edge to flip
+* @return : pointer to new edge
+* 
+**********************************************************/
+tmEdge *tmEdge_flipEdge(tmEdge *e)
+{
+  tmMesh *mesh = e->mesh;
+  tmNode *p1, *p2;
+  tmEdge *e11, *e12, *e21, *e22;
+
+  tmTri *t1 = e->t1;
+  tmTri *t2 = e->t2;
+
+  tmNode *n1 = e->n1;
+  tmNode *n2 = e->n2;
+
+  /*-----------------------------------------------------
+  | Estimate node p2 and edges e11, e12
+  -----------------------------------------------------*/
+  if (n1 == t1->n1) /* e = t1->e3 */
+  {
+    p2   = t1->n3;
+    e11  = t1->e1;
+    e12  = t1->e2;
+    check(e  == t1->e3, "Wrong triangle-edge definition.");
+    check(n2 == t1->n2, "Wrong triangle-node definition.");
+  }
+  else if (n1 == t1->n2) /* e = t1->e1 */
+  {
+    p2   = t1->n1;
+    e11  = t1->e2;
+    e12  = t1->e3;
+    check(e  == t1->e1, "Wrong triangle-edge definition.");
+    check(n2 == t1->n3, "Wrong triangle-node definition.");
+  }
+  else if (n1 == t1->n3)/* e = t1->e2 */
+  {
+    p2   = t1->n2;
+    e11  = t1->e3;
+    e12  = t1->e1;
+    check(e  == t1->e2, "Wrong triangle-edge definition.");
+    check(n2 == t1->n1, "Wrong triangle-node definition.");
+  }
+  else
+    log_err("Wrong triangle definition.");
+
+  /*-----------------------------------------------------
+  | Estimate node p1 and edges e21, e22
+  -----------------------------------------------------*/
+  if (n1 == t2->n1) /* e = t2->e2 */
+  {
+    p1   = t2->n2;
+    e21  = t2->e3;
+    e22  = t2->e1;
+    check(e == t2->e2, "Wrong triangle-edge definition.");
+    check(n2 == t2->n3, "Wrong triangle-node definition.");
+  }
+  else if (n1 == t2->n2) /* e = t2->e3 */
+  {
+    p1  = t2->n3;
+    e21 = t2->e1;
+    e22 = t2->e2;
+    check(e == t2->e3, "Wrong triangle-edge definition.");
+    check(n2 == t2->n1, "Wrong triangle-node definition.");
+  }
+  else if (n1 == t2->n3) /* e = t2->e1 */
+  {
+    p1  = t2->n1;
+    e21 = t2->e2;
+    e22 = t2->e3;
+    check(e == t2->e1, "Wrong triangle-edge definition.");
+    check(n2 == t2->n2, "Wrong triangle-node definition.");
+  }
+  else
+    log_err("Wrong triangle definition.");
+
+  /*-----------------------------------------------------
+  | Create new triangles t1*, t2* and remove old ones
+  | t1* = (n1, p1, p2)
+  | t2* = (n2, p2, p1)
+  -----------------------------------------------------*/
+  tmTri_destroy(t1);
+  tmTri_destroy(t2);
+  t1 = tmTri_create(mesh, n1, p1, p2);
+  t2 = tmTri_create(mesh, n2, p2, p1);
+
+  /*-----------------------------------------------------
+  | Create new edge e* = (p1, p2) and remove old one
+  -----------------------------------------------------*/
+#if (TM_DEBUG > 1)
+  tmPrint("FLIPPING EDGE (%d,%d) to (%d,%d)",
+      e->n1->index, e->n2->index, p1->index, p2->index);
+#endif
+  tmEdge_destroy(e);
+  e = tmMesh_edgeCreate(mesh, p1, p2, t1, t2);
+
+  /*-----------------------------------------------------
+  | Update adjacency of triangles t1*, t2* in 
+  | edges e11, e12, e21, e22
+  -----------------------------------------------------*/
+  /* e11 = (n2, p2) */
+  if (e11->n1 == n2)
+    e11->t1 = t2;
+  else if (e11->n1 == p2)
+    e11->t2 = t2;
+  else
+    log_err("Wrong edge definition. (%d,%d) -> (%d,%d)",
+        n2->index, p2->index, e11->n1->index, e11->n2->index);
+
+  /* e12 = (p2, n1) */
+  if (e12->n1 == p2)
+    e12->t1 = t1;
+  else if (e12->n1 == n1)
+    e12->t2 = t1;
+  else
+    log_err("Wrong edge definition. (%d,%d) -> (%d,%d)",
+        n2->index, p2->index, e11->n1->index, e11->n2->index);
+
+  /* e21 = (n1, p1) */
+  if (e21->n1 == n1)
+    e21->t1 = t1;
+  else if (e21->n1 == p1)
+    e21->t2 = t1;
+  else
+    log_err("Wrong edge definition. (%d,%d) -> (%d,%d)",
+        n2->index, p2->index, e11->n1->index, e11->n2->index);
+
+  /* e22 = (p1,n2) */
+  if (e22->n1 == p1)
+    e22->t1 = t2;
+  else if (e22->n1 == n2)
+    e22->t2 = t2;
+  else
+    log_err("Wrong edge definition. (%d,%d) -> (%d,%d)",
+        n2->index, p2->index, e11->n1->index, e11->n2->index);
+
+  /*-----------------------------------------------------
+  | Add edges e11, e12,.. to triangles t1*, t2*
+  -----------------------------------------------------*/
+  t1->e1 = e;
+  t1->e2 = e12;
+  t1->e3 = e21;
+
+  t2->e1 = e;
+  t2->e2 = e22;
+  t2->e3 = e11;
+
+  /*-----------------------------------------------------
+  | Check if edges e11, e12,.. are locally delaunay
+  | if not -> add them to the list
+  -----------------------------------------------------*/
+  tmEdge_isDelaunay(e11);
+  tmEdge_isDelaunay(e12);
+  tmEdge_isDelaunay(e21);
+  tmEdge_isDelaunay(e22);
+
+  return e;
+
+error:
+  return NULL;
+
+} /* tmEdge_flipEdge() */
 

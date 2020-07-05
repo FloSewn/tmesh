@@ -277,7 +277,7 @@ tmEdge *tmMesh_edgeCreate(tmMesh *mesh,
   /*--------------------------------------------------------
   | Check if edge meets local Delaunay constraint
   --------------------------------------------------------*/
-  edge->is_local_delaunay = tmEdge_isLocalDelaunay(edge);
+  tmEdge_isDelaunay(edge);
 
   return edge;
 
@@ -462,16 +462,13 @@ void tmMesh_remBdry(tmMesh *mesh, tmBdry *bdry)
 /**********************************************************
 * Function: tmMesh_objInside()
 *----------------------------------------------------------
-* Function to check wether an object is contained within
-* the mesh boundary
+* Function to check wether an object at position xy 
+* is contained within the mesh boundary
 *----------------------------------------------------------
 * @param mesh
-* @param obj
-* @param obj_type
+* @param xy
 **********************************************************/
-tmBool tmMesh_objInside(tmMesh *mesh, 
-                        void   *obj, 
-                        int     obj_type)
+tmBool tmMesh_objInside(tmMesh   *mesh, tmDouble xy[2])
 {
   ListNode *cur;
   tmBdry *cur_bdry;
@@ -485,13 +482,11 @@ tmBool tmMesh_objInside(tmMesh *mesh,
 
     if (cur_bdry->is_interior == TRUE)
     {
-      is_inside &= !(tmBdry_isInside(cur_bdry, 
-                                     obj, obj_type));
+      is_inside &= !(tmBdry_isInside(cur_bdry, xy));
     }
     else
     {
-      is_inside &= tmBdry_isInside(cur_bdry, 
-                                   obj, obj_type);
+      is_inside &= tmBdry_isInside(cur_bdry, xy);
     }
   }
 
@@ -765,20 +760,16 @@ void tmMesh_delaunayFlip(tmMesh *mesh)
   | Create list of edges that are not locally delaunay
   -------------------------------------------------------*/
   int       n_flip = 0;
-  List     *edges  = List_create();
   ListNode *cur;
 
-  for (cur = mesh->edges_stack->first; 
-       cur != NULL; cur = cur->next)
-  {
-    if ( ((tmEdge*)cur->value)->is_local_delaunay == FALSE )
-      List_push(edges, cur->value);
-  }
+  int n_edges  = mesh->edges_stack->count;
+  int flip_max = n_edges * n_edges;
 
 #if (TM_DEBUG > 1)
+  tmPrint("-----------------------------------");
   tmPrint("NUMBER OF NON-DELAUNAY EDGES: %d",
-      edges->count);
-  for (cur = edges->first; 
+      mesh->delaunay_stack->count);
+  for (cur = mesh->delaunay_stack->first; 
        cur != NULL; cur = cur->next)
   {
     tmIndex i1 = ((tmEdge*)cur->value)->n1->index;
@@ -788,216 +779,22 @@ void tmMesh_delaunayFlip(tmMesh *mesh)
 #endif
 
   /*-------------------------------------------------------
-  | Flip edges 
+  | Flip non-delaunay edges 
   -------------------------------------------------------*/
-  int n_edges  = mesh->edges_stack->count;
-  int flip_max = n_edges * n_edges;
-  while ( edges->count > 0 && n_flip < flip_max)
+  while ( mesh->delaunay_stack->count > 0 && n_flip < flip_max)
   {
     n_flip   += 1;
-    tmEdge *e = (tmEdge*)List_pop(edges);
-
-    tmTri *t1 = e->t1;
-    tmTri *t2 = e->t2;
-
-    tmNode *n1 = e->n1;
-    tmNode *n2 = e->n2;
-
-    /*-----------------------------------------------------
-    | Find quadrilateral nodes 
-    | -> p1, p2
-    | Find quadrilateral edges 
-    | -> e11, e12, e21, e22
-    -----------------------------------------------------*/
-    tmNode *p1, *p2;
-    tmEdge *e11, *e12, *e21, *e22;
-
-    if (n1 == t1->n1) /* e = t1->e3 */
-    {
-      p2   = t1->n3;
-      e11  = t1->e1;
-      e12  = t1->e2;
-      check(e  == t1->e3, "Wrong triangle-edge definition.");
-      check(n2 == t1->n2, "Wrong triangle-node definition.");
-    }
-    else if (n1 == t1->n2) /* e = t1->e1 */
-    {
-      p2   = t1->n1;
-      e11  = t1->e2;
-      e12  = t1->e3;
-      check(e  == t1->e1, "Wrong triangle-edge definition.");
-      check(n2 == t1->n3, "Wrong triangle-node definition.");
-    }
-    else if (n1 == t1->n3)/* e = t1->e2 */
-    {
-      p2   = t1->n2;
-      e11  = t1->e3;
-      e12  = t1->e1;
-      check(e  == t1->e2, "Wrong triangle-edge definition.");
-      check(n2 == t1->n1, "Wrong triangle-node definition.");
-    }
-    else
-      log_err("Wrong triangle definition.");
-
-    if (n1 == t2->n1) /* e = t2->e2 */
-    {
-      p1   = t2->n2;
-      e21  = t2->e3;
-      e22  = t2->e1;
-      check(e == t2->e2, "Wrong triangle-edge definition.");
-      check(n2 == t2->n3, "Wrong triangle-node definition.");
-    }
-    else if (n1 == t2->n2) /* e = t2->e3 */
-    {
-      p1  = t2->n3;
-      e21 = t2->e1;
-      e22 = t2->e2;
-      check(e == t2->e3, "Wrong triangle-edge definition.");
-      check(n2 == t2->n1, "Wrong triangle-node definition.");
-    }
-    else if (n1 == t2->n3) /* e = t2->e1 */
-    {
-      p1  = t2->n1;
-      e21 = t2->e2;
-      e22 = t2->e3;
-      check(e == t2->e1, "Wrong triangle-edge definition.");
-      check(n2 == t2->n2, "Wrong triangle-node definition.");
-    }
-    else
-      log_err("Wrong triangle definition.");
-
-    /*-----------------------------------------------------
-    | Create new triangles t1*, t2* and remove old ones
-    | t1* = (n1, p1, p2)
-    | t2* = (n2, p2, p1)
-    -----------------------------------------------------*/
-    tmTri_destroy(t1);
-    tmTri_destroy(t2);
-    t1 = tmTri_create(mesh, n1, p1, p2);
-    t2 = tmTri_create(mesh, n2, p2, p1);
-
-    /*-----------------------------------------------------
-    | Create new edge e* = (p1, p2) and remove old one
-    -----------------------------------------------------*/
-#if (TM_DEBUG > 1)
-    tmPrint("FLIPPING EDGE (%d,%d) to (%d,%d)",
-        e->n1->index, e->n2->index, p1->index, p2->index);
-#endif
-    tmEdge_destroy(e);
-    e = tmMesh_edgeCreate(mesh, p1, p2, t1, t2);
-
-    /*-----------------------------------------------------
-    | Update triangles t1*, t2* in quad-edges e11, e12,...
-    -----------------------------------------------------*/
-    /* e11 = (n2, p2) */
-    if (e11->n1 == n2)
-      e11->t1 = t2;
-    else if (e11->n1 == p2)
-      e11->t2 = t2;
-    else
-      log_err("Wrong edge definition. (%d,%d) -> (%d,%d)",
-          n2->index, p2->index, e11->n1->index, e11->n2->index);
-
-    /* e12 = (p2, n1) */
-    if (e12->n1 == p2)
-      e12->t1 = t1;
-    else if (e12->n1 == n1)
-      e12->t2 = t1;
-    else
-      log_err("Wrong edge definition. (%d,%d) -> (%d,%d)",
-          n2->index, p2->index, e11->n1->index, e11->n2->index);
-
-    /* e21 = (n1, p1) */
-    if (e21->n1 == n1)
-      e21->t1 = t1;
-    else if (e21->n1 == p1)
-      e21->t2 = t1;
-    else
-      log_err("Wrong edge definition. (%d,%d) -> (%d,%d)",
-          n2->index, p2->index, e11->n1->index, e11->n2->index);
-
-    /* e22 = (p1,n2) */
-    if (e22->n1 == p1)
-      e22->t1 = t2;
-    else if (e22->n1 == n2)
-      e22->t2 = t2;
-    else
-      log_err("Wrong edge definition. (%d,%d) -> (%d,%d)",
-          n2->index, p2->index, e11->n1->index, e11->n2->index);
-
-    /*-----------------------------------------------------
-    | Add quad edges e11, e12,.. to triangles t1*, t2*
-    -----------------------------------------------------*/
-    t1->e1 = e;
-    t1->e2 = e12;
-    t1->e3 = e21;
-
-    t2->e1 = e;
-    t2->e2 = e22;
-    t2->e3 = e11;
-
-    /*-----------------------------------------------------
-    | Update t1*, t2* in quad tri-neighbors t11, t12,...
-    | -> Already done on triangle generation
-    -----------------------------------------------------*/
-
-    /*-----------------------------------------------------
-    | Check if edges e11, e12,.. are locally delaunay
-    | if not -> add them to the list
-    -----------------------------------------------------*/
-    e11->is_local_delaunay = tmEdge_isLocalDelaunay(e11);
-    e12->is_local_delaunay = tmEdge_isLocalDelaunay(e12);
-    e21->is_local_delaunay = tmEdge_isLocalDelaunay(e21);
-    e22->is_local_delaunay = tmEdge_isLocalDelaunay(e22);
-
-    if (e11->is_local_delaunay == FALSE)
-    {
-      List_push(edges, e11);
-#if (TM_DEBUG > 1)
-      tmPrint("EDGE (%d,%d) is put on Delaunay flip stack",
-          e11->n1->index, e11->n2->index);
-#endif
-    }
-
-    if (e12->is_local_delaunay == FALSE)
-    {
-      List_push(edges, e12);
-#if (TM_DEBUG > 1)
-      tmPrint("EDGE (%d,%d) is put on Delaunay flip stack",
-          e12->n1->index, e12->n2->index);
-#endif
-    }
-
-    if (e21->is_local_delaunay == FALSE)
-    {
-      List_push(edges, e21);
-#if (TM_DEBUG > 1)
-      tmPrint("EDGE (%d,%d) is put on Delaunay flip stack",
-          e21->n1->index, e21->n2->index);
-#endif
-    }
-
-    if (e22->is_local_delaunay == FALSE)
-    {
-      List_push(edges, e22);
-#if (TM_DEBUG > 1)
-      tmPrint("EDGE (%d,%d) is put on Delaunay flip stack",
-          e22->n1->index, e22->n2->index);
-#endif
-    }
-
+    tmEdge_flipEdge( (tmEdge*)List_pop(mesh->delaunay_stack) );
   }
-
-  List_destroy(edges);
 
   /*-------------------------------------------------------
   | Set triangle-triangle connectivity
   -------------------------------------------------------*/
   tmMesh_setTriNeighbors(mesh);
 
-
 #if (TM_DEBUG > 1)
   tmPrint("NUMBER OF DELAUNAY EDGE FLIPS: %d", n_flip);
+  tmPrint("-----------------------------------");
 #endif
 
 error:
@@ -1055,3 +852,58 @@ void tmMesh_calcArea(tmMesh *mesh)
   mesh->areaBdry = area;
 
 } /* tmMesh_calcArea() */
+
+
+/**********************************************************
+* Function: tmMesh_getTriFromCoords()
+*----------------------------------------------------------
+* Function returns a triangle which contains a given 
+* point (x,y). If the point is located on the edge
+* of two triangles, the first one that has been located
+* on the tri-stack will be chosen.
+*----------------------------------------------------------
+* @param mesh: mesh for which the edge is defined
+* @param xy: point coordinates
+* @return: triangle, in which xy is contained.
+**********************************************************/
+tmTri* tmMesh_getTriFromCoords(tmMesh *mesh, tmDouble xy[2])
+{
+  ListNode *cur;
+
+  tmSizeFun sizeFun = mesh->sizeFun;
+  tmDouble        r = TM_TRI_NODE_RANGE_FAC * sizeFun(xy);
+
+  List *inCirc = tmQtree_getObjCirc(mesh->tris_qtree, xy, r);
+
+  /*-------------------------------------------------------
+  | For each found triangle, check if point (x,y) is 
+  | located within it
+  -------------------------------------------------------*/
+  if ( inCirc != NULL)
+  {
+    for (cur = inCirc->first; cur != NULL; cur = cur->next)
+    {
+      tmTri    *t   = (tmTri*)cur->value;
+
+      tmDouble *xy1 = t->n1->xy;
+      tmDouble *xy2 = t->n2->xy;
+      tmDouble *xy3 = t->n3->xy;
+
+      tmBool left1 = IS_LEFTON( xy1, xy2, xy);
+      tmBool left2 = IS_LEFTON( xy2, xy3, xy);
+      tmBool left3 = IS_LEFTON( xy3, xy1, xy);
+
+      tmBool n_in_tri =  left1 & left2 & left3;
+
+      if (n_in_tri == TRUE)
+      {
+        List_destroy(inCirc);
+        return t;
+      }
+    }
+  }
+
+  List_destroy(inCirc);
+  return NULL;
+
+} /* tmMesh_getTriFromCoords() */

@@ -181,14 +181,13 @@ void tmMesh_remBdry(tmMesh *mesh, tmBdry *bdry);
 /**********************************************************
 * Function: tmMesh_objInside()
 *----------------------------------------------------------
-* Function to check wether an object is contained within
-* the mesh boundary
+* Function to check wether an object at position xy 
+* is contained within the mesh boundary
 *----------------------------------------------------------
 * @param mesh
-* @param obj
-* @param obj_type
+* @param xy
 **********************************************************/
-tmBool tmMesh_objInside(tmMesh *mesh, void *obj, int obj_type);
+tmBool tmMesh_objInside(tmMesh   *mesh, tmDouble xy[2]);
 
 /**********************************************************
 * Function: tmMesh_printMesh()
@@ -240,5 +239,19 @@ void tmMesh_setTriNeighbors(tmMesh *mesh);
 * @param mesh: mesh for which the edge is defined
 **********************************************************/
 void tmMesh_calcArea(tmMesh *mesh);
+
+/**********************************************************
+* Function: tmMesh_getTriFromCoords()
+*----------------------------------------------------------
+* Function returns a triangle which contains a given 
+* point (x,y). If the point is located on the edge
+* of two triangles, the first one that has been located
+* on the tri-stack will be chosen.
+*----------------------------------------------------------
+* @param mesh: mesh for which the edge is defined
+* @param xy: point coordinates
+* @return: triangle, in which xy is contained.
+**********************************************************/
+tmTri* tmMesh_getTriFromCoords(tmMesh *mesh, tmDouble xy[2]);
 
 #endif

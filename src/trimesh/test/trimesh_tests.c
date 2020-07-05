@@ -238,15 +238,15 @@ char *test_mesh_create_destroy()
       "tmBdry_isLeft() failed.");
 
 
-  mu_assert( tmMesh_objInside(mesh, n_t_0, TM_NODE) == TRUE,
+  mu_assert( tmMesh_objInside(mesh, n_t_0->xy) == TRUE,
       "tmMesh_objInside() failed.");
-  mu_assert( tmMesh_objInside(mesh, n_t_1, TM_NODE) == FALSE,
+  mu_assert( tmMesh_objInside(mesh, n_t_1->xy) == FALSE,
       "tmMesh_objInside() failed.");
-  mu_assert( tmMesh_objInside(mesh, n_t_2, TM_NODE) == FALSE,
+  mu_assert( tmMesh_objInside(mesh, n_t_2->xy) == FALSE,
       "tmMesh_objInside() failed.");
-  mu_assert( tmMesh_objInside(mesh, n_2, TM_NODE) == TRUE,
+  mu_assert( tmMesh_objInside(mesh, n_2->xy) == TRUE,
       "tmMesh_objInside() failed.");
-  mu_assert( tmMesh_objInside(mesh, n_12, TM_NODE) == FALSE,
+  mu_assert( tmMesh_objInside(mesh, n_12->xy) == FALSE,
       "tmMesh_objInside() failed.");
 
 
@@ -343,17 +343,17 @@ char *test_tmMesh_objInside()
   tmBdry_refine(bdry_int);
 
 
-  mu_assert( tmMesh_objInside(mesh, t0, TM_NODE) == TRUE,
+  mu_assert( tmMesh_objInside(mesh, t0->xy) == TRUE,
       "tmMesh_objInside() failed.");
-  mu_assert( tmMesh_objInside(mesh, t1, TM_NODE) == TRUE,
+  mu_assert( tmMesh_objInside(mesh, t1->xy) == TRUE,
       "tmMesh_objInside() failed.");
-  mu_assert( tmMesh_objInside(mesh, t2, TM_NODE) == TRUE,
+  mu_assert( tmMesh_objInside(mesh, t2->xy) == TRUE,
       "tmMesh_objInside() failed.");
-  mu_assert( tmMesh_objInside(mesh, t3, TM_NODE) == TRUE,
+  mu_assert( tmMesh_objInside(mesh, t3->xy) == TRUE,
       "tmMesh_objInside() failed.");
-  mu_assert( tmMesh_objInside(mesh, t4, TM_NODE) == FALSE,
+  mu_assert( tmMesh_objInside(mesh, t4->xy) == FALSE,
       "tmMesh_objInside() failed.");
-  mu_assert( tmMesh_objInside(mesh, t5, TM_NODE) == FALSE,
+  mu_assert( tmMesh_objInside(mesh, t5->xy) == FALSE,
       "tmMesh_objInside() failed.");
 
 
@@ -1421,6 +1421,24 @@ char *test_tmFront_simpleMesh2()
   | Print the mesh data 
   --------------------------------------------------------*/
   tmMesh_printMesh(mesh);
+
+  /*--------------------------------------------------------
+  | Test specific functions
+  --------------------------------------------------------*/
+  tmDouble xy_t1[2] = { 2.0, 5.0 };
+  tmTri *t1 = tmMesh_getTriFromCoords(mesh, xy_t1);
+  mu_assert( t1->index == 21,
+      "tmMesh_getTriFromCoords() failed.");
+
+  t1 = tmMesh_getTriFromCoords(mesh, xy0);
+  mu_assert( t1->index == 10,
+      "tmMesh_getTriFromCoords() failed.");
+
+  t1 = tmMesh_getTriFromCoords(mesh, xy3);
+  mu_assert( t1->index == 21,
+      "tmMesh_getTriFromCoords() failed.");
+
+
   tmMesh_destroy(mesh);
 
   return NULL;

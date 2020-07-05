@@ -138,18 +138,20 @@ tmBool tmBdry_isRightOn(tmBdry *bdry, void *obj, int obj_type);
 /**********************************************************
 * Function: tmBdry_isInside()
 *----------------------------------------------------------
-* Check if an object is inside of a boundary
-* which is enclosed by at least three edges,
+* Check if an object with position xy is inside of a 
+* boundary which is enclosed by at least three edges,
 * using the Ray-Method.
 * If the object is located on the boundary edges,
 * it is treated as lying inside.
+* 
+* Check out this source:
+* http://alienryderflex.com/polygon/
 *----------------------------------------------------------
 * @param *bdry: pointer to a tmBdry 
-* @param *obj:  pointer to object to check for
-* @param  obj_type: object type specifier
+* @param  xy:   location to check for
 * @return boolean if object is located on the left of bdry
 **********************************************************/
-tmBool tmBdry_isInside(tmBdry *bdry, void *obj, int obj_type);
+tmBool tmBdry_isInside(tmBdry *bdry, tmDouble xy[2]);
 
 /**********************************************************
 * Function: tmBdry_splitEdge()

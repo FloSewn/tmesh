@@ -272,8 +272,8 @@ tmBool tmBdry_isRightOn(tmBdry *bdry, void *obj, int obj_type)
 /**********************************************************
 * Function: tmBdry_isInside()
 *----------------------------------------------------------
-* Check if an object is inside of a boundary
-* which is enclosed by at least three edges,
+* Check if an object with position xy is inside of a 
+* boundary which is enclosed by at least three edges,
 * using the Ray-Method.
 * If the object is located on the boundary edges,
 * it is treated as lying inside.
@@ -282,30 +282,18 @@ tmBool tmBdry_isRightOn(tmBdry *bdry, void *obj, int obj_type)
 * http://alienryderflex.com/polygon/
 *----------------------------------------------------------
 * @param *bdry: pointer to a tmBdry 
-* @param *obj:  pointer to object to check for
-* @param  obj_type: object type specifier
+* @param  xy:   location to check for
 * @return boolean if object is located on the left of bdry
 **********************************************************/
-tmBool tmBdry_isInside(tmBdry *bdry, void *obj, int obj_type)
+tmBool tmBdry_isInside(tmBdry *bdry, tmDouble xy[2])
 {
   ListNode *cur;
-  tmDouble *xy;
   tmBool    is_inside = TRUE;
   tmMesh   *mesh      = bdry->mesh;
   int      count      = 0;
 
   if (bdry->no_edges < 3)
     log_err("tmBdry_isInside() can not be called for boundaries with less than three segments.");
-
-  if ( obj_type == TM_NODE)
-    xy = ((tmNode*)obj)->xy;
-  else if ( obj_type == TM_EDGE)
-    xy = ((tmEdge*)obj)->xy;
-  else if ( obj_type == TM_TRI)
-    xy = ((tmTri*)obj)->xy;
-  else
-    log_err("Wrong type provied for tmBdry_isInside()");
-
 
   /*-------------------------------------------------------
   | Loop over all boundary edges

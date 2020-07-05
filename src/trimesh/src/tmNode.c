@@ -372,7 +372,7 @@ tmBool tmNode_isValid(tmNode *node)
   /*-------------------------------------------------------
   | 0) Check if node is within the domain
   -------------------------------------------------------*/
-  if ( tmMesh_objInside(mesh, node, TM_NODE) == FALSE )
+  if ( tmMesh_objInside(mesh, node->xy) == FALSE )
   {
 #if (TM_DEBUG > 1)
     tmPrint(" -> REJECTED: NEW-NODE OUTSIDE OF DOMAIN");
@@ -482,3 +482,5 @@ tmBool tmNode_isValid(tmNode *node)
   return TRUE;
 
 } /* tmNode_isValid() */
+
+

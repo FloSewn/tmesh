@@ -534,7 +534,7 @@ tmBool tmTri_isValid(tmTri *tri)
   /*-------------------------------------------------------
   | 0) Check if triangle is within the domain
   -------------------------------------------------------*/
-  if ( tmMesh_objInside(mesh, tri, TM_TRI) == FALSE )
+  if ( tmMesh_objInside(mesh, tri->xy) == FALSE )
   {
 #if (TM_DEBUG > 1)
     tmPrint(" -> REJECTED: TRIANGLE OUTSIDE OF DOMAIN");

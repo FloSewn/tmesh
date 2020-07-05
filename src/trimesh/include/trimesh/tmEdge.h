@@ -184,10 +184,52 @@ tmNode *tmEdge_createNode(tmEdge *edge);
 * Function: tmEdge_isLocalDelaunay()
 *----------------------------------------------------------
 * Check if an edge is locally delaunay
+* If yes, put edge on the non-delaunay edge stack of the
+* mesh
 *----------------------------------------------------------
 * @param edge: pointer to edge
 * 
 **********************************************************/
-tmBool tmEdge_isLocalDelaunay(tmEdge *edge);
+void tmEdge_isDelaunay(tmEdge *edge);
+
+/**********************************************************
+* Function: tmEdge_flipEdge()
+*----------------------------------------------------------
+* Perform an edge flip, in order to get a new edge
+* which satisfies the delaunay constraint.
+* Definition:
+*
+*                    n2
+*                   /^^
+*                  / | \
+*                 /  |  \
+*            e11 /   |   \ e22
+*               /    |    \
+*              /     |     \
+*             /      |      \
+*         p2 v   t1  |  t2   \ p1
+*            \       |       ^
+*             \      |e     /
+*              \     |     /
+*               \    |    /
+*            e12 \   |   / e21
+*                 \  |  /
+*                  \ | / 
+*                   v|/
+*                    n1
+*               
+*  e:   (n1, n2)      -> Flip to e*: (p1, p2)
+*  t1:  (n1, n2, p2)  -> Flip to t1* : (n1, p1, p2)
+*  t2:  (n1, p1, n2)  -> Flip to t2* : (n2, p2, p1)
+*
+*  e11: (n2, p2)  e12: (p2, n2)
+*  e21: (n1, p1)  e22: (p1, n2)
+*            
+*----------------------------------------------------------
+* @param edge: pointer to edge to flip
+* @return : pointer to new edge
+* 
+**********************************************************/
+tmEdge *tmEdge_flipEdge(tmEdge *e);
 
 #endif

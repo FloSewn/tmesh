@@ -853,7 +853,6 @@ void tmMesh_calcArea(tmMesh *mesh)
 
 } /* tmMesh_calcArea() */
 
-
 /**********************************************************
 * Function: tmMesh_getTriFromCoords()
 *----------------------------------------------------------
@@ -907,3 +906,246 @@ tmTri* tmMesh_getTriFromCoords(tmMesh *mesh, tmDouble xy[2])
   return NULL;
 
 } /* tmMesh_getTriFromCoords() */
+
+
+/**********************************************************
+* Function: tmMesh_refineLocal()
+*----------------------------------------------------------
+* Add a new node at a specified location in the mesh
+* and subsequently re-triangulate the mesh in this area.
+*----------------------------------------------------------
+* @param mesh: the mesh structure
+* @param xy:   coordinates of the new node to insert
+*
+**********************************************************/
+void tmMesh_refineLocally(tmMesh *mesh, tmDouble xy[2])
+{
+  /*-------------------------------------------------------
+  | Find triangle from that point 
+  -------------------------------------------------------*/
+  tmTri *tri = tmMesh_getTriFromCoords(mesh, xy);
+
+  if (tri == NULL)
+    return;
+
+  tmNode *n1 = tri->n1;
+  tmNode *n2 = tri->n2;
+  tmNode *n3 = tri->n3;
+
+  tmEdge *e1 = tri->e1;
+  tmEdge *e2 = tri->e2;
+  tmEdge *e3 = tri->e3;
+
+  tmTri  *t1 = NULL;
+  tmTri  *t2 = NULL;
+  tmTri  *t3 = NULL;
+
+  tmTri_destroy(tri);
+
+  List *edges = List_create();
+
+  /*-----------------------------------------------------
+  | Add edges from tri neighbor 1
+  -----------------------------------------------------*/
+  t1 = (n3 == e1->n1) ? e1->t1 : e1->t2;
+
+  if (t1 != NULL)
+  {
+    if (e1 == t1->e1) 
+    {
+      if (t1->e2 != NULL)
+        List_push(edges, t1->e2);
+      if (t1->e3 != NULL)
+        List_push(edges, t1->e3);
+    }
+    else if (e1 == t1->e2)
+    {
+      if (t1->e1 != NULL)
+        List_push(edges, t1->e1);
+      if (t1->e3 != NULL)
+        List_push(edges, t1->e3);
+    }
+    else if (e1 == t1->e3)
+    {
+      if (t1->e1 != NULL)
+        List_push(edges, t1->e1);
+      if (t1->e2 != NULL)
+        List_push(edges, t1->e2);
+    }
+    else
+      log_err("Wrong triangle-edge connectivity");
+
+    /*---------------------------------------------------
+    | Remove triangle 
+    ---------------------------------------------------*/
+    tmTri_destroy(t1);
+  }
+  /*-----------------------------------------------------
+  | Add edge 1 if no tri neighbor 1 exists
+  -----------------------------------------------------*/
+  else
+  {
+    List_push(edges, e1);
+  }
+
+  /*-----------------------------------------------------
+  | Get edges from tri neighbor 2
+  -----------------------------------------------------*/
+  t2 = (n1 == e2->n1) ? e2->t1 : e2->t2;
+
+  if (t2 != NULL)
+  {
+    if (e2 == t2->e1) 
+    {
+      if (t2->e2 != NULL)
+        List_push(edges, t2->e2);
+      if (t2->e3 != NULL)
+        List_push(edges, t2->e3);
+    }
+    else if (e2 == t2->e2)
+    {
+      if (t2->e1 != NULL)
+        List_push(edges, t2->e1);
+      if (t2->e3 != NULL)
+        List_push(edges, t2->e3);
+    }
+    else if (e2 == t2->e3)
+    {
+      if (t2->e1 != NULL)
+        List_push(edges, t2->e1);
+      if (t2->e2 != NULL)
+        List_push(edges, t2->e2);
+    }
+    else
+      log_err("Wrong triangle-edge connectivity");
+
+    /*---------------------------------------------------
+    | Remove triangle 
+    ---------------------------------------------------*/
+    tmTri_destroy(t2);
+  }
+  /*-----------------------------------------------------
+  | Add edge 2 if no tri neighbor 2 exists
+  -----------------------------------------------------*/
+  else
+  {
+    List_push(edges, e2);
+  }
+
+
+  /*-----------------------------------------------------
+  | Get edges from tri neighbor 3
+  -----------------------------------------------------*/
+  t3 = (n2 == e3->n1) ? e3->t1 : e3->t2;
+
+  if (t3 != NULL)
+  {
+    if (e3 == t3->e1) 
+    {
+      if (t3->e2 != NULL)
+        List_push(edges, t3->e2);
+      if (t3->e3 != NULL)
+        List_push(edges, t3->e3);
+    }
+    else if (e3 == t3->e2)
+    {
+      if (t3->e1 != NULL)
+        List_push(edges, t3->e1);
+      if (t3->e3 != NULL)
+        List_push(edges, t3->e3);
+    }
+    else if (e3 == t3->e3)
+    {
+      if (t3->e1 != NULL)
+        List_push(edges, t3->e1);
+      if (t3->e2 != NULL)
+        List_push(edges, t3->e2);
+    }
+    else
+      log_err("Wrong triangle-edge connectivity");
+
+    /*---------------------------------------------------
+    | Remove triangle 
+    ---------------------------------------------------*/
+    tmTri_destroy(t3);
+
+  }
+  /*-----------------------------------------------------
+  | Add edge 3 if no tri neighbor 3 exists
+  -----------------------------------------------------*/
+  else
+  {
+    List_push(edges, e3);
+  }
+
+  /*-----------------------------------------------------
+  | Add new node at location xy and create new triangles
+  -----------------------------------------------------*/
+  tmTri  *new_tri;
+  tmTri  *first_tri, *cur_tri;
+
+  tmNode *new_node = tmNode_create(mesh, xy);
+  tmEdge *base     = List_pop(edges);
+  tmNode *first_node;
+
+  if (ORIENTATION(base->n1->xy, base->n2->xy, xy) == 1) 
+  {
+    new_tri = tmTri_create(mesh, base->n1, 
+                           base->n2, new_node);
+    first_node  = base->n2;
+    base->t1    = new_tri;
+    new_tri->e3 = base;
+  }
+  else
+  {
+    new_tri = tmTri_create(mesh, base->n2, 
+                           base->n1, new_node);
+    first_node = base->n1;
+    base->t2   = new_tri;
+    new_tri->e3 = base;
+  }
+
+  tmEdge_isDelaunay(base);
+
+  first_tri = new_tri;
+  cur_tri   = new_tri;
+
+  ListNode *cur;
+  tmNode   *cur_node;
+  tmEdge   *new_edge;
+
+  while (edges->count > 0)
+  {
+    base  = List_pop(edges);
+
+    if (ORIENTATION(base->n1->xy, base->n2->xy, xy) == 1) 
+    {
+      new_tri = tmTri_create(mesh, base->n1, 
+                             base->n2, new_node);
+      cur_node    = base->n2;
+      base->t1    = new_tri;
+      new_tri->e3 = base;
+    }
+    else
+    {
+      new_tri = tmTri_create(mesh, base->n2, 
+                             base->n1, new_node);
+      cur_node    = base->n1;
+      base->t2    = new_tri;
+      new_tri->e3 = base;
+    }
+
+    new_edge = tmMesh_edgeCreate(mesh,
+                                 new_node, cur_node,
+                                 new_tri, cur_tri);
+
+    cur_tri = new_tri;
+    tmEdge_isDelaunay(base);
+    tmPrint("List count: %d", edges->count);
+  }
+
+  new_edge = tmMesh_edgeCreate(mesh,
+                               new_node, first_node,
+                               first_tri, cur_tri);
+
+} /* tmMesh_insertMeshNode() */

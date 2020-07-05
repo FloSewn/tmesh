@@ -1418,13 +1418,8 @@ char *test_tmFront_simpleMesh2()
   tmMesh_delaunayFlip(mesh);
 
   /*--------------------------------------------------------
-  | Print the mesh data 
-  --------------------------------------------------------*/
-  tmMesh_printMesh(mesh);
-
-  /*--------------------------------------------------------
   | Test specific functions
-  --------------------------------------------------------*/
+  --------------------------------------------------------*
   tmDouble xy_t1[2] = { 2.0, 5.0 };
   tmTri *t1 = tmMesh_getTriFromCoords(mesh, xy_t1);
   mu_assert( t1->index == 21,
@@ -1436,7 +1431,15 @@ char *test_tmFront_simpleMesh2()
 
   t1 = tmMesh_getTriFromCoords(mesh, xy3);
   mu_assert( t1->index == 21,
-      "tmMesh_getTriFromCoords() failed.");
+      "tmMesh_getTriFromCoords() failed.");*/
+
+  //tmDouble xy_refine[2] = { 0.5, 5.0 };
+  //tmMesh_refineLocally(mesh, xy_refine);
+
+  /*--------------------------------------------------------
+  | Print the mesh data 
+  --------------------------------------------------------*/
+  tmMesh_printMesh(mesh);
 
 
   tmMesh_destroy(mesh);

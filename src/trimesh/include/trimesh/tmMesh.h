@@ -254,4 +254,16 @@ void tmMesh_calcArea(tmMesh *mesh);
 **********************************************************/
 tmTri* tmMesh_getTriFromCoords(tmMesh *mesh, tmDouble xy[2]);
 
+/**********************************************************
+* Function: tmMesh_refineLocal()
+*----------------------------------------------------------
+* Add a new node at a specified location in the mesh
+* and subsequently re-triangulate the mesh in this area.
+*----------------------------------------------------------
+* @param mesh: the mesh structure
+* @param xy:   coordinates of the new node to insert
+*
+**********************************************************/
+void tmMesh_refineLocally(tmMesh *mesh, tmDouble xy[2]);
+
 #endif

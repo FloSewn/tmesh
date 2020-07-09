@@ -48,6 +48,7 @@ set( TESTDIR_TMESH ${TMESH_DIR}/test )
 
 add_executable( ${TESTEXE_TMESH}
   ${TESTDIR_TMESH}/tmesh_tests.c
+  ${TESTDIR_TMESH}/tmesh_cylinder.c
   ${TESTDIR_TMESH}/geom_tests.c
   ${TESTDIR_TMESH}/unit_tests.c
 )

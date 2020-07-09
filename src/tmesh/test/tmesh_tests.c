@@ -55,7 +55,7 @@ static inline tmDouble size_fun_5( tmDouble xy[2] )
 }
 static inline tmDouble size_fun_6( tmDouble xy[2] )
 {
-  return 2.;
+  return 0.5;
 }
 
 
@@ -1267,7 +1267,7 @@ char *test_tmFront_innerOuterMesh()
 {
   tmDouble xy_min[2] = {  -0.0,  0.0 };
   tmDouble xy_max[2] = { 120.0,120.0 };
-  tmMesh *mesh = tmMesh_create(xy_min, xy_max, 10, size_fun_4);
+  tmMesh *mesh = tmMesh_create(xy_min, xy_max, 100, size_fun_4);
 
   /*--------------------------------------------------------
   | exterior nodes
@@ -1329,8 +1329,8 @@ char *test_tmFront_innerOuterMesh()
   /*--------------------------------------------------------
   | Refine whole boundary according to size function
   --------------------------------------------------------*/
-  tmBdry_refine(bdry_ext);
-  tmBdry_refine(bdry_int);
+  //tmBdry_refine(bdry_ext);
+  //tmBdry_refine(bdry_int);
 
   /*--------------------------------------------------------
   | Create mesh
@@ -1357,7 +1357,7 @@ char *test_tmFront_simpleMesh2()
 {
   tmDouble xy_min[2] = {-10.0,-10.0 };
   tmDouble xy_max[2] = { 20.0, 20.0 };
-  tmMesh *mesh = tmMesh_create(xy_min, xy_max, 10, size_fun_6);
+  tmMesh *mesh = tmMesh_create(xy_min, xy_max, 100, size_fun_6);
 
   /*--------------------------------------------------------
   | exterior boundary
@@ -1394,8 +1394,8 @@ char *test_tmFront_simpleMesh2()
   /*--------------------------------------------------------
   | Refine whole boundary according to size function
   --------------------------------------------------------*/
-  tmBdry_refine(bdry_ext);
-  tmBdry_refine(bdry_int);
+  //tmBdry_refine(bdry_ext);
+  //tmBdry_refine(bdry_int);
 
   /*--------------------------------------------------------
   | Create mesh
@@ -1404,18 +1404,11 @@ char *test_tmFront_simpleMesh2()
   tmMesh_ADFMeshing(mesh);
   clock_t tic_2 = clock();
 
-  printf("> ----------------------------------------------\n");
-  printf("> simple mesh 2 performance test                \n");
-  printf("> ----------------------------------------------\n");
-  printf("> Number of elements: %d\n", mesh->no_tris);
-  printf("> Meshing time      : %e sec\n", (double) (tic_2 - tic_1) / CLOCKS_PER_SEC );
-  printf("> ----------------------------------------------\n");
-
-
   /*--------------------------------------------------------
   | Flip edges which are not locally delaunay
   --------------------------------------------------------*/
   tmMesh_delaunayFlip(mesh);
+  clock_t tic_3 = clock();
 
   /*--------------------------------------------------------
   | Test specific functions
@@ -1440,6 +1433,15 @@ char *test_tmFront_simpleMesh2()
   | Print the mesh data 
   --------------------------------------------------------*/
   tmMesh_printMesh(mesh);
+
+  printf("> ----------------------------------------------\n");
+  printf("> simple mesh 1 performance test                \n");
+  printf("> ----------------------------------------------\n");
+  printf("> Number of elements: %d\n", mesh->no_tris);
+  printf("> Meshing time      : %e sec\n", (double) (tic_2 - tic_1) / CLOCKS_PER_SEC );
+  printf("> Flipping time     : %e sec\n", (double) (tic_3 - tic_2) / CLOCKS_PER_SEC );
+  printf("> ----------------------------------------------\n");
+
 
 
   tmMesh_destroy(mesh);

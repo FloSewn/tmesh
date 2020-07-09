@@ -54,7 +54,7 @@ typedef tmDouble (*tmSizeFun) (tmDouble xy[2]);
 * Debugging Layers
 * 0 -> No output
 ***********************************************************/
-#define TM_DEBUG 0
+#define TM_DEBUG 2
 
 #ifdef TM_DEBUG 
 #define tmPrint(M, ...) fprintf(stdout, "> " M "\n",\
@@ -79,6 +79,7 @@ typedef tmDouble (*tmSizeFun) (tmDouble xy[2]);
 #define TM_NODE_EDGE_DIST_FAC ( 0.40 )
 #define TM_TRI_RANGE_FAC      ( 1.50 )
 #define TM_BDRY_REFINE_FAC    ( 1.00 )
+#define TM_FRONT_REFINE_FAC   ( 1.00 )
 #define TM_NODE_NBR_DIST_FAC  ( 1.00 )
 #define TM_TRI_NODE_RANGE_FAC ( 1.50 )
 #define TM_TRI_MIN_ANGLE      ( ( 10.0*PI_D)/180.0 )

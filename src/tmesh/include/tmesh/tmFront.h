@@ -136,4 +136,30 @@ void tmFront_update(tmMesh *mesh,
                     tmEdge *e, 
                     tmTri  *t);
 
+/**********************************************************
+* Function: tmFront_refine()
+*----------------------------------------------------------
+* Refine the edges of the advancing front structure 
+* according to a size function
+*----------------------------------------------------------
+* @param *mesh: pointer to mesh containing the front
+* @return: 
+**********************************************************/
+void tmFront_refine(tmMesh *mesh);
+
+/**********************************************************
+* Function: tmFront_splitEdge()
+*----------------------------------------------------------
+* Split an edge by inserting a new node on its centroid
+* and splitting it into two new edges
+* This edge will be pointing from its node n1 to the new
+* node and a new edge will be created, which points
+* from the new node to n2.
+*----------------------------------------------------------
+* @param *front: pointer to front
+* @param *edge: pointer to a tmEdge 
+* @return: pointer to newly created first edge
+**********************************************************/
+tmEdge *tmFront_splitEdge(tmFront *front, tmEdge *edge);
+
 #endif

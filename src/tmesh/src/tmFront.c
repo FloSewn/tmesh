@@ -509,3 +509,83 @@ void tmFront_update(tmMesh *mesh,
 
 } /* tmFront_update() */
 
+
+/**********************************************************
+* Function: tmFront_refine()
+*----------------------------------------------------------
+* Refine the edges of the advancing front structure 
+* according to a size function
+*----------------------------------------------------------
+* @param *mesh: pointer to mesh containing the front
+* @return: 
+**********************************************************/
+void tmFront_refine(tmMesh *mesh)
+{
+  ListNode *cur, *nxt;
+  int counter = 0;
+
+  tmFront *front = mesh->front;
+
+  cur = nxt = front->edges_stack->first;
+
+  tmSizeFun sizeFun = front->mesh->sizeFun;
+
+  while ( counter < front->no_edges )
+  {
+    nxt = cur->next;
+
+    tmDouble rho_1 = sizeFun( ((tmEdge*)cur->value)->n1->xy );
+    tmDouble rho_m = sizeFun( ((tmEdge*)cur->value)->xy );
+    tmDouble rho   = TM_FRONT_REFINE_FAC * (rho_1 + rho_m);
+    check( rho > TM_MIN_SIZE,
+        "Size function return value lower than defined minimum scale.");
+
+    if ( ((tmEdge*)cur->value)->len > rho )
+      tmFront_splitEdge(front, cur->value);
+    else
+      counter += 1;
+
+    cur = nxt;
+
+    if (cur == NULL)
+      cur = front->edges_stack->first;
+  }
+
+error:
+  return;
+
+} /* tmFront_refine() */
+
+/**********************************************************
+* Function: tmFront_splitEdge()
+*----------------------------------------------------------
+* Split an edge by inserting a new node on its centroid
+* and splitting it into two new edges
+* This edge will be pointing from its node n1 to the new
+* node and a new edge will be created, which points
+* from the new node to n2.
+*----------------------------------------------------------
+* @param *front: pointer to front
+* @param *edge: pointer to a tmEdge 
+* @return: pointer to newly created first edge
+**********************************************************/
+tmEdge *tmFront_splitEdge(tmFront *front, tmEdge *edge)
+{
+  tmSizeFun sizeFun = front->mesh->sizeFun;
+
+  tmNode *n1 = edge->n1;
+  tmNode *n2 = edge->n2;
+
+  /*-------------------------------------------------------
+  | Create new node and edges
+  -------------------------------------------------------*/
+  tmNode *nn = tmNode_create(edge->mesh, edge->xy);
+
+  tmEdge_destroy(edge);
+
+  tmEdge *ne1 = tmFront_edgeCreate(front, n1, nn, NULL);
+  tmEdge *ne2 = tmFront_edgeCreate(front, nn, n2, NULL);
+
+  return ne1;
+
+} /* tmFront_splitEdge() */

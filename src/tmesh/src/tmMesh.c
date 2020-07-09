@@ -667,6 +667,7 @@ void tmMesh_ADFMeshing(tmMesh *mesh)
   | Initialize the front from mesh boundaries
   -------------------------------------------------------*/
   tmFront_init(mesh);
+  tmFront_refine(mesh);
   tmFront_sortEdges(mesh);
 
   /*-------------------------------------------------------
@@ -730,7 +731,8 @@ void tmMesh_ADFMeshing(tmMesh *mesh)
     log_err("The advancing front meshing was not successfull.");
   else
   {
-    check( EQ(mesh->areaTris, mesh->areaBdry),
+    tmDouble err_area = fabs(mesh->areaTris - mesh->areaBdry) / mesh->areaBdry;
+    check( err_area < 1e-5,
         "Mesh area %.5f does not equal to sum of triangle area %.5f", mesh->areaBdry, mesh->areaTris);
   }
 

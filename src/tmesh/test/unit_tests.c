@@ -2,6 +2,7 @@
 #include "lcthw/minunit.h"
 #include "lcthw/dbg.h"
 #include "tmesh_tests.h"
+#include "tmesh_cylinder.h"
 #include "geom_tests.h"
 
 /************************************************************
@@ -25,8 +26,10 @@ char *all_tests()
   //mu_run_test(test_tmFront_init);
   //mu_run_test(test_tmFront_advance); 
   //mu_run_test(test_tmFront_simpleMesh);
-  mu_run_test(test_tmFront_simpleMesh2);
-  //mu_run_test(test_tmFront_innerOuterMesh);
+  //mu_run_test(test_tmFront_simpleMesh2);
+  mu_run_test(test_tmFront_innerOuterMesh);
+  
+  //mu_run_test(test_mesh_cylinder);
   
 
 

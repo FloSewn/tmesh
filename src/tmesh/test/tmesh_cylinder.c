@@ -60,8 +60,6 @@ char *test_mesh_cylinder()
   tmEdge *e_e2 = tmBdry_edgeCreate(bdry_ext, n_e2, n_e3, 2);
   tmEdge *e_e3 = tmBdry_edgeCreate(bdry_ext, n_e3, n_e0, 3);
 
-  tmBdry_refine(bdry_ext);
-
 
   /*--------------------------------------------------------
   | interior boundary
@@ -90,8 +88,6 @@ char *test_mesh_cylinder()
   {
     e_circ[i] = tmBdry_edgeCreate(bdry_int, n_circ[i], n_circ[(i+1)%n_segs], 4);
   }
-
-  tmBdry_refine(bdry_int);
 
   /*--------------------------------------------------------
   | Create mesh

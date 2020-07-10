@@ -55,7 +55,7 @@ static inline tmDouble size_fun_5( tmDouble xy[2] )
 }
 static inline tmDouble size_fun_6( tmDouble xy[2] )
 {
-  return 0.5;
+  return 2.0;
 }
 
 
@@ -1100,11 +1100,6 @@ char *test_tmFront_advance()
   tmEdge *e3 = tmBdry_edgeCreate(bdry_ext, n3, n0, 0);
 
   /*--------------------------------------------------------
-  | Refine whole boundary according to size function
-  --------------------------------------------------------*/
-  tmBdry_refine(bdry_ext);
-
-  /*--------------------------------------------------------
   | Initialize the advancing front and 
   | check for its correct initialization 
   --------------------------------------------------------*/
@@ -1225,11 +1220,6 @@ char *test_tmFront_simpleMesh()
   tmEdge *e3 = tmBdry_edgeCreate(bdry_ext, n3, n0, 0);
 
   /*--------------------------------------------------------
-  | Refine whole boundary according to size function
-  --------------------------------------------------------*/
-  tmBdry_refine(bdry_ext);
-
-  /*--------------------------------------------------------
   | Create mesh
   --------------------------------------------------------*/
   clock_t tic_1 = clock();
@@ -1327,12 +1317,6 @@ char *test_tmFront_innerOuterMesh()
   tmEdge *e13 = tmBdry_edgeCreate(bdry_int, n13, n4, 1);
 
   /*--------------------------------------------------------
-  | Refine whole boundary according to size function
-  --------------------------------------------------------*/
-  //tmBdry_refine(bdry_ext);
-  //tmBdry_refine(bdry_int);
-
-  /*--------------------------------------------------------
   | Create mesh
   --------------------------------------------------------*/
   tmMesh_ADFMeshing(mesh);
@@ -1392,12 +1376,6 @@ char *test_tmFront_simpleMesh2()
   tmEdge *e5 = tmBdry_edgeCreate(bdry_int, n5, n3, 1);
 
   /*--------------------------------------------------------
-  | Refine whole boundary according to size function
-  --------------------------------------------------------*/
-  //tmBdry_refine(bdry_ext);
-  //tmBdry_refine(bdry_int);
-
-  /*--------------------------------------------------------
   | Create mesh
   --------------------------------------------------------*/
   clock_t tic_1 = clock();
@@ -1411,23 +1389,24 @@ char *test_tmFront_simpleMesh2()
   clock_t tic_3 = clock();
 
   /*--------------------------------------------------------
-  | Test specific functions
+  | Test specific functions for size_fun 2.0
   --------------------------------------------------------*
-  tmDouble xy_t1[2] = { 2.0, 5.0 };
+  tmDouble xy_t1[2] = { 0.0, 0.0 };
   tmTri *t1 = tmMesh_getTriFromCoords(mesh, xy_t1);
-  mu_assert( t1->index == 21,
-      "tmMesh_getTriFromCoords() failed.");
-
-  t1 = tmMesh_getTriFromCoords(mesh, xy0);
   mu_assert( t1->index == 10,
       "tmMesh_getTriFromCoords() failed.");
 
-  t1 = tmMesh_getTriFromCoords(mesh, xy3);
-  mu_assert( t1->index == 21,
-      "tmMesh_getTriFromCoords() failed.");*/
+  tmDouble xy_t2[2] = { 2.0, 2.0 };
+  tmTri *t2 = tmMesh_getTriFromCoords(mesh, xy_t2);
+  mu_assert( t2->index == 11,
+      "tmMesh_getTriFromCoords() failed.");
 
-  //tmDouble xy_refine[2] = { 0.5, 5.0 };
-  //tmMesh_refineLocally(mesh, xy_refine);
+  tmTri *t3 = tmMesh_getTriFromCoords(mesh, xy0);
+  mu_assert( t1->index == 10,
+      "tmMesh_getTriFromCoords() failed.");
+
+  tmDouble xy_refine[2] = { 0.5, 5.0 };
+  tmMesh_refineLocally(mesh, xy_refine);*/
 
   /*--------------------------------------------------------
   | Print the mesh data 

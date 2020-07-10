@@ -113,8 +113,8 @@ def main():
         #        ax.plot(nodes[e,0], nodes[e,1], c='k',
         #                lw=2.0, ls='-',marker='o')
 
-        #for i, n in enumerate(nodes):
-        #    ax.text(n[0],n[1],i, color='b')
+        for i, n in enumerate(nodes):
+            ax.text(n[0],n[1],i, color='b')
 
         if step == len(tris):
             for e in front_edges:
@@ -124,8 +124,8 @@ def main():
         tri_patches = []
         for i_tri, tri in enumerate(tris[:step]):
             tri_patches.append(Polygon([nodes[tri[i]] for i in range(3)]))
-        #    tri_centr = np.mean([nodes[tri[i]] for i in range(3)], axis=0)
-        #    ax.text(tri_centr[0], tri_centr[1], i_tri, color='k')
+            tri_centr = np.mean([nodes[tri[i]] for i in range(3)], axis=0)
+            ax.text(tri_centr[0], tri_centr[1], i_tri, color='k')
 
         tri_col = PatchCollection(tri_patches, **TRI_PATCH)
         ax.add_collection(tri_col)

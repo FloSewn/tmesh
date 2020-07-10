@@ -949,7 +949,12 @@ void tmMesh_refineLocally(tmMesh *mesh, tmDouble xy[2])
   /*-----------------------------------------------------
   | Add edges from tri neighbor 1
   -----------------------------------------------------*/
-  t1 = (n3 == e1->n1) ? e1->t1 : e1->t2;
+  if (n3 == e1->n1)
+    t1 = e1->t1;
+  else if (n3 == e1->n2)
+    t1 = e1->t2;
+  else
+    log_err("Wrong edge-node connectivity.");
 
   if (t1 != NULL)
   {
@@ -993,7 +998,12 @@ void tmMesh_refineLocally(tmMesh *mesh, tmDouble xy[2])
   /*-----------------------------------------------------
   | Get edges from tri neighbor 2
   -----------------------------------------------------*/
-  t2 = (n1 == e2->n1) ? e2->t1 : e2->t2;
+  if (n1 == e2->n1)
+    t2 = e2->t1;
+  else if (n1 == e2->n2)
+    t2 = e2->t2;
+  else
+    log_err("Wrong edge-node connectivity.");
 
   if (t2 != NULL)
   {
@@ -1038,7 +1048,12 @@ void tmMesh_refineLocally(tmMesh *mesh, tmDouble xy[2])
   /*-----------------------------------------------------
   | Get edges from tri neighbor 3
   -----------------------------------------------------*/
-  t3 = (n2 == e3->n1) ? e3->t1 : e3->t2;
+  if (n2 == e3->n1)
+    t3 = e3->t1;
+  else if (n2 == e3->n2)
+    t3 = e3->t2;
+  else
+    log_err("Wrong edge-node connectivity.");
 
   if (t3 != NULL)
   {

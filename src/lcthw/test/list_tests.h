@@ -8,5 +8,6 @@ char *test_list_remove();
 char *test_list_shift();
 char *test_list_destroy();
 char *test_list_join();
+char *test_list_split();
 
 #endif

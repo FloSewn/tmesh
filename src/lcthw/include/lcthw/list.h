@@ -3,9 +3,9 @@
 
 
 
-/***************************************************************
+/**************************************************************
 * Defines for the handling with list structures
-***************************************************************/
+**************************************************************/
 /* Returns the count of a list */
 #define List_count(A) ((A)->count)
 /* Return the value of the first list entry */
@@ -96,5 +96,10 @@ void *List_remove(List *list, ListNode *node);
 * the <list2> structure.
 **************************************************************/
 void *List_join(List *list1, List *list2);
+
+/*************************************************************
+* Splits a list <list1> at a specified Listnode <node>
+*************************************************************/
+List *List_split(List *list1, int index);
 
 #endif /* lcthw_list_h */

@@ -25,6 +25,7 @@ char *all_tests()
   mu_run_test(test_list_shift);
   mu_run_test(test_list_join);
   mu_run_test(test_list_destroy);
+  mu_run_test(test_list_split);
 
   /**********************************************************
   * Unit tests for list algorithms

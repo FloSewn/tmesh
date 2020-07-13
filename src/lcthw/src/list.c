@@ -181,9 +181,50 @@ void *List_join(List *list1, List *list2)
   list2->first = NULL;
   list2->last  = NULL;
 
+  List_destroy(list2);
+
 error:
   return NULL;
 }
 
+
+/*************************************************************
+* Splits a list <list1> at a specified index of the list
+*************************************************************/
+List *List_split(List *list1, int index)
+{
+  if (index == 0)
+    return list1;
+
+  if (list1->count <= 1)
+    return list1;
+
+  if (index >= list1->count || index < 0)
+    return list1;
+
+  ListNode *node = list1->first;
+
+  int i = 0;
+  while (i < index)
+  {
+    i++;
+    node = node->next;
+  }
+
+  List *list2  = List_create();
+  list2->first = node;
+  list2->last  = list1->last;
+
+  list1->last  = node->prev;
+
+  node->prev->next = NULL;
+  node->prev       = NULL;
+
+  list2->count = list1->count - i;
+  list1->count = i;
+  
+  return list2;
+
+}
 
 

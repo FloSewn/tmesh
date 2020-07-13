@@ -95,7 +95,6 @@ char *test_list_shift()
 char *test_list_destroy()
 {
   List_clear_destroy(list);
-  List_clear_destroy(list_jn);
 
   return NULL;
 }
@@ -138,3 +137,80 @@ char *test_list_join()
 
 }
 
+
+char *test_list_split()
+{
+
+  List *test_list = List_create();
+  double test_data[5] = {1.0, 2.0, 3.0, 4.0, 5.0};
+
+  int i;
+  for (i = 0; i < 5; i++)
+    List_push(test_list, &test_data[i]);
+
+  mu_assert( test_list->first->prev == NULL,
+      "Wrong list definition.");
+  mu_assert( test_list->last->next == NULL,
+      "Wrong list definition.");
+
+  List *split_list = List_split(test_list, 2);
+
+  mu_assert( *(double*)(split_list->first->value) == 3.0,
+      "Failed to split list.");
+  mu_assert( *(double*)(split_list->last->value) == 5.0,
+      "Failed to split list.");
+
+  mu_assert( *(double*)(test_list->first->value) == 1.0,
+      "Failed to split list.");
+  mu_assert( *(double*)(test_list->last->value) == 2.0,
+      "Failed to split list.");
+
+  mu_assert( split_list->first->prev == NULL,
+      "Failed to split list.");
+  mu_assert( test_list->last->next == NULL,
+      "Failed to split list.");
+  mu_assert( test_list->count == 2,
+      "Failed to split list.");
+  mu_assert( split_list->count == 3,
+      "Failed to split list.");
+
+  List_destroy(split_list);
+
+  split_list = List_split(test_list, 0);
+
+  mu_assert( split_list == test_list,
+      "Failed to split list.");
+
+  split_list = List_split(test_list, test_list->count-1); 
+
+  mu_assert( *(double*)(split_list->first->value) == 2.0,
+      "Failed to split list.");
+  mu_assert( *(double*)(split_list->last->value) == 2.0,
+      "Failed to split list.");
+  mu_assert( *(double*)(test_list->first->value) == 1.0,
+      "Failed to split list.");
+  mu_assert( *(double*)(test_list->last->value) == 1.0,
+      "Failed to split list.");
+  mu_assert( split_list->first->prev == NULL,
+      "Failed to split list.");
+  mu_assert( test_list->last->next == NULL,
+      "Failed to split list.");
+
+  mu_assert( test_list->count == 1,
+      "Failed to split list.");
+  mu_assert( split_list->count == 1,
+      "Failed to split list.");
+
+  List_destroy(split_list);
+
+
+  split_list = List_split(test_list, 0);
+
+  mu_assert( split_list == test_list,
+      "Failed to split list.");
+  
+
+  List_destroy(test_list);
+
+  return NULL;
+}

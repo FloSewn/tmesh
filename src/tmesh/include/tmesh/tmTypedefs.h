@@ -75,15 +75,15 @@ typedef tmDouble (*tmSizeFun) (tmDouble xy[2]);
 /***********************************************************
 * MESHING PARAMETERS
 ***********************************************************/
-#define TM_NEW_NODE_DIST_FAC  ( 1.15 )
+#define TM_NEW_NODE_DIST_FAC  ( 1.05 ) // 1.15
 #define TM_NODE_EDGE_DIST_FAC ( 0.40 )
-#define TM_TRI_RANGE_FAC      ( 1.10 )
+#define TM_TRI_RANGE_FAC      ( 1.35 )
 #define TM_BDRY_REFINE_FAC    ( 1.00 )
 #define TM_FRONT_REFINE_FAC   ( 1.00 )
 #define TM_NODE_NBR_DIST_FAC  ( 1.00 )
 #define TM_TRI_NODE_RANGE_FAC ( 1.50 )
-#define TM_TRI_MIN_ANGLE      ( ( 10.0*PI_D)/180.0 )
-#define TM_TRI_MAX_ANGLE      ( (170.0*PI_D)/180.0 )
+#define TM_TRI_MIN_ANGLE      ( ( 15.0*PI_D)/180.0 )
+#define TM_TRI_MAX_ANGLE      ( (165.0*PI_D)/180.0 )
 #define TM_TRI_MIN_QUALITY    ( 0.04 )
 
 /***********************************************************

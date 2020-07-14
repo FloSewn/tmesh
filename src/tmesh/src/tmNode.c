@@ -271,19 +271,17 @@ List *tmNode_getNbrsFromSizeFun(tmNode *node)
   | -> Distance to node is already buffered in dblBuf 
   |    of node by tmQtree_getObjCirc()
   -------------------------------------------------------*/
-  /* Merge sort                                          *
-  List *inCirc_sort;
-  inCirc_sort = List_merge_sort(inCirc,
+  List *inCirc_sorted;
+  inCirc_sorted = List_merge_sort(inCirc,
                         (List_compare) tmNode_compareDblBuf);
-  check( inCirc_sort != NULL,
-      "List sort in tmNode_getNbrsFromSizeFun() failed.");*/
-
-  /* Bubble sort                                         */
-  int sorted = List_bubble_sort(inCirc, 
-                        (List_compare) tmNode_compareDblBuf);
-  check( sorted == 0,
+  check( inCirc_sorted != NULL,
       "List sort in tmNode_getNbrsFromSizeFun() failed.");
-  return inCirc;
+
+  if (inCirc != inCirc_sorted)
+    List_destroy(inCirc);
+
+  return inCirc_sorted; 
+
 
 error:
   return NULL;

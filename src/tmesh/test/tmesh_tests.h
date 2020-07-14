@@ -40,6 +40,11 @@ char *test_tmQtree_2();
 char *test_tmQtree_performance();
 
 /*************************************************************
+* Unit test function to handle the tmQtree performance
+************************************************************/
+char *test_tmQtree_performance2();
+
+/*************************************************************
 * Unit test function for the triangle intersection 
 ************************************************************/
 char *test_tmTri_intersection();

@@ -584,7 +584,7 @@ void tmMesh_printMesh(tmMesh *mesh)
 
   /*-------------------------------------------------------
   | Print mesh edges and triangle neighbors
-  -------------------------------------------------------*/
+  -------------------------------------------------------*
   fprintf(stdout,"MESH EDGES %d\n", mesh->no_edges);
   edge_index = 0;
   for (cur = mesh->edges_stack->first; 
@@ -608,11 +608,11 @@ void tmMesh_printMesh(tmMesh *mesh)
     fprintf(stdout,"%d\t%9d\t%9d\t%9d\t%9d\n", 
         edge_index, ind1, ind2, i1, i2);
     edge_index += 1;
-  }
+  }*/
 
   /*-------------------------------------------------------
   | print triangles neighbors
-  -------------------------------------------------------*/
+  -------------------------------------------------------*
   fprintf(stdout,"NEIGHBORS %d\n", mesh->no_tris);
   tri_index = 0;
   for (cur = mesh->tris_stack->first; 
@@ -639,7 +639,7 @@ void tmMesh_printMesh(tmMesh *mesh)
         tri_index, i1, i2, i3);
     
     tri_index += 1;
-  } 
+  } */
 
 } /* tmMesh_printMesh() */
 
@@ -713,7 +713,7 @@ void tmMesh_ADFMeshing(tmMesh *mesh)
     -----------------------------------------------------*/
     if ( tmFront_advance(mesh, curEdge) == TRUE )
     {
-      tmFront_sortEdges(mesh);
+      //tmFront_sortEdges(mesh);
       cur = front->edges_stack->first;
       n = 0;
     }

@@ -224,10 +224,17 @@ void tmFront_sortEdges(tmMesh *mesh)
   | Sort edge entries 
   | -> Only list values are swapped
   -------------------------------------------------------*/
-  int sorted = List_bubble_sort(front_edges, 
+  List *edges_sorted = List_merge_sort(front_edges,
                         (List_compare) tmEdge_compareLen);
-  check( sorted == 0,
+  check( edges_sorted != NULL,
       "List sort in tmFront_sortEdges() failed.");
+
+  if (front_edges != edges_sorted)
+  {
+    List_destroy(front_edges);
+    front->edges_stack = edges_sorted;
+    front_edges = edges_sorted;
+  } 
 
   /*-------------------------------------------------------
   | Update list positions 

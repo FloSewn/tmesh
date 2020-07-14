@@ -37,7 +37,7 @@ static inline tmDouble size_fun_3( tmDouble xy[2] )
   tmDouble dx = x0 - xy[0];
   tmDouble dy = y0 - xy[1];
   tmDouble r2 = dx*dx + dy*dy;
-  return 1.75 - 1.6 * exp(-0.003*r2);
+  return 0.65 - 0.64 * exp(-0.003*r2);
 }
 static inline tmDouble size_fun_4( tmDouble xy[2] )
 {
@@ -55,7 +55,7 @@ static inline tmDouble size_fun_5( tmDouble xy[2] )
 }
 static inline tmDouble size_fun_6( tmDouble xy[2] )
 {
-  return 2.0;
+  return 0.1;
 }
 
 
@@ -912,6 +912,94 @@ char *test_tmQtree_performance()
 
 } /* test_tmQtree_performance() */
 
+/*************************************************************
+* Unit test function to handle the tmQtree performance
+************************************************************/
+char *test_tmQtree_performance2()
+{
+  tmDouble xy_min[2] = { -50.0, -55.0 };
+  tmDouble xy_max[2] = {  55.0,  50.0 };
+  tmMesh *mesh = tmMesh_create(xy_min, xy_max, 10, size_fun_1);
+
+  int n_nodes = 50000;
+
+  tmDouble a = 2.5;
+  tmDouble b =-3.4;
+  tmDouble c = 6.5;
+  tmDouble t_0 = 0.0;
+  tmDouble t_1 = 5.0 * PI_D; 
+  tmDouble dt  = (t_1 - t_0) / (tmDouble)n_nodes;
+
+  int i;
+  tmNode *n;
+  tmDouble n_xy[2]     = { 0.0, 0.0 };
+  tmDouble bbox_min[2] = { 0.0, 0.0 };
+  tmDouble bbox_max[2] = { 0.0, 0.0 };
+  tmDouble t;
+
+  int n_obj_qt = 0;
+  int n_obj_bf = 0;
+
+  clock_t tic_0 = clock();
+
+  /*--------------------------------------------------------
+  | Create nodes in domain
+  --------------------------------------------------------*/
+  for (i = 0; i < n_nodes; i++)
+  {
+    t = t_0 + dt * (tmDouble)i;
+    n_xy[0] = (a + b * t) * cos(t) + c * sin(40. * t);
+    n_xy[1] = (a + b * t) * sin(t) + c * cos(40. * t);
+    n = tmNode_create(mesh, n_xy); 
+  }
+
+  /*--------------------------------------------------------
+  | Print out qtree
+  --------------------------------------------------------*/
+  //tmQtree_printQtree(mesh->nodes_qtree);
+
+  clock_t tic_1 = clock();
+
+  /*--------------------------------------------------------
+  | Find objects within bbox of every node with qtree
+  --------------------------------------------------------*/
+  for (i = 0; i < n_nodes; i++)
+  {
+    t = t_0 + dt * (tmDouble)i;
+    n_xy[0] = (a + b * t) * cos(t) + c * sin(40. * t);
+    n_xy[1] = (a + b * t) * sin(t) + c * cos(40. * t);
+
+    List *obj_circ = tmQtree_getObjCirc(mesh->nodes_qtree, 
+                                        n_xy, 2.0);
+
+    if (obj_circ != NULL)
+    {
+      n_obj_qt += obj_circ->count;
+      List_destroy(obj_circ);
+    }
+    
+  }
+
+  clock_t tic_2 = clock();
+  tmMesh_destroy(mesh);
+  clock_t tic_3 = clock();
+
+
+  printf("-------------------------------------------------------------------\n");
+  printf(" tmQtree Performance test 2              \n");
+  printf("-------------------------------------------------------------------\n");
+  printf(" > Found nodes: %d\n", n_obj_qt);
+  printf("-------------------------------------------------------------------\n");
+  printf(" > Total time                    : %e sec\n", (double) (tic_3 - tic_0) / CLOCKS_PER_SEC );
+  printf(" > Time for initilization        : %e sec\n", (double) (tic_1 - tic_0) / CLOCKS_PER_SEC );
+  printf(" > Time for qtree search         : %e sec\n", (double) (tic_2 - tic_1) / CLOCKS_PER_SEC );
+  printf(" > Time to clear everything      : %e sec\n", (double) (tic_3 - tic_2) / CLOCKS_PER_SEC );
+  printf("-------------------------------------------------------------------\n");
+
+  return NULL;
+
+} /* test_tmQtree_performance2() */
+
 
 /************************************************************
 * Unit test function for the triangle intersection 
@@ -1257,7 +1345,7 @@ char *test_tmFront_innerOuterMesh()
 {
   tmDouble xy_min[2] = {  -0.0,  0.0 };
   tmDouble xy_max[2] = { 120.0,120.0 };
-  tmMesh *mesh = tmMesh_create(xy_min, xy_max, 100, size_fun_4);
+  tmMesh *mesh = tmMesh_create(xy_min, xy_max, 100, size_fun_3);
 
   /*--------------------------------------------------------
   | exterior nodes
@@ -1324,7 +1412,7 @@ char *test_tmFront_innerOuterMesh()
   /*--------------------------------------------------------
   | Flip edges which are not locally delaunay
   --------------------------------------------------------*/
-  tmMesh_delaunayFlip(mesh);
+  //tmMesh_delaunayFlip(mesh);
 
   /*--------------------------------------------------------
   | Print the mesh data 
@@ -1385,7 +1473,7 @@ char *test_tmFront_simpleMesh2()
   /*--------------------------------------------------------
   | Flip edges which are not locally delaunay
   --------------------------------------------------------*/
-  tmMesh_delaunayFlip(mesh);
+  //tmMesh_delaunayFlip(mesh);
   clock_t tic_3 = clock();
 
   /*--------------------------------------------------------

@@ -823,34 +823,22 @@ List *tmQtree_getObjBbox(tmQtree *qtree,
     List *obj_NE = tmQtree_getObjBbox(qtree->child_NE,
                                       xy_min, xy_max);
     if (obj_NE != NULL)
-    {
       List_join(obj_found, obj_NE);
-      List_destroy(obj_NE);
-    }
 
     List *obj_NW = tmQtree_getObjBbox(qtree->child_NW,
                                       xy_min, xy_max);
     if (obj_NW != NULL)
-    {
       List_join(obj_found, obj_NW);
-      List_destroy(obj_NW);
-    }
 
     List *obj_SW = tmQtree_getObjBbox(qtree->child_SW,
                                       xy_min, xy_max);
     if (obj_SW != NULL)
-    {
       List_join(obj_found, obj_SW);
-      List_destroy(obj_SW);
-    }
 
     List *obj_SE = tmQtree_getObjBbox(qtree->child_SE,
                                       xy_min, xy_max);
     if (obj_SE != NULL)
-    {
       List_join(obj_found, obj_SE);
-      List_destroy(obj_SE);
-    }
     
   }
   /*-------------------------------------------------------
@@ -931,34 +919,22 @@ List *tmQtree_getObjCirc(tmQtree *qtree,
     List *obj_NE = tmQtree_getObjCirc(qtree->child_NE,
                                       xy, r);
     if (obj_NE != NULL)
-    {
       List_join(obj_found, obj_NE);
-      List_destroy(obj_NE);
-    }
 
     List *obj_NW = tmQtree_getObjCirc(qtree->child_NW,
                                       xy, r);
     if (obj_NW != NULL)
-    {
       List_join(obj_found, obj_NW);
-      List_destroy(obj_NW);
-    }
 
     List *obj_SW = tmQtree_getObjCirc(qtree->child_SW,
                                       xy, r);
     if (obj_SW != NULL)
-    {
       List_join(obj_found, obj_SW);
-      List_destroy(obj_SW);
-    }
 
     List *obj_SE = tmQtree_getObjCirc(qtree->child_SE,
                                       xy, r);
     if (obj_SE != NULL)
-    {
       List_join(obj_found, obj_SE);
-      List_destroy(obj_SE);
-    }
     
   }
   /*-------------------------------------------------------

@@ -22,12 +22,13 @@ char *all_tests()
   //mu_run_test(test_tmQtree);
   //mu_run_test(test_tmQtree_2);
   //mu_run_test(test_tmQtree_performance);
+  //mu_run_test(test_tmQtree_performance2);
   //mu_run_test(test_tmBdry_refine);
   //mu_run_test(test_tmFront_init);
   //mu_run_test(test_tmFront_advance); 
   //mu_run_test(test_tmFront_simpleMesh);
-  mu_run_test(test_tmFront_simpleMesh2);
-  //mu_run_test(test_tmFront_innerOuterMesh);
+  //mu_run_test(test_tmFront_simpleMesh2);
+  mu_run_test(test_tmFront_innerOuterMesh);
   
   //mu_run_test(test_mesh_cylinder);
   

@@ -2,3 +2,6 @@ build/*
 bin/*
 lib/*
 *.o
+*.dat
+share/python/pics/*.png
+src/tags

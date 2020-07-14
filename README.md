@@ -1,7 +1,7 @@
 # TMesh
 ------------------------------------------------------------
 
-<img src="doc/images/qtree.png" alt="Background-Qtree" width="500"/>
+<img src="doc/images/tMesh.png" alt="tMesh-Grid" width="500"/>
 
 ## Profiling
 * Compile with `-pg` (default in debugging mode)

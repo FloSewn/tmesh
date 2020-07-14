@@ -105,7 +105,7 @@ def main():
 
     for step in range(len(tris), len(tris)-1-i_plts, -1):
 
-        fig, ax = plt.subplots(1,1,figsize=(10,10))
+        fig, ax = plt.subplots(1,1,figsize=(8,4))
         ax.set_aspect('equal')
 
         #for i_bdry, edges in boundaries.items():
@@ -132,12 +132,12 @@ def main():
 
         ax.set_xlim((nodes[:,0].min(),nodes[:,0].max()))
         ax.set_ylim((nodes[:,1].min(),nodes[:,1].max()))
-        ax.set_axis_off()
+        #ax.set_axis_off()
 
         fig_path = os.path.join( export_path, 'mesh_step_{:}'.format(len(tris)-step))
         print("Exporting {:}".format(fig_path))
         plt.tight_layout()
-        fig.savefig(fig_path + '.png', dpi=300)
+        fig.savefig(fig_path + '.png', dpi=280)
         plt.close(fig)
         print("Done")
 

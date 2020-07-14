@@ -11,11 +11,11 @@ import numpy as np
 import sys, os
 
 TRI_PATCH = {'edgecolors' : ['k'],
-             'linewidths' : 0.5,
-             'facecolors' : ['r'],
+             'linewidths' : 0.9,
+             'facecolors' : ['w'],
              'joinstyle'  : 'round',
              'capstyle'   : 'round',
-             'alpha'      : 0.3,
+             'alpha'      : 1.0,
              'cmap'       : 'coolwarm'}
 
 def read_meshdata(mesh_file):
@@ -132,6 +132,7 @@ def main():
 
         ax.set_xlim((nodes[:,0].min(),nodes[:,0].max()))
         ax.set_ylim((nodes[:,1].min(),nodes[:,1].max()))
+        ax.set_axis_off()
 
         fig_path = os.path.join( export_path, 'mesh_step_{:}'.format(len(tris)-step))
         print("Exporting {:}".format(fig_path))

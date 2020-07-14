@@ -57,6 +57,35 @@ static inline tmDouble size_fun_6( tmDouble xy[2] )
 {
   return 0.1;
 }
+static inline tmDouble size_fun_7( tmDouble xy[2] )
+{
+  tmDouble x0 = 9.0;
+  tmDouble y0 = 3.0;
+  tmDouble Rx = 7.0;
+  tmDouble Ry = 4.0;
+  tmDouble R  = 5.5;
+  tmDouble h  = 0.15;
+  tmDouble alpha = 0.4 * PI_D;
+
+  tmDouble rho = 0.35;
+  tmDouble rho_min = 0.025;
+
+  int i;
+  for (i=0; i<5; i++)
+  {
+    const tmDouble idbl = (tmDouble)i;
+    const tmDouble xi = x0 + Rx * cos(0.5*PI_D+idbl*alpha);
+    const tmDouble yi = y0 + Ry * sin(0.5*PI_D+idbl*alpha);
+    const tmDouble dx = xy[0] - xi;
+    const tmDouble dy = xy[1] - yi;
+    const tmDouble ri = sqrt(dx*dx +dy*dy);
+    const tmDouble rho_i = h * fabs(ri - R) + rho_min;
+
+    rho = MIN(rho, rho_i);
+  }
+
+  return rho;
+}
 
 
 /*************************************************************
@@ -1509,10 +1538,140 @@ char *test_tmFront_simpleMesh2()
   printf("> Flipping time     : %e sec\n", (double) (tic_3 - tic_2) / CLOCKS_PER_SEC );
   printf("> ----------------------------------------------\n");
 
-
-
   tmMesh_destroy(mesh);
 
   return NULL;
 
 } /* test_tmFront_simpleMesh2() */
+
+
+char *test_tmFront_tMesh()
+{
+  tmDouble xy_min[2] = { -1.0, -1.0 };
+  tmDouble xy_max[2] = { 18.0,  9.0 };
+  tmMesh *mesh = tmMesh_create(xy_min, xy_max, 100, size_fun_7);
+
+  /*--------------------------------------------------------
+  | exterior boundary
+  --------------------------------------------------------*/
+  tmDouble xy0[2] = {  0.0,  0.0 };
+  tmDouble xy1[2] = { 16.0,  0.0 };
+  tmDouble xy2[2] = { 16.0,  8.0 };
+  tmDouble xy3[2] = {  0.0,  8.0 };
+
+  tmNode *n0 = tmNode_create(mesh, xy0);
+  tmNode *n1 = tmNode_create(mesh, xy1);
+  tmNode *n2 = tmNode_create(mesh, xy2);
+  tmNode *n3 = tmNode_create(mesh, xy3);
+
+  tmBdry *bdry_ext = tmMesh_addBdry(mesh, FALSE, 0);
+  tmEdge *e0 = tmBdry_edgeCreate(bdry_ext, n0, n1, 0);
+  tmEdge *e1 = tmBdry_edgeCreate(bdry_ext, n1, n2, 0);
+  tmEdge *e2 = tmBdry_edgeCreate(bdry_ext, n2, n3, 0);
+  tmEdge *e3 = tmBdry_edgeCreate(bdry_ext, n3, n0, 0);
+
+  /*--------------------------------------------------------
+  | interior boundary
+  --------------------------------------------------------*/
+  tmDouble  xy4[2] = {  3.0,  1.0 };
+  tmDouble  xy5[2] = {  3.0,  5.0 };
+  tmDouble  xy6[2] = {  1.0,  5.0 };
+  tmDouble  xy7[2] = {  1.0,  7.0 };
+  tmDouble  xy8[2] = {  7.0,  7.0 };
+  tmDouble  xy9[2] = {  7.0,  5.0 };
+  tmDouble xy10[2] = {  5.0,  5.0 };
+  tmDouble xy11[2] = {  5.0,  1.0 };
+
+  tmNode  *n4 = tmNode_create(mesh, xy4);
+  tmNode  *n5 = tmNode_create(mesh, xy5);
+  tmNode  *n6 = tmNode_create(mesh, xy6);
+  tmNode  *n7 = tmNode_create(mesh, xy7);
+  tmNode  *n8 = tmNode_create(mesh, xy8);
+  tmNode  *n9 = tmNode_create(mesh, xy9);
+  tmNode *n10 = tmNode_create(mesh, xy10);
+  tmNode *n11 = tmNode_create(mesh, xy11);
+
+  tmBdry *bdry_int1 = tmMesh_addBdry(mesh, TRUE, 1);
+  tmEdge  *e4 = tmBdry_edgeCreate(bdry_int1, n4, n5, 1);
+  tmEdge  *e5 = tmBdry_edgeCreate(bdry_int1, n5, n6, 1);
+  tmEdge  *e6 = tmBdry_edgeCreate(bdry_int1, n6, n7, 1);
+  tmEdge  *e7 = tmBdry_edgeCreate(bdry_int1, n7, n8, 1);
+  tmEdge  *e8 = tmBdry_edgeCreate(bdry_int1, n8, n9, 1);
+  tmEdge  *e9 = tmBdry_edgeCreate(bdry_int1, n9, n10,1);
+  tmEdge *e10 = tmBdry_edgeCreate(bdry_int1, n10, n11, 1);
+  tmEdge *e11 = tmBdry_edgeCreate(bdry_int1, n11, n4, 1);
+
+
+  tmDouble xy12[2] = {  8.0,  7.0 };
+  tmDouble xy13[2] = { 10.0,  7.0 };
+  tmDouble xy14[2] = { 11.0,  5.5 };
+  tmDouble xy15[2] = { 12.0,  5.5 };
+  tmDouble xy16[2] = { 13.0,  7.0 };
+  tmDouble xy17[2] = { 15.0,  7.0 };
+  tmDouble xy18[2] = { 15.0,  1.0 };
+  tmDouble xy19[2] = { 13.0,  1.0 };
+  tmDouble xy20[2] = { 13.0,  4.0 };
+  tmDouble xy21[2] = { 12.0,  3.0 };
+  tmDouble xy22[2] = { 11.0,  3.0 };
+  tmDouble xy23[2] = { 10.0,  4.0 };
+  tmDouble xy24[2] = { 10.0,  1.0 };
+  tmDouble xy25[2] = {  8.0,  1.0 };
+  tmDouble xy26[2] = {  8.0,  5.0 };
+
+  tmNode *n12 = tmNode_create(mesh, xy12);
+  tmNode *n13 = tmNode_create(mesh, xy13);
+  tmNode *n14 = tmNode_create(mesh, xy14);
+  tmNode *n15 = tmNode_create(mesh, xy15);
+  tmNode *n16 = tmNode_create(mesh, xy16);
+  tmNode *n17 = tmNode_create(mesh, xy17);
+  tmNode *n18 = tmNode_create(mesh, xy18);
+  tmNode *n19 = tmNode_create(mesh, xy19);
+  tmNode *n20 = tmNode_create(mesh, xy20);
+  tmNode *n21 = tmNode_create(mesh, xy21);
+  tmNode *n22 = tmNode_create(mesh, xy22);
+  tmNode *n23 = tmNode_create(mesh, xy23);
+  tmNode *n24 = tmNode_create(mesh, xy24);
+  tmNode *n25 = tmNode_create(mesh, xy25);
+  tmNode *n26 = tmNode_create(mesh, xy26);
+
+  tmBdry *bdry_int2 = tmMesh_addBdry(mesh, TRUE, 2);
+  tmEdge *e12 = tmBdry_edgeCreate(bdry_int2, n12, n13, 2);
+  tmEdge *e13 = tmBdry_edgeCreate(bdry_int2, n13, n14, 2);
+  tmEdge *e14 = tmBdry_edgeCreate(bdry_int2, n14, n15, 2);
+  tmEdge *e15 = tmBdry_edgeCreate(bdry_int2, n15, n16, 2);
+  tmEdge *e16 = tmBdry_edgeCreate(bdry_int2, n16, n17, 2);
+  tmEdge *e17 = tmBdry_edgeCreate(bdry_int2, n17, n18, 2);
+  tmEdge *e18 = tmBdry_edgeCreate(bdry_int2, n18, n19, 2);
+  tmEdge *e19 = tmBdry_edgeCreate(bdry_int2, n19, n20, 2);
+  tmEdge *e20 = tmBdry_edgeCreate(bdry_int2, n20, n21, 2);
+  tmEdge *e21 = tmBdry_edgeCreate(bdry_int2, n21, n22, 2);
+  tmEdge *e22 = tmBdry_edgeCreate(bdry_int2, n22, n23, 2);
+  tmEdge *e23 = tmBdry_edgeCreate(bdry_int2, n23, n24, 2);
+  tmEdge *e24 = tmBdry_edgeCreate(bdry_int2, n24, n25, 2);
+  tmEdge *e25 = tmBdry_edgeCreate(bdry_int2, n25, n26, 2);
+  tmEdge *e26 = tmBdry_edgeCreate(bdry_int2, n26, n12, 2);
+
+  /*--------------------------------------------------------
+  | Create mesh
+  --------------------------------------------------------*/
+  clock_t tic_1 = clock();
+  tmMesh_ADFMeshing(mesh);
+  clock_t tic_2 = clock();
+
+  /*--------------------------------------------------------
+  | Print the mesh data 
+  --------------------------------------------------------*/
+  tmMesh_printMesh(mesh);
+
+  printf("> ----------------------------------------------\n");
+  printf("> simple mesh 1 performance test                \n");
+  printf("> ----------------------------------------------\n");
+  printf("> Number of elements: %d\n", mesh->no_tris);
+  printf("> Meshing time      : %e sec\n", (double) (tic_2 - tic_1) / CLOCKS_PER_SEC );
+  printf("> ----------------------------------------------\n");
+
+  tmMesh_destroy(mesh);
+
+  return NULL;
+
+} /* test_tmFront_tMesh() */

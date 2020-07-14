@@ -77,7 +77,7 @@ typedef tmDouble (*tmSizeFun) (tmDouble xy[2]);
 ***********************************************************/
 #define TM_NEW_NODE_DIST_FAC  ( 1.05 ) // 1.15
 #define TM_NODE_EDGE_DIST_FAC ( 0.40 )
-#define TM_TRI_RANGE_FAC      ( 1.35 )
+#define TM_TRI_RANGE_FAC      ( 2.35 )
 #define TM_BDRY_REFINE_FAC    ( 1.00 )
 #define TM_FRONT_REFINE_FAC   ( 1.00 )
 #define TM_NODE_NBR_DIST_FAC  ( 1.00 )

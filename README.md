@@ -97,6 +97,7 @@ defined in the test function `test_tmFront_simpleMesh2()`.
 * Python-Interface 
 * Delaunay-refinement for generated grids
 * Automatic generation of size-functions, based on the provided boundaries
+* Better output format of generated meshes, e.g. HDF5 or netCDF.
 
 ## Sources
 * [Jonathan Richard Shewchuk, Lecture Notes on Delaunay Mesh Generation, February 5, 2012](https://people.eecs.berkeley.edu/~jrs/meshpapers/delnotes.pdf)

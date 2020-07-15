@@ -35,6 +35,9 @@ def main():
     ax.set_yscale('log')
     ax.set_xscale('log')
 
+    ax.set_xlabel('Number of triangles')
+    ax.set_ylabel('Meshing time in seconds')
+
     #ax.grid(True)
 
     fig_path = os.path.join( export_path, 'performance')

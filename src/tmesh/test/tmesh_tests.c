@@ -45,13 +45,9 @@ static inline tmDouble size_fun_4( tmDouble xy[2] )
 }
 static inline tmDouble size_fun_5( tmDouble xy[2] )
 {
-  tmDouble y0 = 10.0;
-  tmDouble dy = y0 - xy[1];
-  return 2.50 - 2.00 * exp(-0.02*dy*dy) + 0.02 * xy[0];
-  //tmDouble val = 0.05
-  //             + 0.001 * (xy[0]-50)*(xy[0]-50) 
-  //             + 0.001 * (xy[1]-50)*(xy[1]-50);
-  //return val;
+  tmDouble dx = 8.0 - xy[0];
+  tmDouble dy = 6.0 - xy[1];
+  return 0.46 - 0.41 * exp(-0.05*(dx*dx+dy*dy));
 }
 static inline tmDouble size_fun_6( tmDouble xy[2] )
 {
@@ -1458,7 +1454,7 @@ char *test_tmFront_simpleMesh2()
 {
   tmDouble xy_min[2] = {-10.0,-10.0 };
   tmDouble xy_max[2] = { 20.0, 20.0 };
-  tmMesh *mesh = tmMesh_create(xy_min, xy_max, 100, size_fun_6);
+  tmMesh *mesh = tmMesh_create(xy_min, xy_max, 100, size_fun_5);
 
   /*--------------------------------------------------------
   | exterior boundary

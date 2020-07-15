@@ -25,7 +25,7 @@ First, create a new mesh object:
 ```sh
 tmMesh *mesh = tmMesh_create(xy_min, xy_max, N, size_fun);
 ```
-Here, `xy_min` and `xy_max` define the bounding box of the entir domain, `N` is the number of elements that are stored in the underlying quadtree structure until a quad is refined.
+Here, `xy_min` and `xy_max` define the bounding box of the entire domain, `N` is the number of elements that are stored in the underlying quadtree structure until a quad is refined.
 Next, define some vertices for the exterior boundary:
 ```sh
 tmNode *n0 = tmNode_create(mesh, xy0);
@@ -68,7 +68,7 @@ which is located in the directory *share/python*.
 ## Benchmarks
 <img src="doc/images/qtree.png" alt="tMesh-Grid" width="500"/>
 
-**TMesh** uses an adaptive quadtree structure to store vertices, edges and triangles in an accessible way. This allows us to find any existing object in the meshing process with an average complexity of N log.
+**TMesh** uses an adaptive quadtree structure to store vertices, edges and triangles in an accessible way. This allows to find any existing object in the meshing process with an average complexity of N log.
 The quadtree is refined and coarsened automatically as objects are inserted or removed from the structure. 
 
 For profiling of a test-binary:
@@ -77,7 +77,7 @@ For profiling of a test-binary:
 * Profile with: `gprof test gmon.out > prof_output`
 
  ### Qtree search benchmark
- Here's a short benchmark of the underlying quadtree structure. Its the output from the test-function "test_tmQtree_performance()" for various numbers of vertices.
+ Here's a short benchmark of the underlying quadtree structure. Its the output from the test-function `test_tmQtree_performance()` for various numbers of vertices.
 | Nodes        | Qtree        | Brute Force  |
 | :----------: | :----------: | :----------: |
 |        10000 |        0.0 s |        0.6 s |
@@ -88,7 +88,9 @@ For profiling of a test-binary:
 
 
 ### Triangular mesh generation benchmark
-This plot shows the performance of **TMesh** for the generation of a simple mesh, defined in the test function "test_tmFront_simpleMesh2()".
+This plot shows the performance of **TMesh** for the generation of a simple mesh, 
+defined in the test function `test_tmFront_simpleMesh2()`.
+
 <img src="doc/images/performance.png" alt="tMesh-Grid" width="500"/>
 
 ## Todos
@@ -101,6 +103,7 @@ This plot shows the performance of **TMesh** for the generation of a simple mesh
 * [Jonathan Richard Shewchuk's free course material on Mesh Generation and Geometry Processing in Graphics, Engineering, and Modeling ](https://people.eecs.berkeley.edu/~jrs/mesh/)
 * Lo, Daniel SH. Finite element mesh generation. CRC Press, 2014
 * Blazek, Jiri. Computational fluid dynamics: principles and applications. Butterworth-Heinemann, 2015
+* Zed A. Shaw, Learn C the Hard Way (this is where liblcthw.a comes from)
 
 ## License 
 MIT

@@ -100,8 +100,9 @@ defined in the test function `test_tmFront_simpleMesh2()`.
 * Better output format of generated meshes, e.g. HDF5 or netCDF.
 
 ## Sources
-* [Jonathan Richard Shewchuk, Lecture Notes on Delaunay Mesh Generation, February 5, 2012](https://people.eecs.berkeley.edu/~jrs/meshpapers/delnotes.pdf)
-* [Jonathan Richard Shewchuk's free course material on Mesh Generation and Geometry Processing in Graphics, Engineering, and Modeling ](https://people.eecs.berkeley.edu/~jrs/mesh/)
+* o'Rourke, Joseph. Computational geometry in C. Cambridge university press, 1998.
+* [Shewchuk, Jonathan R. Lecture Notes on Delaunay Mesh Generation, February 5, 2012](https://people.eecs.berkeley.edu/~jrs/meshpapers/delnotes.pdf)
+* [Jonathan R. Shewchuk's free course material on Mesh Generation and Geometry Processing in Graphics, Engineering, and Modeling ](https://people.eecs.berkeley.edu/~jrs/mesh/)
 * Lo, Daniel SH. Finite element mesh generation. CRC Press, 2014
 * Blazek, Jiri. Computational fluid dynamics: principles and applications. Butterworth-Heinemann, 2015
 * Zed A. Shaw, Learn C the Hard Way (this is where liblcthw.a comes from)

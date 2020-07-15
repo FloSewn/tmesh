@@ -92,10 +92,15 @@ This plot shows the performance of **TMesh** for the generation of a simple mesh
 <img src="doc/images/performance.png" alt="tMesh-Grid" width="500"/>
 
 ## Todos
-
+* Python-Interface 
+* Delaunay-refinement for generated grids
+* Automatic generation of size-functions, based on the provided boundaries
 
 ## Sources
-
+* [Jonathan Richard Shewchuk, Lecture Notes on Delaunay Mesh Generation, February 5, 2012](https://people.eecs.berkeley.edu/~jrs/meshpapers/delnotes.pdf)
+* [Jonathan Richard Shewchuk's free course material on Mesh Generation and Geometry Processing in Graphics, Engineering, and Modeling ](https://people.eecs.berkeley.edu/~jrs/mesh/)
+* Lo, Daniel SH. Finite element mesh generation. CRC Press, 2014
+* Blazek, Jiri. Computational fluid dynamics: principles and applications. Butterworth-Heinemann, 2015
 
 ## License 
 MIT

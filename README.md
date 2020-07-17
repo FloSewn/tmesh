@@ -4,12 +4,12 @@
 
 
 **TMesh** is a lightweight C library to create two-dimensional triangular grids, which can 
-be used for Finite Element or Computational Fluid Dynamics applications.
+be used for Finite Element Methods or Computational Fluid Dynamics applications.
 The triangles are generated with an advancing-front method, for which the user must only provide edge segments that define the boundaries of the domain. Furthermore it is possible to refine 
 triangles locally with a user-defined size function.
 
 ## Installation
-Currently, **TMesh** is just a static library **libtmesh.a**, generated in the *lib*-directory of this repository. It relies on my static **liblcthw.a** library, which is created here as well. 
+Currently, **TMesh** is just a static library **libtmesh.a**, generated in the *lib*-directory of this repository. 
 For installation, just create a build directory and run
 ```sh
 cmake ..
@@ -105,5 +105,5 @@ defined in the test function `test_tmFront_simpleMesh2()`.
 * [Jonathan R. Shewchuk's free course material on Mesh Generation and Geometry Processing in Graphics, Engineering, and Modeling ](https://people.eecs.berkeley.edu/~jrs/mesh/)
 * Lo, Daniel SH. Finite element mesh generation. CRC Press, 2014
 * Blazek, Jiri. Computational fluid dynamics: principles and applications. Butterworth-Heinemann, 2015
-* Zed A. Shaw, Learn C the Hard Way (this is where liblcthw.a comes from)
+* Zed A. Shaw, Learn C the Hard Way (this is where the testing structure and the list functions are coming from)
 

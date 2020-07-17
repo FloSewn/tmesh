@@ -1,24 +1,23 @@
-#ifndef lcthw_list_h
-#define lcthw_list_h
-
+#ifndef TMESH_TMLIST_H
+#define TMESH_TMLIST_H
 
 
 /**************************************************************
 * Defines for the handling with list structures
 **************************************************************/
 /* Returns the count of a list */
-#define List_count(A) ((A)->count)
+#define tmList_count(A) ((A)->count)
 /* Return the value of the first list entry */
-#define List_first(A) ((A)->first != NULL ? (A)->first->value : NULL)
+#define tmList_first(A) ((A)->first != NULL ? (A)->first->value : NULL)
 /* Return the value of the last list entry */
-#define List_last(A) ((A)->last != NULL ? (A)->last->value : NULL)
+#define tmList_last(A) ((A)->last != NULL ? (A)->last->value : NULL)
 /* Return the first list entry */
-#define List_first_node(A) ((A)->first != NULL ? (A)->first : NULL)
+#define tmList_first_node(A) ((A)->first != NULL ? (A)->first : NULL)
 /* Return the last list entry */
-#define List_last_node(A) ((A)->last != NULL ? (A)->last : NULL)
+#define tmList_last_node(A) ((A)->last != NULL ? (A)->last : NULL)
 /* Perform a loop over a list structure */
-#define LIST_FOREACH(L, S, M, V) ListNode *_node = NULL;\
-                                 ListNode *V = NULL;\
+#define TMLIST_FOREACH(L, S, M, V) tmListNode *_node = NULL;\
+                                 tmListNode *V = NULL;\
 for(V = _node = L->S; _node != NULL; V = _node = _node->M)
 
 
@@ -26,80 +25,96 @@ for(V = _node = L->S; _node != NULL; V = _node = _node->M)
 /**************************************************************
 * ListNode Structure
 **************************************************************/
-struct ListNode;
-typedef struct ListNode {
-  struct ListNode *prev;
-  struct ListNode *next;
+struct tmListNode;
+typedef struct tmListNode {
+  struct tmListNode *prev;
+  struct tmListNode *next;
   void *value;
-} ListNode;
+} tmListNode;
 
 /**************************************************************
 * List Structure
 **************************************************************/
-typedef struct List {
+typedef struct tmList {
   int count;
-  ListNode *first;
-  ListNode *last;
-} List;
+  tmListNode *first;
+  tmListNode *last;
+} tmList;
+
+/*************************************************************
+* Function pointer to compare function
+*************************************************************/
+typedef int (*tmList_compare) (const void *a, const void *b);
 
 
 
 /**************************************************************
 * This function creates a new list structure
 **************************************************************/
-List *List_create();
+tmList *tmList_create();
 
 /**************************************************************
 * This function frees the memory of all ListNodes of a given 
 * list structure
 **************************************************************/
-void List_destroy(List *list);
+void tmList_destroy(tmList *list);
 
 /**************************************************************
 * This function frees all memory of the data that is stored 
 * in a given list structure
 **************************************************************/
-void List_clear(List *list);
+void tmList_clear(tmList *list);
 
 /**************************************************************
 * This function frees all memory of a list structure
 **************************************************************/
-void List_clear_destroy(List *list);
+void tmList_clear_destroy(tmList *list);
 
 /**************************************************************
 * Push a new list node to the end of a list structure
 **************************************************************/
-void List_push(List *list, void *value);
+void tmList_push(tmList *list, void *value);
 
 /**************************************************************
 * Remove the last node from a list structure
 **************************************************************/
-void *List_pop(List *list);
+void *tmList_pop(tmList *list);
 
 /**************************************************************
 * Push a new list node to the beginning of a list structure
 **************************************************************/
-void List_unshift(List *list, void *value);
+void tmList_unshift(tmList *list, void *value);
 
 /**************************************************************
 * Remove the first node from a list structure
 **************************************************************/
-void *List_shift(List *list);
+void *tmList_shift(tmList *list);
 
 /**************************************************************
 * Remove a specific node from a list structure
 **************************************************************/
-void *List_remove(List *list, ListNode *node);
+void *tmList_remove(tmList *list, tmListNode *node);
 
 /**************************************************************
 * Appends <list2> to the end of <list1> and frees 
 * the <list2> structure.
 **************************************************************/
-void *List_join(List *list1, List *list2);
+void *tmList_join(tmList *list1, tmList *list2);
 
 /*************************************************************
 * Splits a list <list1> at a specified Listnode <node>
 *************************************************************/
-List *List_split(List *list1, int index);
+tmList *tmList_split(tmList *list1, int index);
 
-#endif /* lcthw_list_h */
+
+/*************************************************************
+* Bubble sort algorithm
+*************************************************************/
+int tmList_bubble_sort(tmList *list, tmList_compare cmp);
+
+/*************************************************************
+* Merge sort algorithm
+*************************************************************/
+tmList *tmList_merge_sort(tmList *list, tmList_compare cmp);
+
+#endif /* TMESH_TMLIST_H */

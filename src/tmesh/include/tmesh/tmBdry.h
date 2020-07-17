@@ -25,10 +25,10 @@ typedef struct tmBdry {
   /*-------------------------------------------------------
   | Boundary edges
   -------------------------------------------------------*/
-  tmEdge   *edges_head;
-  List     *edges_stack;
-  tmQtree  *edges_qtree;
-  ListNode *mesh_pos;
+  tmEdge     *edges_head;
+  tmList     *edges_stack;
+  tmQtree    *edges_qtree;
+  tmListNode *mesh_pos;
 
 } tmBdry;
 
@@ -76,7 +76,7 @@ tmEdge *tmBdry_edgeCreate(tmBdry *bdry,
 *----------------------------------------------------------
 * @return: ListNode to tmEdge on the mesh's edge stack
 **********************************************************/
-ListNode *tmBdry_addEdge(tmBdry *bdry, tmEdge *edge);
+tmListNode *tmBdry_addEdge(tmBdry *bdry, tmEdge *edge);
 
 /**********************************************************
 * Function: tmBdry_remEdge()

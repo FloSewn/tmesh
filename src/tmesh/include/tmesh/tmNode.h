@@ -24,35 +24,35 @@ typedef struct tmNode {
   /*-------------------------------------------------------
   | Properties of this node and its state
   -------------------------------------------------------*/
-  ListNode *stack_pos;
-  ListNode *qtree_pos;
-  tmQtree  *qtree;
+  tmListNode *stack_pos;
+  tmListNode *qtree_pos;
+  tmQtree    *qtree;
 
   /*-------------------------------------------------------
   | Boundary properties if node is located on a boundary
   -------------------------------------------------------*/
   tmBool  on_bdry;
-  List   *bdry_edges;
+  tmList *bdry_edges;
   int     n_bdry_edges;
 
   /*-------------------------------------------------------
   | All adjacent front edges to this node 
   -------------------------------------------------------*/
   tmBool  on_front;
-  List   *front_edges;
+  tmList *front_edges;
   int     n_front_edges;
 
   /*-------------------------------------------------------
   | All mesh edges to this node 
   -------------------------------------------------------*/
-  List   *mesh_edges;
+  tmList *mesh_edges;
   int     n_mesh_edges;
 
   /*-------------------------------------------------------
   | All adjacent triangles to this node 
   -------------------------------------------------------*/
-  List *tris;
-  int   n_tris;
+  tmList *tris;
+  int     n_tris;
 
   /*-------------------------------------------------------
   | Buffer variables ( e.g. for sorting )
@@ -94,9 +94,9 @@ void tmNode_destroy(tmNode *node);
 *----------------------------------------------------------
 * @param *mesh: pointer to a tmNode 
 *
-* @return: List of tmEdges
+* @return: tmList of tmEdges
 **********************************************************/
-List *tmNode_getBdryEdgeIn(tmNode *node);
+tmList *tmNode_getBdryEdgeIn(tmNode *node);
 
 /**********************************************************
 * Function: tmNode_getBdryEdgeOut()
@@ -105,9 +105,9 @@ List *tmNode_getBdryEdgeIn(tmNode *node);
 *----------------------------------------------------------
 * @param *mesh: pointer to a tmNode 
 *
-* @return: List of tmEdges
+* @return: tmList of tmEdges
 **********************************************************/
-List *tmNode_getBdryEdgeOut(tmNode *node);
+tmList *tmNode_getBdryEdgeOut(tmNode *node);
 
 /**********************************************************
 * Function: tmNode_getFrontEdgeIn()
@@ -116,9 +116,9 @@ List *tmNode_getBdryEdgeOut(tmNode *node);
 *----------------------------------------------------------
 * @param *mesh: pointer to a tmNode 
 *
-* @return: List of tmEdges
+* @return: tmList of tmEdges
 **********************************************************/
-List *tmNode_getFrontEdgeIn(tmNode *node);
+tmList *tmNode_getFrontEdgeIn(tmNode *node);
 
 /**********************************************************
 * Function: tmNode_getFrontEdgeOut()
@@ -127,9 +127,9 @@ List *tmNode_getFrontEdgeIn(tmNode *node);
 *----------------------------------------------------------
 * @param *mesh: pointer to a tmNode 
 *
-* @return: List of tmEdges
+* @return: tmList of tmEdges
 **********************************************************/
-List *tmNode_getFrontEdgeOut(tmNode *node);
+tmList *tmNode_getFrontEdgeOut(tmNode *node);
 
 /**********************************************************
 * Function: tmNode_getNbrsFromSizeFun
@@ -139,7 +139,7 @@ List *tmNode_getFrontEdgeOut(tmNode *node);
 *----------------------------------------------------------
 * 
 **********************************************************/
-List *tmNode_getNbrsFromSizeFun(tmNode *node);
+tmList *tmNode_getNbrsFromSizeFun(tmNode *node);
 
 /**********************************************************
 * Function: tmNode_getFrontNbrs
@@ -150,7 +150,7 @@ List *tmNode_getNbrsFromSizeFun(tmNode *node);
 *----------------------------------------------------------
 * 
 **********************************************************/
-List *tmNode_getFrontNbrs(tmNode *node);
+tmList *tmNode_getFrontNbrs(tmNode *node);
 
 /**********************************************************
 * Function: tmNode_getAdjFrontEdge()

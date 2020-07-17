@@ -6,10 +6,8 @@
 #define _USE_MATH_DEFINES
 #include <math.h>
 
-#include "lcthw/dbg.h"
-#include "lcthw/list.h"
-#include "lcthw/list_algos.h"
-#include "lcthw/darray.h"
+#include "tmesh/dbg.h"
+#include "tmesh/tmList.h"
 
 /***********************************************************
 * Flag to use double precision -> undefine to use float
@@ -261,9 +259,9 @@ static inline tmDouble EDGE_NODE_DIST2(tmDouble v[2],
 /*----------------------------------------------------------
 | Check if an object is contained in a provided list
 ----------------------------------------------------------*/
-static inline tmBool OBJ_IN_LIST(void *obj, List *list)
+static inline tmBool OBJ_IN_LIST(void *obj, tmList *list)
 {
-  ListNode *cur;
+  tmListNode *cur;
   for (cur = list->first; cur != NULL; cur = cur->next)
     if ( cur->value == obj )
       return TRUE;

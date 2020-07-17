@@ -5,10 +5,10 @@
 #include "tmesh/tmMesh.h"
 #include "tmesh/tmQtree.h"
 #include "tmesh/tmFront.h"
+#include "tmesh/tmList.h"
 
-#include "lcthw/list.h"
-#include "lcthw/minunit.h"
-#include "lcthw/dbg.h"
+#include "tmesh/minunit.h"
+#include "tmesh/dbg.h"
 
 #include "tmesh_tests.h"
 
@@ -133,9 +133,9 @@ char *test_mesh_create_destroy()
   tmNode *n_8 = tmNode_create(mesh, xy_8);
   tmNode *n_9 = tmNode_create(mesh, xy_9);
 
-  mu_assert( List_first(mesh->nodes_stack) == n_0,
+  mu_assert( tmList_first(mesh->nodes_stack) == n_0,
       "Failed to add node to mesh->nodes_stack.");
-  mu_assert( List_last(mesh->nodes_stack) == n_9,
+  mu_assert( tmList_last(mesh->nodes_stack) == n_9,
       "Failed to add node to mesh->nodes_stack."); 
 
   /*--------------------------------------------------------
@@ -153,9 +153,9 @@ char *test_mesh_create_destroy()
   tmBdry *bdry_ext = tmMesh_addBdry(mesh, FALSE, 0);
   tmBdry *bdry_int = tmMesh_addBdry(mesh, TRUE,  1);
 
-  mu_assert( List_first(mesh->bdry_stack) == bdry_ext,
+  mu_assert( tmList_first(mesh->bdry_stack) == bdry_ext,
       "Failed to create boundary.");
-  mu_assert( List_last(mesh->bdry_stack) == bdry_int,
+  mu_assert( tmList_last(mesh->bdry_stack) == bdry_int,
       "Failed to create boundary.");
 
   /*--------------------------------------------------------
@@ -202,7 +202,7 @@ char *test_mesh_create_destroy()
   tmDouble bbox_min[2] = { 13.0, -1.0 };
   tmDouble bbox_max[2] = { 22.0, 11.0 };
 
-  List *obj_bbox = tmQtree_getObjBbox(bdry_ext->edges_qtree, 
+  tmList *obj_bbox = tmQtree_getObjBbox(bdry_ext->edges_qtree, 
                                       bbox_min, bbox_max);
 
   mu_assert(obj_bbox->count == 4,
@@ -217,7 +217,7 @@ char *test_mesh_create_destroy()
       "tmQtree_getObjBbox() failed.");
 
   if (obj_bbox != NULL)
-    List_destroy(obj_bbox);
+    tmList_destroy(obj_bbox);
 
   /*--------------------------------------------------------
   | Create interior boundary edges
@@ -464,14 +464,14 @@ char *test_tmBdry_refine()
   //mu_assert( n4->xy[1] == 0.0, 
   //    "tmBdry_splitEdge() failed.");
 
-  List *n4_e_in = tmNode_getBdryEdgeIn(n4);
-  mu_assert( e0 == List_first(n4_e_in),
+  tmList *n4_e_in = tmNode_getBdryEdgeIn(n4);
+  mu_assert( e0 == tmList_first(n4_e_in),
       "tmNode_getBdryEdgeIn() failed.");
-  List_destroy(n4_e_in);
+  tmList_destroy(n4_e_in);
 
-  List *n4_e_out = tmNode_getBdryEdgeOut(n4);
-  tmEdge *e4 = List_first(n4_e_out);
-  List_destroy(n4_e_out);
+  tmList *n4_e_out = tmNode_getBdryEdgeOut(n4);
+  tmEdge *e4 = tmList_first(n4_e_out);
+  tmList_destroy(n4_e_out);
 
   mu_assert( e4->n1 == n4,
       "tmBdry_splitEdge() failed.");
@@ -630,7 +630,7 @@ char *test_tmQtree()
   | Check that all nodes have been distributed from 
   | parent qtree to its childs
   -------------------------------------------------------*/
-  ListNode *cur;
+  tmListNode *cur;
   tmBool obj_in_qtree = FALSE;
   int index = 0;
   for (cur = mesh->nodes_qtree->obj->first;
@@ -729,7 +729,7 @@ char *test_tmQtree()
   tmDouble bbox_min[2] = { -1.0, -1.0 };
   tmDouble bbox_max[2] = {  1.0,  1.0 };
 
-  List *obj_bbox = tmQtree_getObjBbox(mesh->nodes_qtree, 
+  tmList *obj_bbox = tmQtree_getObjBbox(mesh->nodes_qtree, 
                                       bbox_min, bbox_max);
 
   mu_assert(obj_bbox->count == 3,
@@ -742,7 +742,7 @@ char *test_tmQtree()
       "tmQtree_getObjBbox() failed.");
 
   if (obj_bbox != NULL)
-    List_destroy(obj_bbox);
+    tmList_destroy(obj_bbox);
 
   /*--------------------------------------------------------
   | Check function for finding objects in qree with circle
@@ -750,7 +750,7 @@ char *test_tmQtree()
   tmDouble xy_c[2] = { 1.0, 1.0 };
   tmDouble r_c     = 0.75;
 
-  List *obj_circ = tmQtree_getObjCirc(mesh->nodes_qtree, 
+  tmList *obj_circ = tmQtree_getObjCirc(mesh->nodes_qtree, 
                                       xy_c, r_c);
 
   mu_assert(obj_circ->count == 3,
@@ -763,7 +763,7 @@ char *test_tmQtree()
       "tmQtree_getObjCirc() failed.");
 
   if (obj_circ != NULL)
-    List_destroy(obj_circ);
+    tmList_destroy(obj_circ);
 
 
 
@@ -874,14 +874,14 @@ char *test_tmQtree_performance()
     tmDouble bbox_min[2] = { n_xy[0]-2.0, n_xy[1]-2.0 };
     tmDouble bbox_max[2] = { n_xy[0]+2.0, n_xy[1]+2.0 };
 
-    List *obj_bbox = tmQtree_getObjBbox(mesh->nodes_qtree, 
+    tmList *obj_bbox = tmQtree_getObjBbox(mesh->nodes_qtree, 
                                         bbox_min, bbox_max);
 
 
     if (obj_bbox != NULL)
     {
       n_obj_qt += obj_bbox->count;
-      List_destroy(obj_bbox);
+      tmList_destroy(obj_bbox);
     }
     
   }
@@ -890,7 +890,7 @@ char *test_tmQtree_performance()
   /*--------------------------------------------------------
   | Brute force search for objects in bbox
   --------------------------------------------------------*/
-  ListNode *cur;
+  tmListNode *cur;
   tmDouble *cur_xy;
   tmBool    in_bbox;
 
@@ -994,13 +994,13 @@ char *test_tmQtree_performance2()
     n_xy[0] = (a + b * t) * cos(t) + c * sin(40. * t);
     n_xy[1] = (a + b * t) * sin(t) + c * cos(40. * t);
 
-    List *obj_circ = tmQtree_getObjCirc(mesh->nodes_qtree, 
+    tmList *obj_circ = tmQtree_getObjCirc(mesh->nodes_qtree, 
                                         n_xy, 2.0);
 
     if (obj_circ != NULL)
     {
       n_obj_qt += obj_circ->count;
-      List_destroy(obj_circ);
+      tmList_destroy(obj_circ);
     }
     
   }
@@ -1137,8 +1137,8 @@ char *test_tmFront_init()
   --------------------------------------------------------*/
   tmFront_init(mesh);
 
-  ListNode *cur_front, *cur_bdry;
-  ListNode *nxt_front, *nxt_bdry;
+  tmListNode *cur_front, *cur_bdry;
+  tmListNode *nxt_front, *nxt_bdry;
   cur_front = nxt_front = mesh->front->edges_stack->first;
   cur_bdry = nxt_bdry = bdry_ext->edges_stack->first;
   while (cur_front != NULL || cur_bdry != NULL)
@@ -1228,7 +1228,7 @@ char *test_tmFront_advance()
   /*--------------------------------------------------------
   | Get nodes in vicinity of nn
   --------------------------------------------------------*/
-  List *nn_nb = tmNode_getNbrsFromSizeFun(nn);
+  tmList *nn_nb = tmNode_getNbrsFromSizeFun(nn);
 
   tmNode *first = (tmNode*) nn_nb->first->value;
   tmNode *last  = (tmNode*) nn_nb->last->value;
@@ -1256,8 +1256,8 @@ char *test_tmFront_advance()
   /*--------------------------------------------------------
   | Get node neighbors on advancing front of edge nodes
   --------------------------------------------------------*/
-  List *n1_nb = tmNode_getFrontNbrs(ne->n1);
-  List *n2_nb = tmNode_getFrontNbrs(ne->n2);
+  tmList *n1_nb = tmNode_getFrontNbrs(ne->n1);
+  tmList *n2_nb = tmNode_getFrontNbrs(ne->n2);
 
   tmEdge *n1_e = tmNode_getAdjFrontEdge(ne->n1, winner);
   tmEdge *n2_e = tmNode_getAdjFrontEdge(ne->n2, winner);
@@ -1287,11 +1287,11 @@ char *test_tmFront_advance()
 
 
   if (nn_nb != NULL)
-    List_destroy(nn_nb);
+    tmList_destroy(nn_nb);
   if (n1_nb != NULL)
-    List_destroy(n1_nb);
+    tmList_destroy(n1_nb);
   if (n2_nb != NULL)
-    List_destroy(n2_nb);
+    tmList_destroy(n2_nb);
 
   /*--------------------------------------------------------
   | Print the mesh data 

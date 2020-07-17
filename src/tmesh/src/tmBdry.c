@@ -1,4 +1,5 @@
 #include "tmesh/tmTypedefs.h"
+#include "tmesh/tmList.h"
 #include "tmesh/tmMesh.h"
 #include "tmesh/tmEdge.h"
 #include "tmesh/tmNode.h"
@@ -38,7 +39,7 @@ tmBdry *tmBdry_create(tmMesh *mesh,
   | Boundary edges
   -------------------------------------------------------*/
   bdry->edges_head   = NULL;
-  bdry->edges_stack  = List_create();
+  bdry->edges_stack  = tmList_create();
   bdry->edges_qtree  = tmQtree_create(mesh, TM_EDGE);
   tmQtree_init(bdry->edges_qtree, NULL, 0, 
                mesh->xy_min, mesh->xy_max);
@@ -61,7 +62,7 @@ error:
 **********************************************************/
 void tmBdry_destroy(tmBdry *bdry)
 {
-  ListNode *cur, *nxt;
+  tmListNode *cur, *nxt;
 
   /*-------------------------------------------------------
   | Free all boundary edges on the stack
@@ -78,7 +79,7 @@ void tmBdry_destroy(tmBdry *bdry)
   | Destroy edges qtree and edges stack
   -------------------------------------------------------*/
   tmQtree_destroy(bdry->edges_qtree);
-  List_destroy(bdry->edges_stack);
+  tmList_destroy(bdry->edges_stack);
 
   /*-------------------------------------------------------
   | Remove boundary from the mesh structure 
@@ -117,17 +118,17 @@ tmEdge *tmBdry_edgeCreate(tmBdry *bdry,
 * Function to add an edge to a tmBdry structure
 * This edge is the new head of the boundary structure
 *----------------------------------------------------------
-* @return: ListNode to tmEdge on the mesh's edge stack
+* @return: tmListNode to tmEdge on the mesh's edge stack
 **********************************************************/
-ListNode *tmBdry_addEdge(tmBdry *bdry, tmEdge *edge)
+tmListNode *tmBdry_addEdge(tmBdry *bdry, tmEdge *edge)
 {
-  ListNode *edge_pos;
+  tmListNode *edge_pos;
   bdry->no_edges += 1;
   bdry->edges_head  = edge;
 
-  List_push(bdry->edges_stack, edge);
+  tmList_push(bdry->edges_stack, edge);
   tmQtree_addObj(bdry->edges_qtree, edge);
-  edge_pos = List_last_node(bdry->edges_stack);
+  edge_pos = tmList_last_node(bdry->edges_stack);
   
   return edge_pos;
 
@@ -159,7 +160,7 @@ void tmBdry_remEdge(tmBdry *bdry, tmEdge *edge)
   /*-------------------------------------------------------
   | Remove edge from stack
   -------------------------------------------------------*/
-  List_remove(bdry->edges_stack, edge->stack_pos);
+  tmList_remove(bdry->edges_stack, edge->stack_pos);
 
   /*-------------------------------------------------------
   | Destroy edge
@@ -181,7 +182,7 @@ void tmBdry_remEdge(tmBdry *bdry, tmEdge *edge)
 **********************************************************/
 tmBool tmBdry_isLeft(tmBdry *bdry, void *obj, int obj_type)
 {
-  ListNode *cur;
+  tmListNode *cur;
   tmBool is_left = TRUE;
 
   for (cur = bdry->edges_stack->first; 
@@ -206,7 +207,7 @@ tmBool tmBdry_isLeft(tmBdry *bdry, void *obj, int obj_type)
 **********************************************************/
 tmBool tmBdry_isLeftOn(tmBdry *bdry, void *obj, int obj_type)
 {
-  ListNode *cur;
+  tmListNode *cur;
   tmBool is_left = TRUE;
 
   for (cur = bdry->edges_stack->first; 
@@ -231,7 +232,7 @@ tmBool tmBdry_isLeftOn(tmBdry *bdry, void *obj, int obj_type)
 **********************************************************/
 tmBool tmBdry_isRight(tmBdry *bdry, void *obj, int obj_type)
 {
-  ListNode *cur;
+  tmListNode *cur;
   tmBool is_right = TRUE;
 
   for (cur = bdry->edges_stack->first; 
@@ -256,7 +257,7 @@ tmBool tmBdry_isRight(tmBdry *bdry, void *obj, int obj_type)
 **********************************************************/
 tmBool tmBdry_isRightOn(tmBdry *bdry, void *obj, int obj_type)
 {
-  ListNode *cur;
+  tmListNode *cur;
   tmBool is_right = TRUE;
 
   for (cur = bdry->edges_stack->first; 
@@ -287,7 +288,7 @@ tmBool tmBdry_isRightOn(tmBdry *bdry, void *obj, int obj_type)
 **********************************************************/
 tmBool tmBdry_isInside(tmBdry *bdry, tmDouble xy[2])
 {
-  ListNode *cur;
+  tmListNode *cur;
   tmBool    is_inside = TRUE;
   tmMesh   *mesh      = bdry->mesh;
   int      count      = 0;
@@ -377,7 +378,7 @@ tmEdge *tmBdry_splitEdge(tmBdry *bdry, tmEdge *edge)
 void tmBdry_refine(tmBdry *bdry)
 {
 
-  ListNode *cur, *nxt;
+  tmListNode *cur, *nxt;
   int counter = 0;
 
   cur = nxt = bdry->edges_stack->first;
@@ -424,7 +425,7 @@ error:
 **********************************************************/
 void tmBdry_calcArea(tmBdry *bdry)
 {
-  ListNode *cur;
+  tmListNode *cur;
 
   tmDouble p1 = 0.0;
   tmDouble p2 = 0.0;

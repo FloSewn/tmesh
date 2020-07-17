@@ -22,15 +22,15 @@ typedef struct tmMesh {
   | Mesh nodes 
   -------------------------------------------------------*/
   tmNode  *nodes_head;
-  List    *nodes_stack;
+  tmList  *nodes_stack;
   int      no_nodes;
   tmQtree *nodes_qtree;
 
   /*-------------------------------------------------------
   | Mesh boundaries 
   -------------------------------------------------------*/
-  int    no_bdrys;
-  List  *bdry_stack;
+  int      no_bdrys;
+  tmList  *bdry_stack;
 
   /*-------------------------------------------------------
   | Mesh advancing front edges 
@@ -45,20 +45,20 @@ typedef struct tmMesh {
   /*-------------------------------------------------------
   | Mesh edges
   -------------------------------------------------------*/
-  List    *edges_stack;
+  tmList  *edges_stack;
   int      no_edges;
   tmQtree *edges_qtree;
 
   /*-------------------------------------------------------
   | Stack to keep track of non-Delaunay edges
   -------------------------------------------------------*/
-  List    *delaunay_stack;
+  tmList    *delaunay_stack;
 
   /*-------------------------------------------------------
   | Mesh triangles 
   -------------------------------------------------------*/
   tmTri   *tris_head;
-  List    *tris_stack;
+  tmList  *tris_stack;
   int      no_tris;
   tmQtree *tris_qtree;
   int      no_tris_delaunay;
@@ -97,7 +97,7 @@ void tmMesh_destroy(tmMesh *mesh);
 *----------------------------------------------------------
 * @return: tmNode index on the mesh's node stack
 **********************************************************/
-ListNode *tmMesh_addNode(tmMesh *mesh, tmNode *node);
+tmListNode *tmMesh_addNode(tmMesh *mesh, tmNode *node);
 
 /**********************************************************
 * Function: tmMesh_edgeCreate()
@@ -120,7 +120,7 @@ tmEdge *tmMesh_edgeCreate(tmMesh *mesh,
 * @param mesh: mesh for which the edge is defined
 * @param edge: edge to add 
 **********************************************************/
-ListNode *tmMesh_addEdge(tmMesh *mesh, tmEdge *edge);
+tmListNode *tmMesh_addEdge(tmMesh *mesh, tmEdge *edge);
 
 /**********************************************************
 * Function: tmMesh_addTri()
@@ -129,7 +129,7 @@ ListNode *tmMesh_addEdge(tmMesh *mesh, tmEdge *edge);
 *----------------------------------------------------------
 * @return: tmTri index on the mesh's tri stack
 **********************************************************/
-ListNode *tmMesh_addTri(tmMesh *mesh, tmTri *tri);
+tmListNode *tmMesh_addTri(tmMesh *mesh, tmTri *tri);
 
 /**********************************************************
 * Function: tmMesh_remNode()

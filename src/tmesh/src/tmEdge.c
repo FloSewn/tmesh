@@ -1,4 +1,5 @@
 #include "tmesh/tmTypedefs.h"
+#include "tmesh/tmList.h"
 #include "tmesh/tmMesh.h"
 #include "tmesh/tmEdge.h"
 #include "tmesh/tmNode.h"
@@ -90,13 +91,13 @@ tmEdge *tmEdge_create(tmMesh *mesh,
     edge->bdry  = bdry;
     edge->is_on_bdry  = TRUE;
 
-    List_push(edge->n1->bdry_edges, edge);
-    edge->n1_pos = List_last_node(edge->n1->bdry_edges);
+    tmList_push(edge->n1->bdry_edges, edge);
+    edge->n1_pos = tmList_last_node(edge->n1->bdry_edges);
     edge->n1->on_bdry = TRUE;
     edge->n1->n_bdry_edges += 1;
 
-    List_push(edge->n2->bdry_edges, edge);
-    edge->n2_pos = List_last_node(edge->n2->bdry_edges);
+    tmList_push(edge->n2->bdry_edges, edge);
+    edge->n2_pos = tmList_last_node(edge->n2->bdry_edges);
     edge->n2->on_bdry = TRUE;
     edge->n2->n_bdry_edges += 1;
 
@@ -110,13 +111,13 @@ tmEdge *tmEdge_create(tmMesh *mesh,
     edge->front = mesh->front;
     edge->is_on_front = TRUE;
 
-    List_push(edge->n1->front_edges, edge);
-    edge->n1_pos = List_last_node(edge->n1->front_edges);
+    tmList_push(edge->n1->front_edges, edge);
+    edge->n1_pos = tmList_last_node(edge->n1->front_edges);
     edge->n1->on_front = TRUE;
     edge->n1->n_front_edges += 1;
 
-    List_push(edge->n2->front_edges, edge);
-    edge->n2_pos = List_last_node(edge->n2->front_edges);
+    tmList_push(edge->n2->front_edges, edge);
+    edge->n2_pos = tmList_last_node(edge->n2->front_edges);
     edge->n2->on_front = TRUE;
     edge->n2->n_front_edges += 1;
 
@@ -129,12 +130,12 @@ tmEdge *tmEdge_create(tmMesh *mesh,
   {
     edge->is_on_mesh = TRUE;
 
-    List_push(edge->n1->mesh_edges, edge);
-    edge->n1_pos = List_last_node(edge->n1->mesh_edges);
+    tmList_push(edge->n1->mesh_edges, edge);
+    edge->n1_pos = tmList_last_node(edge->n1->mesh_edges);
     edge->n1->n_mesh_edges += 1;
 
-    List_push(edge->n2->mesh_edges, edge);
-    edge->n2_pos = List_last_node(edge->n2->mesh_edges);
+    tmList_push(edge->n2->mesh_edges, edge);
+    edge->n2_pos = tmList_last_node(edge->n2->mesh_edges);
     edge->n2->n_mesh_edges += 1;
 
     edge->stack_pos = tmMesh_addEdge(mesh, edge);
@@ -168,13 +169,13 @@ void tmEdge_destroy(tmEdge *edge)
     tmBdry_remEdge(edge->bdry, edge);
 
     /* Remove edge from node 1 edge list                 */
-    List_remove(edge->n1->bdry_edges, edge->n1_pos);
+    tmList_remove(edge->n1->bdry_edges, edge->n1_pos);
     edge->n1->n_bdry_edges -= 1;
     if (edge->n1->n_bdry_edges <= 0)
       edge->n1->on_bdry = FALSE;
 
     /* Remove edge from node 2 edge list                 */
-    List_remove(edge->n2->bdry_edges, edge->n2_pos);
+    tmList_remove(edge->n2->bdry_edges, edge->n2_pos);
     edge->n2->n_bdry_edges -= 1;
     if (edge->n2->n_bdry_edges <= 0)
       edge->n2->on_bdry = FALSE;
@@ -187,13 +188,13 @@ void tmEdge_destroy(tmEdge *edge)
     tmFront_remEdge(edge->front, edge);
 
     /* Remove edge from node 1 edge list                 */
-    List_remove(edge->n1->front_edges, edge->n1_pos);
+    tmList_remove(edge->n1->front_edges, edge->n1_pos);
     edge->n1->n_front_edges -= 1;
     if (edge->n1->n_front_edges <= 0)
       edge->n1->on_front = FALSE;
 
     /* Remove edge from node 2 edge list                 */
-    List_remove(edge->n2->front_edges, edge->n2_pos);
+    tmList_remove(edge->n2->front_edges, edge->n2_pos);
     edge->n2->n_front_edges -= 1;
     if (edge->n2->n_front_edges <= 0)
       edge->n2->on_front = FALSE;
@@ -205,10 +206,10 @@ void tmEdge_destroy(tmEdge *edge)
   {
     tmMesh_remEdge(edge->mesh, edge);
 
-    List_remove(edge->n1->mesh_edges, edge->n1_pos);
+    tmList_remove(edge->n1->mesh_edges, edge->n1_pos);
     edge->n1->n_mesh_edges -= 1;
 
-    List_remove(edge->n2->mesh_edges, edge->n2_pos);
+    tmList_remove(edge->n2->mesh_edges, edge->n2_pos);
     edge->n2->n_mesh_edges -= 1;
 
   }
@@ -257,13 +258,13 @@ void tmEdge_init(tmEdge *edge, tmBdry *bdry, tmFront *front)
   {
     edge->bdry = bdry;
 
-    List_push(edge->n1->bdry_edges, edge);
-    edge->n1_pos           = List_last_node(edge->n1->bdry_edges);
+    tmList_push(edge->n1->bdry_edges, edge);
+    edge->n1_pos           = tmList_last_node(edge->n1->bdry_edges);
     edge->n1->on_bdry      = TRUE;
     edge->n1->n_bdry_edges += 1;
 
-    List_push(edge->n2->bdry_edges, edge);
-    edge->n2_pos           = List_last_node(edge->n2->bdry_edges);
+    tmList_push(edge->n2->bdry_edges, edge);
+    edge->n2_pos           = tmList_last_node(edge->n2->bdry_edges);
     edge->n2->on_bdry      = TRUE;
     edge->n2->n_bdry_edges += 1;
   }
@@ -272,13 +273,13 @@ void tmEdge_init(tmEdge *edge, tmBdry *bdry, tmFront *front)
   -------------------------------------------------------*/
   else 
   {
-    List_push(edge->n1->front_edges, edge);
-    edge->n1_pos            = List_last_node(edge->n1->front_edges);
+    tmList_push(edge->n1->front_edges, edge);
+    edge->n1_pos            = tmList_last_node(edge->n1->front_edges);
     edge->n1->on_front      = TRUE;
     edge->n1->n_front_edges += 1;
 
-    List_push(edge->n2->front_edges, edge);
-    edge->n2_pos             = List_last_node(edge->n2->front_edges);
+    tmList_push(edge->n2->front_edges, edge);
+    edge->n2_pos             = tmList_last_node(edge->n2->front_edges);
     edge->n2->on_front       = TRUE;
     edge->n2->n_front_edges += 1;
   }
@@ -553,7 +554,7 @@ void tmEdge_isDelaunay(tmEdge *edge)
   | Mark edge als non-delaunay and add it to the stack
   -------------------------------------------------------*/
   edge->is_local_delaunay = FALSE;
-  List_push(edge->mesh->delaunay_stack, edge);
+  tmList_push(edge->mesh->delaunay_stack, edge);
 
   return;
 

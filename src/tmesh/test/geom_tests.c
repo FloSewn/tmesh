@@ -1,7 +1,7 @@
 #include "tmesh/tmTypedefs.h"
 
-#include "lcthw/minunit.h"
-#include "lcthw/dbg.h"
+#include "tmesh/minunit.h"
+#include "tmesh/dbg.h"
 
 #include <stdio.h>
 #include <stdlib.h>

@@ -44,9 +44,9 @@ typedef struct tmQtree {
   /*-------------------------------------------------------
   | Objects contained in this Qtree
   -------------------------------------------------------*/
-  int   n_obj_tot;
-  int   n_obj;
-  List *obj;
+  int     n_obj_tot;
+  int     n_obj;
+  tmList *obj;
 
   /*-------------------------------------------------------
   | Parent Qtree and children Qtrees
@@ -150,9 +150,9 @@ tmBool tmQtree_containsObj(tmQtree *qtree,
 * @param xy_min, xy_max: bounding box
 *
 **********************************************************/
-List *tmQtree_getObjBbox(tmQtree *qtree, 
-                         tmDouble xy_min[2], 
-                         tmDouble xy_max[2]);
+tmList *tmQtree_getObjBbox(tmQtree *qtree, 
+                           tmDouble xy_min[2], 
+                           tmDouble xy_max[2]);
 
 /**********************************************************
 * Function: tmQtree_getObjCirc()
@@ -165,9 +165,9 @@ List *tmQtree_getObjBbox(tmQtree *qtree,
 * @param r: circle radius
 *
 **********************************************************/
-List *tmQtree_getObjCirc(tmQtree *qtree, 
-                         tmDouble xy[2], 
-                         tmDouble r);
+tmList *tmQtree_getObjCirc(tmQtree *qtree, 
+                           tmDouble xy[2], 
+                           tmDouble r);
 
 /**********************************************************
 * Function: tmQtree_printQtree()

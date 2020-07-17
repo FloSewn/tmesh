@@ -1,4 +1,5 @@
 #include "tmesh/tmTypedefs.h"
+#include "tmesh/tmList.h"
 #include "tmesh/tmMesh.h"
 #include "tmesh/tmEdge.h"
 #include "tmesh/tmNode.h"
@@ -95,7 +96,7 @@ static void tmQtree_split(tmQtree *qtree)
   | Distribute objects to children
   | and remove from own list
   -------------------------------------------------------*/
-  ListNode *cur, *nxt;
+  tmListNode *cur, *nxt;
   tmDouble *cur_xy;
   tmQtree  *p;
 
@@ -138,7 +139,7 @@ static void tmQtree_split(tmQtree *qtree)
     /*-----------------------------------------------------
     | Remove from own list
     -----------------------------------------------------*/
-    List_remove(qtree->obj, cur);
+    tmList_remove(qtree->obj, cur);
 
     qtree->n_obj     -= 1;
     qtree->n_obj_tot -= 1;
@@ -176,7 +177,7 @@ static void tmQtree_split(tmQtree *qtree)
 **********************************************************/
 static tmBool tmQtree_merge(tmQtree *qtree)
 {
-  ListNode *cur;
+  tmListNode *cur;
 
 #if (TM_DEBUG > 2)
   if ( qtree->obj_type == TM_NODE)
@@ -363,7 +364,7 @@ tmQtree *tmQtree_create(tmMesh *mesh, int obj_type)
   -------------------------------------------------------*/
   qtree->n_obj     = 0;
   qtree->n_obj_tot = 0;
-  qtree->obj       = List_create();
+  qtree->obj       = tmList_create();
   qtree->obj_type  = obj_type;
 
   return qtree;
@@ -384,7 +385,7 @@ void tmQtree_destroy(tmQtree *qtree)
   /*-------------------------------------------------------
   | Free all list structures
   -------------------------------------------------------*/
-  List_destroy(qtree->obj);
+  tmList_destroy(qtree->obj);
 
   /*-------------------------------------------------------
   | Free all children structures
@@ -497,23 +498,23 @@ tmBool tmQtree_addObj(tmQtree *qtree, void *obj)
   -------------------------------------------------------*/
   else
   {
-    List_push(qtree->obj, obj);
+    tmList_push(qtree->obj, obj);
     qtree->n_obj     += 1;
     qtree->n_obj_tot += 1;
 
     if ( qtree->obj_type == TM_NODE)
     {
-      ((tmNode*)obj)->qtree_pos = List_last_node(qtree->obj);
+      ((tmNode*)obj)->qtree_pos = tmList_last_node(qtree->obj);
       ((tmNode*)obj)->qtree     = qtree;
     }
     else if ( qtree->obj_type == TM_EDGE)
     {
-      ((tmEdge*)obj)->qtree_pos = List_last_node(qtree->obj);
+      ((tmEdge*)obj)->qtree_pos = tmList_last_node(qtree->obj);
       ((tmEdge*)obj)->qtree     = qtree;
     }
     else if ( qtree->obj_type == TM_TRI)
     {
-      ((tmTri*)obj)->qtree_pos = List_last_node(qtree->obj);
+      ((tmTri*)obj)->qtree_pos = tmList_last_node(qtree->obj);
       ((tmTri*)obj)->qtree     = qtree;
     }
     else
@@ -632,7 +633,7 @@ tmBool tmQtree_remObj(tmQtree *qtree, void *obj)
       if ( ((tmNode*)obj)->qtree != qtree )
         return FALSE;
 
-      List_remove(qtree->obj, ((tmNode*)obj)->qtree_pos);
+      tmList_remove(qtree->obj, ((tmNode*)obj)->qtree_pos);
       
     }
     else if ( qtree->obj_type == TM_EDGE)
@@ -640,7 +641,7 @@ tmBool tmQtree_remObj(tmQtree *qtree, void *obj)
       if ( ((tmEdge*)obj)->qtree != qtree )
         return FALSE;
 
-      List_remove(qtree->obj, ((tmEdge*)obj)->qtree_pos);
+      tmList_remove(qtree->obj, ((tmEdge*)obj)->qtree_pos);
 
     }
     else if ( qtree->obj_type == TM_TRI)
@@ -648,7 +649,7 @@ tmBool tmQtree_remObj(tmQtree *qtree, void *obj)
       if ( ((tmTri*)obj)->qtree != qtree )
         return FALSE;
 
-      List_remove(qtree->obj, ((tmTri*)obj)->qtree_pos);
+      tmList_remove(qtree->obj, ((tmTri*)obj)->qtree_pos);
 
     }
     else
@@ -769,7 +770,7 @@ tmBool tmQtree_containsObj(tmQtree *qtree,
   -------------------------------------------------------*/
   else
   {
-    ListNode *cur;
+    tmListNode *cur;
     tmBool obj_in_qtree = FALSE;
 
     for (cur = qtree->obj->first; 
@@ -798,7 +799,7 @@ tmBool tmQtree_containsObj(tmQtree *qtree,
 * @param xy_min, xy_max: bounding box
 *
 **********************************************************/
-List *tmQtree_getObjBbox(tmQtree *qtree, 
+tmList *tmQtree_getObjBbox(tmQtree *qtree, 
                          tmDouble xy_min[2], 
                          tmDouble xy_max[2])
 {
@@ -813,32 +814,32 @@ List *tmQtree_getObjBbox(tmQtree *qtree,
   if (overlap == FALSE)
     return NULL;
 
-  List *obj_found = List_create();
+  tmList *obj_found = tmList_create();
 
   /*-------------------------------------------------------
   | If bbox is splitted, search in children
   -------------------------------------------------------*/
   if (qtree->is_splitted == TRUE)
   {
-    List *obj_NE = tmQtree_getObjBbox(qtree->child_NE,
+    tmList *obj_NE = tmQtree_getObjBbox(qtree->child_NE,
                                       xy_min, xy_max);
     if (obj_NE != NULL)
-      List_join(obj_found, obj_NE);
+      tmList_join(obj_found, obj_NE);
 
-    List *obj_NW = tmQtree_getObjBbox(qtree->child_NW,
+    tmList *obj_NW = tmQtree_getObjBbox(qtree->child_NW,
                                       xy_min, xy_max);
     if (obj_NW != NULL)
-      List_join(obj_found, obj_NW);
+      tmList_join(obj_found, obj_NW);
 
-    List *obj_SW = tmQtree_getObjBbox(qtree->child_SW,
+    tmList *obj_SW = tmQtree_getObjBbox(qtree->child_SW,
                                       xy_min, xy_max);
     if (obj_SW != NULL)
-      List_join(obj_found, obj_SW);
+      tmList_join(obj_found, obj_SW);
 
-    List *obj_SE = tmQtree_getObjBbox(qtree->child_SE,
+    tmList *obj_SE = tmQtree_getObjBbox(qtree->child_SE,
                                       xy_min, xy_max);
     if (obj_SE != NULL)
-      List_join(obj_found, obj_SE);
+      tmList_join(obj_found, obj_SE);
     
   }
   /*-------------------------------------------------------
@@ -849,7 +850,7 @@ List *tmQtree_getObjBbox(tmQtree *qtree,
   {
     tmBool    in_bbox;
     tmDouble *cur_xy;
-    ListNode *cur;
+    tmListNode *cur;
 
     for (cur = qtree->obj->first; 
          cur != NULL; cur = cur->next)
@@ -866,13 +867,13 @@ List *tmQtree_getObjBbox(tmQtree *qtree,
       in_bbox = IN_ON_BBOX(cur_xy, xy_min, xy_max);
 
       if (in_bbox == TRUE)
-        List_push(obj_found, cur->value);
+        tmList_push(obj_found, cur->value);
     }
   }
 
   if (obj_found->count == 0)
   {
-    List_destroy(obj_found);
+    tmList_destroy(obj_found);
     return NULL;
   }
   else
@@ -891,7 +892,7 @@ List *tmQtree_getObjBbox(tmQtree *qtree,
 * @param r: circle radius
 *
 **********************************************************/
-List *tmQtree_getObjCirc(tmQtree *qtree, 
+tmList *tmQtree_getObjCirc(tmQtree *qtree, 
                          tmDouble xy[2], 
                          tmDouble r)
 {
@@ -909,32 +910,32 @@ List *tmQtree_getObjCirc(tmQtree *qtree,
   if (overlap == FALSE)
     return NULL;
 
-  List *obj_found = List_create();
+  tmList *obj_found = tmList_create();
 
   /*-------------------------------------------------------
   | If bbox is splitted, search in children
   -------------------------------------------------------*/
   if (qtree->is_splitted == TRUE)
   {
-    List *obj_NE = tmQtree_getObjCirc(qtree->child_NE,
+    tmList *obj_NE = tmQtree_getObjCirc(qtree->child_NE,
                                       xy, r);
     if (obj_NE != NULL)
-      List_join(obj_found, obj_NE);
+      tmList_join(obj_found, obj_NE);
 
-    List *obj_NW = tmQtree_getObjCirc(qtree->child_NW,
+    tmList *obj_NW = tmQtree_getObjCirc(qtree->child_NW,
                                       xy, r);
     if (obj_NW != NULL)
-      List_join(obj_found, obj_NW);
+      tmList_join(obj_found, obj_NW);
 
-    List *obj_SW = tmQtree_getObjCirc(qtree->child_SW,
+    tmList *obj_SW = tmQtree_getObjCirc(qtree->child_SW,
                                       xy, r);
     if (obj_SW != NULL)
-      List_join(obj_found, obj_SW);
+      tmList_join(obj_found, obj_SW);
 
-    List *obj_SE = tmQtree_getObjCirc(qtree->child_SE,
+    tmList *obj_SE = tmQtree_getObjCirc(qtree->child_SE,
                                       xy, r);
     if (obj_SE != NULL)
-      List_join(obj_found, obj_SE);
+      tmList_join(obj_found, obj_SE);
     
   }
   /*-------------------------------------------------------
@@ -945,7 +946,7 @@ List *tmQtree_getObjCirc(tmQtree *qtree,
   {
     tmBool    in_circ;
     tmDouble *cur_xy;
-    ListNode *cur;
+    tmListNode *cur;
 
     for (cur = qtree->obj->first; 
          cur != NULL; cur = cur->next)
@@ -966,7 +967,7 @@ List *tmQtree_getObjCirc(tmQtree *qtree,
 
       if (in_circ == TRUE)
       {
-        List_push(obj_found, cur->value);
+        tmList_push(obj_found, cur->value);
 
         /* Buffer distance of object to centroid */
         if ( qtree->obj_type == TM_NODE)
@@ -983,7 +984,7 @@ List *tmQtree_getObjCirc(tmQtree *qtree,
 
   if (obj_found->count == 0)
   {
-    List_destroy(obj_found);
+    tmList_destroy(obj_found);
     return NULL;
   }
   else

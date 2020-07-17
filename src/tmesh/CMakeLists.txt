@@ -8,6 +8,7 @@ set( TMESH_SRC    ${TMESH_DIR}/src     )
 
 # Define source files
 set( TMESH_MAIN
+  ${TMESH_SRC}/tmList.c
   ${TMESH_SRC}/tmNode.c
   ${TMESH_SRC}/tmEdge.c
   ${TMESH_SRC}/tmTri.c
@@ -33,7 +34,6 @@ target_include_directories( ${TMESH_LIB} PUBLIC
 )
 
 target_link_libraries( ${TMESH_LIB}
-  lcthw
   m
 )
 
@@ -47,6 +47,7 @@ set( TESTEXE_TMESH tmesh_test        )
 set( TESTDIR_TMESH ${TMESH_DIR}/test )
 
 add_executable( ${TESTEXE_TMESH}
+  ${TESTDIR_TMESH}/tmList_tests.c
   ${TESTDIR_TMESH}/tmesh_tests.c
   ${TESTDIR_TMESH}/tmesh_cylinder.c
   ${TESTDIR_TMESH}/geom_tests.c
@@ -58,7 +59,6 @@ target_include_directories( ${TESTEXE_TMESH} PUBLIC
 )
 
 target_link_libraries( ${TESTEXE_TMESH}
-  lcthw
   tmesh
   m
 )

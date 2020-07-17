@@ -3,7 +3,7 @@
 #include "tmesh/tmMesh.h"
 #include "tmesh/tmBdry.h"
 
-#include "lcthw/dbg.h"
+#include "tmesh/dbg.h"
 
 #include "tmesh_cylinder.h"
 

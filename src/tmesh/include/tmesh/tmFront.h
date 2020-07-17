@@ -22,7 +22,7 @@ typedef struct tmFront {
   | Advancing front edges
   -------------------------------------------------------*/
   tmEdge  *edges_head;
-  List    *edges_stack;
+  tmList  *edges_stack;
   tmQtree *edges_qtree;
 
 } tmFront;
@@ -77,7 +77,7 @@ tmEdge *tmFront_edgeCreate(tmFront *front,
 *               of the new edge
 * 
 **********************************************************/
-ListNode *tmFront_addEdge(tmFront *front, tmEdge *edge);
+tmListNode *tmFront_addEdge(tmFront *front, tmEdge *edge);
 
 /**********************************************************
 * Function: tmFront_remEdge()

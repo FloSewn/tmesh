@@ -1,4 +1,5 @@
 #include "tmesh/tmTypedefs.h"
+#include "tmesh/tmList.h"
 #include "tmesh/tmMesh.h"
 #include "tmesh/tmEdge.h"
 #include "tmesh/tmNode.h"
@@ -30,7 +31,7 @@ tmFront *tmFront_create(tmMesh *mesh)
   | Advancing front edges
   -------------------------------------------------------*/
   front->edges_head  = NULL;
-  front->edges_stack = List_create();
+  front->edges_stack = tmList_create();
   front->edges_qtree = tmQtree_create(mesh, TM_EDGE);
   tmQtree_init(front->edges_qtree, NULL, 0, 
                mesh->xy_min, mesh->xy_max);
@@ -53,7 +54,7 @@ error:
 **********************************************************/
 void tmFront_destroy(tmFront *front)
 {
-  ListNode *cur, *nxt;
+  tmListNode *cur, *nxt;
 
   /*-------------------------------------------------------
   | Free all front edges on the stack
@@ -70,7 +71,7 @@ void tmFront_destroy(tmFront *front)
   | Destroy edges qtree and edges stack
   -------------------------------------------------------*/
   tmQtree_destroy(front->edges_qtree);
-  List_destroy(front->edges_stack);
+  tmList_destroy(front->edges_stack);
 
   /*-------------------------------------------------------
   | Finally free the front
@@ -119,16 +120,16 @@ tmEdge *tmFront_edgeCreate(tmFront *front,
 *               of the new edge
 * 
 **********************************************************/
-ListNode *tmFront_addEdge(tmFront *front, tmEdge *edge)
+tmListNode *tmFront_addEdge(tmFront *front, tmEdge *edge)
 {
-  ListNode *edge_pos;
+  tmListNode *edge_pos;
 
   front->edges_head = edge;
   front->no_edges += 1;
 
-  List_push(front->edges_stack, edge);
+  tmList_push(front->edges_stack, edge);
   tmQtree_addObj(front->edges_qtree, edge);
-  edge_pos = List_last_node(front->edges_stack);
+  edge_pos = tmList_last_node(front->edges_stack);
 
   return edge_pos;
 
@@ -160,7 +161,7 @@ void tmFront_remEdge(tmFront *front, tmEdge *edge)
   /*-------------------------------------------------------
   | Remove edge from stack
   -------------------------------------------------------*/
-  List_remove(front->edges_stack, edge->stack_pos);
+  tmList_remove(front->edges_stack, edge->stack_pos);
 
   /*-------------------------------------------------------
   | Destroy edge -> removes also adjacency to edge nodes
@@ -179,7 +180,7 @@ void tmFront_remEdge(tmFront *front, tmEdge *edge)
 **********************************************************/
 void tmFront_init(tmMesh *mesh)
 {
-  ListNode *cur, *cur_bdry;
+  tmListNode *cur, *cur_bdry;
 
   tmFront *front = mesh->front;
 
@@ -216,22 +217,22 @@ void tmFront_init(tmMesh *mesh)
 **********************************************************/
 void tmFront_sortEdges(tmMesh *mesh)
 {
-  ListNode *cur;
+  tmListNode *cur;
   tmFront  *front       = mesh->front;
-  List     *front_edges = front->edges_stack; 
+  tmList     *front_edges = front->edges_stack; 
 
   /*-------------------------------------------------------
   | Sort edge entries 
   | -> Only list values are swapped
   -------------------------------------------------------*/
-  List *edges_sorted = List_merge_sort(front_edges,
-                        (List_compare) tmEdge_compareLen);
+  tmList *edges_sorted = tmList_merge_sort(front_edges,
+                        (tmList_compare) tmEdge_compareLen);
   check( edges_sorted != NULL,
-      "List sort in tmFront_sortEdges() failed.");
+      "tmList sort in tmFront_sortEdges() failed.");
 
   if (front_edges != edges_sorted)
   {
-    List_destroy(front_edges);
+    tmList_destroy(front_edges);
     front->edges_stack = edges_sorted;
     front_edges = edges_sorted;
   } 
@@ -267,7 +268,7 @@ tmBool tmFront_advance(tmMesh *mesh, tmEdge *e_ad)
 {
   tmNode   *cn;
   tmTri    *nt;
-  ListNode *cur, *nxt;
+  tmListNode *cur, *nxt;
 
   /*--------------------------------------------------------
   | Create new point at edge
@@ -285,7 +286,7 @@ tmBool tmFront_advance(tmMesh *mesh, tmEdge *e_ad)
   /*--------------------------------------------------------
   | Get nodes in vicinity of nn
   --------------------------------------------------------*/
-  List *nn_nb = tmNode_getNbrsFromSizeFun(nn);
+  tmList *nn_nb = tmNode_getNbrsFromSizeFun(nn);
 
   if (nn_nb != NULL)
   {
@@ -349,7 +350,7 @@ tmBool tmFront_advance(tmMesh *mesh, tmEdge *e_ad)
         tmNode_destroy(nn);
 
         if (nn_nb != NULL)
-          List_destroy(nn_nb);
+          tmList_destroy(nn_nb);
 
 #if (TM_DEBUG > 1)
         tmPrint(" -> NEW TRIANGLE %d: (%d, %d, %d)",
@@ -369,7 +370,7 @@ tmBool tmFront_advance(tmMesh *mesh, tmEdge *e_ad)
     }
 
     if (nn_nb != NULL)
-      List_destroy(nn_nb);
+      tmList_destroy(nn_nb);
 
   } /* if (nn_nb != NULL) */
 
@@ -528,7 +529,7 @@ void tmFront_update(tmMesh *mesh,
 **********************************************************/
 void tmFront_refine(tmMesh *mesh)
 {
-  ListNode *cur, *nxt;
+  tmListNode *cur, *nxt;
   int counter = 0;
 
   tmFront *front = mesh->front;

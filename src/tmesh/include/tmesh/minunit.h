@@ -3,8 +3,9 @@
 #define _minunit_h
 
 #include <stdio.h>
-#include <lcthw/dbg.h>
 #include <stdlib.h>
+
+#include "tmesh/dbg.h"
 
 int tests_run;
 
@@ -16,7 +17,7 @@ int tests_run;
 #define mu_run_test(test) debug("\n-----%s", " " #test); \
   message = test(); tests_run++; if (message) return message;
 
-#define mu_print_tests_run() printf("TESTS RUN: %d\n", tests_run)
+#define mu_print_tests_run() debug("\nTESTS RUN: %d\n", tests_run)
 
 #define RUN_TESTS(name) int main(int argc, char *argv[]) {\
   argc = 0;argc++;\
@@ -29,7 +30,7 @@ int tests_run;
   else {\
     printf("ALL TESTS PASSED\n");\
   }\
-  printf("Tests run: %d\n", tests_run);\
+  debug("Tests run: %d\n", tests_run);\
   exit(result != 0);\
 }
 

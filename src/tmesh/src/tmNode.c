@@ -1,4 +1,5 @@
 #include "tmesh/tmTypedefs.h"
+#include "tmesh/tmList.h"
 #include "tmesh/tmMesh.h"
 #include "tmesh/tmNode.h"
 #include "tmesh/tmTri.h"
@@ -44,16 +45,16 @@ tmNode *tmNode_create(tmMesh *mesh, tmDouble xy[2])
   /*-------------------------------------------------------
   | Init node lists
   -------------------------------------------------------*/
-  node->bdry_edges   = List_create();
+  node->bdry_edges   = tmList_create();
   node->n_bdry_edges = 0;
 
-  node->front_edges   = List_create();
+  node->front_edges   = tmList_create();
   node->n_front_edges = 0;
 
-  node->mesh_edges    = List_create();
+  node->mesh_edges    = tmList_create();
   node->n_mesh_edges  = 0;
 
-  node->tris   = List_create();
+  node->tris   = tmList_create();
   node->n_tris = 0;
 
   /*-------------------------------------------------------
@@ -90,10 +91,10 @@ void tmNode_destroy(tmNode *node)
   /*-------------------------------------------------------
   | Free all list structures
   -------------------------------------------------------*/
-  List_destroy(node->front_edges);
-  List_destroy(node->bdry_edges);
-  List_destroy(node->mesh_edges);
-  List_destroy(node->tris);
+  tmList_destroy(node->front_edges);
+  tmList_destroy(node->bdry_edges);
+  tmList_destroy(node->mesh_edges);
+  tmList_destroy(node->tris);
 
   /*-------------------------------------------------------
   | Finally free node structure memory
@@ -109,20 +110,20 @@ void tmNode_destroy(tmNode *node)
 *----------------------------------------------------------
 * @param *mesh: pointer to a tmNode 
 *
-* @return: List of tmEdges
+* @return: tmList of tmEdges
 **********************************************************/
-List *tmNode_getBdryEdgeIn(tmNode *node)
+tmList *tmNode_getBdryEdgeIn(tmNode *node)
 {
-  ListNode *cur;
+  tmListNode *cur;
   tmEdge   *cur_edge;
-  List     *found_edges = List_create();
+  tmList     *found_edges = tmList_create();
 
   for ( cur = node->bdry_edges->first; 
         cur != NULL; cur = cur->next )
   {
     cur_edge = (tmEdge*) cur->value;
     if ( cur_edge->n2 == node )
-      List_push( found_edges, cur_edge );
+      tmList_push( found_edges, cur_edge );
   }
 
   return found_edges;
@@ -136,20 +137,20 @@ List *tmNode_getBdryEdgeIn(tmNode *node)
 *----------------------------------------------------------
 * @param *mesh: pointer to a tmNode 
 *
-* @return: List of tmEdges
+* @return: tmList of tmEdges
 **********************************************************/
-List *tmNode_getBdryEdgeOut(tmNode *node)
+tmList *tmNode_getBdryEdgeOut(tmNode *node)
 {
-  ListNode *cur;
+  tmListNode *cur;
   tmEdge   *cur_edge;
-  List     *found_edges = List_create();
+  tmList     *found_edges = tmList_create();
 
   for ( cur = node->bdry_edges->first; 
         cur != NULL; cur = cur->next )
   {
     cur_edge = (tmEdge*) cur->value;
     if ( cur_edge->n1 == node )
-      List_push( found_edges, cur_edge );
+      tmList_push( found_edges, cur_edge );
   }
 
   return found_edges;
@@ -163,20 +164,20 @@ List *tmNode_getBdryEdgeOut(tmNode *node)
 *----------------------------------------------------------
 * @param *mesh: pointer to a tmNode 
 *
-* @return: List of tmEdges
+* @return: tmList of tmEdges
 **********************************************************/
-List *tmNode_getFrontEdgeIn(tmNode *node)
+tmList *tmNode_getFrontEdgeIn(tmNode *node)
 {
-  ListNode *cur;
+  tmListNode *cur;
   tmEdge   *cur_edge;
-  List     *found_edges = List_create();
+  tmList     *found_edges = tmList_create();
 
   for ( cur = node->front_edges->first; 
         cur != NULL; cur = cur->next )
   {
     cur_edge = (tmEdge*) cur->value;
     if ( cur_edge->n2 == node )
-      List_push( found_edges, cur_edge );
+      tmList_push( found_edges, cur_edge );
   }
 
   return found_edges;
@@ -190,20 +191,20 @@ List *tmNode_getFrontEdgeIn(tmNode *node)
 *----------------------------------------------------------
 * @param *mesh: pointer to a tmNode 
 *
-* @return: List of tmEdges
+* @return: tmList of tmEdges
 **********************************************************/
-List *tmNode_getFrontEdgeOut(tmNode *node)
+tmList *tmNode_getFrontEdgeOut(tmNode *node)
 {
-  ListNode *cur;
+  tmListNode *cur;
   tmEdge   *cur_edge;
-  List     *found_edges = List_create();
+  tmList     *found_edges = tmList_create();
 
   for ( cur = node->front_edges->first; 
         cur != NULL; cur = cur->next )
   {
     cur_edge = (tmEdge*) cur->value;
     if ( cur_edge->n1 == node )
-      List_push( found_edges, cur_edge );
+      tmList_push( found_edges, cur_edge );
   }
 
   return found_edges;
@@ -251,12 +252,12 @@ int tmNode_compareDblBuf(tmNode *n1, tmNode *n2)
 *----------------------------------------------------------
 * 
 **********************************************************/
-List *tmNode_getNbrsFromSizeFun(tmNode *node)
+tmList *tmNode_getNbrsFromSizeFun(tmNode *node)
 {
   tmSizeFun sizeFun = node->mesh->sizeFun;
   tmDouble        r = TM_NODE_NBR_DIST_FAC*sizeFun(node->xy);
 
-  List *inCirc = tmQtree_getObjCirc(node->mesh->nodes_qtree,
+  tmList *inCirc = tmQtree_getObjCirc(node->mesh->nodes_qtree,
                                     node->xy,
                                     r);
 
@@ -271,14 +272,14 @@ List *tmNode_getNbrsFromSizeFun(tmNode *node)
   | -> Distance to node is already buffered in dblBuf 
   |    of node by tmQtree_getObjCirc()
   -------------------------------------------------------*/
-  List *inCirc_sorted;
-  inCirc_sorted = List_merge_sort(inCirc,
-                        (List_compare) tmNode_compareDblBuf);
+  tmList *inCirc_sorted;
+  inCirc_sorted = tmList_merge_sort(inCirc,
+                        (tmList_compare) tmNode_compareDblBuf);
   check( inCirc_sorted != NULL,
-      "List sort in tmNode_getNbrsFromSizeFun() failed.");
+      "tmList sort in tmNode_getNbrsFromSizeFun() failed.");
 
   if (inCirc != inCirc_sorted)
-    List_destroy(inCirc);
+    tmList_destroy(inCirc);
 
   return inCirc_sorted; 
 
@@ -297,10 +298,10 @@ error:
 *----------------------------------------------------------
 * 
 **********************************************************/
-List *tmNode_getFrontNbrs(tmNode *node)
+tmList *tmNode_getFrontNbrs(tmNode *node)
 {
-  ListNode *cur  = NULL;
-  List     *nbrs = List_create();
+  tmListNode *cur  = NULL;
+  tmList     *nbrs = tmList_create();
 
   for (cur = node->front_edges->first;
        cur != NULL; cur = cur->next)
@@ -308,9 +309,9 @@ List *tmNode_getFrontNbrs(tmNode *node)
     tmEdge *e  = (tmEdge*)cur->value;
 
     if ( node == e->n1 )
-      List_push( nbrs, e->n2 );
+      tmList_push( nbrs, e->n2 );
     else if ( node == e->n2 )
-      List_push( nbrs, e->n1 );
+      tmList_push( nbrs, e->n1 );
     else
       log_err("Invalid edge found in tmNode_getFrontNbrs().");
   }
@@ -336,7 +337,7 @@ error:
 **********************************************************/
 tmEdge *tmNode_getAdjFrontEdge(tmNode *n, tmNode *m)
 {
-  ListNode *cur  = NULL;
+  tmListNode *cur  = NULL;
 
   for (cur = n->front_edges->first;
        cur != NULL; cur = cur->next)
@@ -373,8 +374,8 @@ tmBool tmNode_isValid(tmNode *node)
   tmDouble  dist    = r * fac;
   tmDouble  dist2   = dist * dist;
 
-  List     *inCirc;
-  ListNode *cur, *cur_bdry;
+  tmList     *inCirc;
+  tmListNode *cur, *cur_bdry;
   tmQtree  *cur_qtree;
 
   /*-------------------------------------------------------
@@ -411,14 +412,14 @@ tmBool tmNode_isValid(tmNode *node)
 #if (TM_DEBUG > 1)
           tmPrint(" -> REJECTED: NODE TOO CLOSE TO BOUNDARY");
 #endif
-          List_destroy(inCirc);
+          tmList_destroy(inCirc);
           return FALSE;
         }
       }
     }
 
     if ( inCirc != NULL )
-      List_destroy(inCirc);
+      tmList_destroy(inCirc);
   }
 
   /*-------------------------------------------------------
@@ -441,14 +442,14 @@ tmBool tmNode_isValid(tmNode *node)
 #if (TM_DEBUG > 1)
         tmPrint(" -> REJECTED: NODE TOO CLOSE TO FRONT");
 #endif
-        List_destroy(inCirc);
+        tmList_destroy(inCirc);
         return FALSE;
       }
     }
   }
 
   if ( inCirc != NULL )
-    List_destroy(inCirc);
+    tmList_destroy(inCirc);
 
   /*-------------------------------------------------------
   | 4) Get nodes in vicinity of node
@@ -476,7 +477,7 @@ tmBool tmNode_isValid(tmNode *node)
 #if (TM_DEBUG > 1)
         tmPrint(" -> REJECTED: NODE TOO CLOSE TO NODE");
 #endif
-        List_destroy(inCirc);
+        tmList_destroy(inCirc);
         return FALSE;
       }
 
@@ -484,7 +485,7 @@ tmBool tmNode_isValid(tmNode *node)
   }
 
   if ( inCirc != NULL )
-    List_destroy(inCirc);
+    tmList_destroy(inCirc);
 
 
   return TRUE;

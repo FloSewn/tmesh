@@ -16,9 +16,9 @@ typedef struct tmTri {
   /*-------------------------------------------------------
   | Triangle index
   -------------------------------------------------------*/
-  ListNode *stack_pos;
-  ListNode *qtree_pos;
-  tmQtree  *qtree;
+  tmListNode *stack_pos;
+  tmListNode *qtree_pos;
+  tmQtree    *qtree;
 
   /*-------------------------------------------------------
   | Triangle nodes
@@ -34,9 +34,9 @@ typedef struct tmTri {
   |    These references recover the position of this 
   |    triangle in the lists of its nodes
   -------------------------------------------------------*/
-  ListNode *n1_pos;
-  ListNode *n2_pos;
-  ListNode *n3_pos;
+  tmListNode *n1_pos;
+  tmListNode *n2_pos;
+  tmListNode *n3_pos;
 
   /*-------------------------------------------------------
   | Triangle neighbors

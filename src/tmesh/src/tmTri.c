@@ -1,4 +1,5 @@
 #include "tmesh/tmTypedefs.h"
+#include "tmesh/tmList.h"
 #include "tmesh/tmMesh.h"
 #include "tmesh/tmTri.h"
 #include "tmesh/tmEdge.h"
@@ -343,16 +344,16 @@ tmTri *tmTri_create(tmMesh *mesh,
   /*-------------------------------------------------------
   | Add this triangle to the nodes triangle lists
   -------------------------------------------------------*/
-  List_push(n1->tris, tri);
-  tri->n1_pos = List_last_node(n1->tris);
+  tmList_push(n1->tris, tri);
+  tri->n1_pos = tmList_last_node(n1->tris);
   n1->n_tris += 1;
 
-  List_push(n2->tris, tri);
-  tri->n2_pos = List_last_node(n2->tris);
+  tmList_push(n2->tris, tri);
+  tri->n2_pos = tmList_last_node(n2->tris);
   n2->n_tris += 1;
 
-  List_push(n3->tris, tri);
-  tri->n3_pos = List_last_node(n3->tris);
+  tmList_push(n3->tris, tri);
+  tri->n3_pos = tmList_last_node(n3->tris);
   n3->n_tris += 1;
 
   /*-------------------------------------------------------
@@ -417,13 +418,13 @@ void tmTri_destroy(tmTri *tri)
   /*-------------------------------------------------------
   | Remove triangle from its adjacent nodes 
   -------------------------------------------------------*/
-  List_remove(tri->n1->tris, tri->n1_pos);
+  tmList_remove(tri->n1->tris, tri->n1_pos);
   tri->n1->n_tris -= 1;
 
-  List_remove(tri->n2->tris, tri->n2_pos);
+  tmList_remove(tri->n2->tris, tri->n2_pos);
   tri->n2->n_tris -= 1;
 
-  List_remove(tri->n3->tris, tri->n3_pos);
+  tmList_remove(tri->n3->tris, tri->n3_pos);
   tri->n3->n_tris -= 1;
 
   /*-------------------------------------------------------
@@ -455,9 +456,9 @@ tmTri *tmTri_findTriNeighbor(tmNode *n1,
                              tmNode *n2,
                              tmTri  *tri)
 {
-  ListNode *cur;
+  tmListNode *cur;
   tmTri    *t_nb;
-  List     *tris_nb = n1->tris;
+  tmList     *tris_nb = n1->tris;
 
   if (tris_nb->count == 0)
     return NULL;
@@ -518,8 +519,8 @@ tmBool tmTri_isValid(tmTri *tri)
   tmDouble  dist    = sizeFun( tri->xy ) * fac;
   tmDouble  dist2   = dist * dist;
 
-  List     *inCirc;
-  ListNode *cur, *cur_bdry;
+  tmList     *inCirc;
+  tmListNode *cur, *cur_bdry;
   tmQtree  *cur_qtree;
 
   tmNode   *n1 = tri->n1;
@@ -573,7 +574,7 @@ tmBool tmTri_isValid(tmTri *tri)
 #if (TM_DEBUG > 1)
         tmPrint(" -> REJECTED: TRIANGLE INTERSECTS TRI-EDGE");
 #endif
-        List_destroy(inCirc);
+        tmList_destroy(inCirc);
         return FALSE;
       }
 
@@ -585,7 +586,7 @@ tmBool tmTri_isValid(tmTri *tri)
     }
 
   if (inCirc != NULL)
-    List_destroy(inCirc);
+    tmList_destroy(inCirc);
 
   /*-------------------------------------------------------
   | 2) Check if new triangle or its edges intersect  
@@ -621,7 +622,7 @@ tmBool tmTri_isValid(tmTri *tri)
         tmPrint(" -> REJECTED: TRIANGLE INTERSECTS NODE %d",
             n->index);
 #endif
-        List_destroy(inCirc);
+        tmList_destroy(inCirc);
         return FALSE;
       }
 
@@ -633,7 +634,7 @@ tmBool tmTri_isValid(tmTri *tri)
         tmPrint(" -> REJECTED: TRI-EDGE TOO CLOSE TO NODE %d",
             n->index);
 #endif
-        List_destroy(inCirc);
+        tmList_destroy(inCirc);
         return FALSE;
       }
       if ( EDGE_NODE_DIST2(n2->xy, n3->xy, n->xy) < dist2 )
@@ -642,7 +643,7 @@ tmBool tmTri_isValid(tmTri *tri)
         tmPrint(" -> REJECTED: TRI-EDGE TOO CLOSE TO NODE %d",
             n->index);
 #endif
-        List_destroy(inCirc);
+        tmList_destroy(inCirc);
         return FALSE;
       }
       if ( EDGE_NODE_DIST2(n3->xy, n1->xy, n->xy) < dist2 )
@@ -651,14 +652,14 @@ tmBool tmTri_isValid(tmTri *tri)
         tmPrint(" -> REJECTED: TRI-EDGE TOO CLOSE TO NODE %d",
             n->index);
 #endif
-        List_destroy(inCirc);
+        tmList_destroy(inCirc);
         return FALSE;
       }
     }
   }
 
   if (inCirc != NULL)
-    List_destroy(inCirc);
+    tmList_destroy(inCirc);
 
   /*-------------------------------------------------------
   | 4) Check if triangle angles is good enough

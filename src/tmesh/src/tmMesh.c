@@ -1,4 +1,5 @@
 #include "tmesh/tmTypedefs.h"
+#include "tmesh/tmList.h"
 #include "tmesh/tmMesh.h"
 #include "tmesh/tmBdry.h"
 #include "tmesh/tmFront.h"
@@ -43,7 +44,7 @@ tmMesh *tmMesh_create(tmDouble  xy_min[2],
   | Mesh nodes 
   -------------------------------------------------------*/
   mesh->nodes_head    = NULL;
-  mesh->nodes_stack   = List_create();
+  mesh->nodes_stack   = tmList_create();
   mesh->no_nodes      = 0;
   mesh->nodes_qtree   = tmQtree_create(mesh, TM_NODE);
   tmQtree_init(mesh->nodes_qtree, NULL, 0, xy_min, xy_max); 
@@ -51,7 +52,7 @@ tmMesh *tmMesh_create(tmDouble  xy_min[2],
   /*-------------------------------------------------------
   | Mesh boundary edges 
   -------------------------------------------------------*/
-  mesh->bdry_stack         = List_create();
+  mesh->bdry_stack         = tmList_create();
   mesh->no_bdrys           = 0;
 
   /*-------------------------------------------------------
@@ -67,7 +68,7 @@ tmMesh *tmMesh_create(tmDouble  xy_min[2],
   /*-------------------------------------------------------
   | Mesh edges 
   -------------------------------------------------------*/
-  mesh->edges_stack        = List_create();
+  mesh->edges_stack        = tmList_create();
   mesh->no_edges           = 0;
   mesh->edges_qtree        = tmQtree_create(mesh, TM_EDGE);
   tmQtree_init(mesh->edges_qtree, NULL, 0, xy_min, xy_max);
@@ -75,13 +76,13 @@ tmMesh *tmMesh_create(tmDouble  xy_min[2],
   /*-------------------------------------------------------
   | Stack to keep track of non-Delaunay edges
   -------------------------------------------------------*/
-  mesh->delaunay_stack     = List_create();
+  mesh->delaunay_stack     = tmList_create();
   
   /*-------------------------------------------------------
   | Mesh triangles 
   -------------------------------------------------------*/
   mesh->tris_head         = NULL;
-  mesh->tris_stack        = List_create();
+  mesh->tris_stack        = tmList_create();
   mesh->no_tris           = 0;
   mesh->no_tris_delaunay  = 0;
   mesh->tris_qtree        = tmQtree_create(mesh, TM_TRI);
@@ -106,7 +107,7 @@ error:
 **********************************************************/
 void tmMesh_destroy(tmMesh *mesh)
 {
-  ListNode *cur, *nxt;
+  tmListNode *cur, *nxt;
 
   /*-------------------------------------------------------
   | Free all boundary structures
@@ -193,11 +194,11 @@ void tmMesh_destroy(tmMesh *mesh)
   /*-------------------------------------------------------
   | Free all list structures
   -------------------------------------------------------*/
-  List_destroy(mesh->nodes_stack);
-  List_destroy(mesh->edges_stack);
-  List_destroy(mesh->tris_stack);
-  List_destroy(mesh->bdry_stack);
-  List_destroy(mesh->delaunay_stack);
+  tmList_destroy(mesh->nodes_stack);
+  tmList_destroy(mesh->edges_stack);
+  tmList_destroy(mesh->tris_stack);
+  tmList_destroy(mesh->bdry_stack);
+  tmList_destroy(mesh->delaunay_stack);
 
   /*-------------------------------------------------------
   | Finally free mesh structure memory
@@ -214,13 +215,13 @@ void tmMesh_destroy(tmMesh *mesh)
 *----------------------------------------------------------
 * @return: tmNode index on the mesh's node stack
 **********************************************************/
-ListNode *tmMesh_addNode(tmMesh *mesh, tmNode *node)
+tmListNode *tmMesh_addNode(tmMesh *mesh, tmNode *node)
 {
-  ListNode *node_pos;
+  tmListNode *node_pos;
   mesh->no_nodes += 1;
-  List_push(mesh->nodes_stack, node);
+  tmList_push(mesh->nodes_stack, node);
   tmQtree_addObj(mesh->nodes_qtree, node);
-  node_pos = List_last_node(mesh->nodes_stack);
+  node_pos = tmList_last_node(mesh->nodes_stack);
   
   return node_pos;
 
@@ -291,14 +292,14 @@ tmEdge *tmMesh_edgeCreate(tmMesh *mesh,
 * @param mesh: mesh for which the edge is defined
 * @param edge: edge to add 
 **********************************************************/
-ListNode *tmMesh_addEdge(tmMesh *mesh, tmEdge *edge)
+tmListNode *tmMesh_addEdge(tmMesh *mesh, tmEdge *edge)
 {
-  ListNode *edge_pos;
+  tmListNode *edge_pos;
 
   mesh->no_edges += 1;
-  List_push(mesh->edges_stack, edge);
+  tmList_push(mesh->edges_stack, edge);
   tmQtree_addObj(mesh->edges_qtree, edge);
-  edge_pos = List_last_node(mesh->edges_stack);
+  edge_pos = tmList_last_node(mesh->edges_stack);
 
   return edge_pos;
 
@@ -311,16 +312,16 @@ ListNode *tmMesh_addEdge(tmMesh *mesh, tmEdge *edge)
 *----------------------------------------------------------
 * @return: tmTri index on the mesh's tri stack
 **********************************************************/
-ListNode *tmMesh_addTri(tmMesh *mesh, tmTri *tri)
+tmListNode *tmMesh_addTri(tmMesh *mesh, tmTri *tri)
 {
-  ListNode *tri_pos;
+  tmListNode *tri_pos;
 
   mesh->no_tris  += 1;
   mesh->areaTris += tri->area;
 
-  List_push(mesh->tris_stack, tri);
+  tmList_push(mesh->tris_stack, tri);
   tmQtree_addObj(mesh->tris_qtree, tri);
-  tri_pos = List_last_node(mesh->tris_stack);
+  tri_pos = tmList_last_node(mesh->tris_stack);
   
   return tri_pos;
 
@@ -350,7 +351,7 @@ void tmMesh_remNode(tmMesh *mesh, tmNode *node)
   /*-------------------------------------------------------
   | Remove node from stack
   -------------------------------------------------------*/
-  List_remove(mesh->nodes_stack, node->stack_pos);
+  tmList_remove(mesh->nodes_stack, node->stack_pos);
 
 } /* tmMesh_remNode() */
 
@@ -380,7 +381,7 @@ void tmMesh_remEdge(tmMesh *mesh, tmEdge *edge)
   /*-------------------------------------------------------
   | Remove edge from stack
   -------------------------------------------------------*/
-  List_remove(mesh->edges_stack, edge->stack_pos);
+  tmList_remove(mesh->edges_stack, edge->stack_pos);
 
   /*-------------------------------------------------------
   | Destroy edge -> removes also adjacency to edge nodes
@@ -417,7 +418,7 @@ void tmMesh_remTri(tmMesh *mesh, tmTri *tri)
   /*-------------------------------------------------------
   | Remove node from stack
   -------------------------------------------------------*/
-  List_remove(mesh->tris_stack, tri->stack_pos);
+  tmList_remove(mesh->tris_stack, tri->stack_pos);
 
 } /* tmMesh_remTri() */
 
@@ -434,8 +435,8 @@ tmBdry *tmMesh_addBdry(tmMesh *mesh,
 {
   tmBdry *bdry = tmBdry_create(mesh, is_interior, index);
   mesh->no_bdrys += 1;
-  List_push(mesh->bdry_stack, bdry);
-  bdry->mesh_pos = List_last_node(mesh->bdry_stack);
+  tmList_push(mesh->bdry_stack, bdry);
+  bdry->mesh_pos = tmList_last_node(mesh->bdry_stack);
 
   return bdry;
 
@@ -454,7 +455,7 @@ void tmMesh_remBdry(tmMesh *mesh, tmBdry *bdry)
   | Remove boundary from the mesh 
   -------------------------------------------------------*/
   mesh->no_bdrys -= 1;
-  List_remove(mesh->bdry_stack, bdry->mesh_pos);
+  tmList_remove(mesh->bdry_stack, bdry->mesh_pos);
 
 } /* tmMesh_remBdry() */
 
@@ -470,7 +471,7 @@ void tmMesh_remBdry(tmMesh *mesh, tmBdry *bdry)
 **********************************************************/
 tmBool tmMesh_objInside(tmMesh   *mesh, tmDouble xy[2])
 {
-  ListNode *cur;
+  tmListNode *cur;
   tmBdry *cur_bdry;
 
   tmBool is_inside = TRUE;
@@ -504,7 +505,7 @@ tmBool tmMesh_objInside(tmMesh   *mesh, tmDouble xy[2])
 **********************************************************/
 void tmMesh_printMesh(tmMesh *mesh) 
 {
-  ListNode *cur, *cur_bdry;
+  tmListNode *cur, *cur_bdry;
   int node_index = 0;
   int edge_index = 0;
   int tri_index  = 0;
@@ -660,7 +661,7 @@ void tmMesh_ADFMeshing(tmMesh *mesh)
   int      oldProgress  = 0;
   tmDouble area_inv     = 0.0;
 
-  ListNode *cur, *nxt;
+  tmListNode *cur, *nxt;
   tmFront  *front = mesh->front;
 
   /*-------------------------------------------------------
@@ -762,7 +763,7 @@ void tmMesh_delaunayFlip(tmMesh *mesh)
   | Create list of edges that are not locally delaunay
   -------------------------------------------------------*/
   int       n_flip = 0;
-  ListNode *cur;
+  tmListNode *cur;
 
   int n_edges  = mesh->edges_stack->count;
   int flip_max = n_edges * n_edges;
@@ -786,7 +787,7 @@ void tmMesh_delaunayFlip(tmMesh *mesh)
   while ( mesh->delaunay_stack->count > 0 && n_flip < flip_max)
   {
     n_flip   += 1;
-    tmEdge_flipEdge( (tmEdge*)List_pop(mesh->delaunay_stack) );
+    tmEdge_flipEdge( (tmEdge*)tmList_pop(mesh->delaunay_stack) );
   }
 
   /*-------------------------------------------------------
@@ -815,7 +816,7 @@ error:
 **********************************************************/
 void tmMesh_setTriNeighbors(tmMesh *mesh)
 {
-  ListNode *cur; 
+  tmListNode *cur; 
 
   for (cur = mesh->tris_stack->first; 
        cur != NULL; cur = cur->next)
@@ -839,7 +840,7 @@ void tmMesh_setTriNeighbors(tmMesh *mesh)
 **********************************************************/
 void tmMesh_calcArea(tmMesh *mesh)
 {
-  ListNode *cur_bdry;
+  tmListNode *cur_bdry;
 
   tmDouble area = 0.0;
 
@@ -869,12 +870,12 @@ void tmMesh_calcArea(tmMesh *mesh)
 **********************************************************/
 tmTri* tmMesh_getTriFromCoords(tmMesh *mesh, tmDouble xy[2])
 {
-  ListNode *cur;
+  tmListNode *cur;
 
   tmSizeFun sizeFun = mesh->sizeFun;
   tmDouble        r = TM_TRI_NODE_RANGE_FAC * sizeFun(xy);
 
-  List *inCirc = tmQtree_getObjCirc(mesh->tris_qtree, xy, r);
+  tmList *inCirc = tmQtree_getObjCirc(mesh->tris_qtree, xy, r);
 
   /*-------------------------------------------------------
   | For each found triangle, check if point (x,y) is 
@@ -898,13 +899,13 @@ tmTri* tmMesh_getTriFromCoords(tmMesh *mesh, tmDouble xy[2])
 
       if (n_in_tri == TRUE)
       {
-        List_destroy(inCirc);
+        tmList_destroy(inCirc);
         return t;
       }
     }
   }
 
-  List_destroy(inCirc);
+  tmList_destroy(inCirc);
   return NULL;
 
 } /* tmMesh_getTriFromCoords() */
@@ -944,7 +945,7 @@ void tmMesh_refineLocally(tmMesh *mesh, tmDouble xy[2])
 
   tmTri_destroy(tri);
 
-  List *edges = List_create();
+  tmList *edges = tmList_create();
 
   /*-----------------------------------------------------
   | Add edges from tri neighbor 1
@@ -961,23 +962,23 @@ void tmMesh_refineLocally(tmMesh *mesh, tmDouble xy[2])
     if (e1 == t1->e1) 
     {
       if (t1->e2 != NULL)
-        List_push(edges, t1->e2);
+        tmList_push(edges, t1->e2);
       if (t1->e3 != NULL)
-        List_push(edges, t1->e3);
+        tmList_push(edges, t1->e3);
     }
     else if (e1 == t1->e2)
     {
       if (t1->e1 != NULL)
-        List_push(edges, t1->e1);
+        tmList_push(edges, t1->e1);
       if (t1->e3 != NULL)
-        List_push(edges, t1->e3);
+        tmList_push(edges, t1->e3);
     }
     else if (e1 == t1->e3)
     {
       if (t1->e1 != NULL)
-        List_push(edges, t1->e1);
+        tmList_push(edges, t1->e1);
       if (t1->e2 != NULL)
-        List_push(edges, t1->e2);
+        tmList_push(edges, t1->e2);
     }
     else
       log_err("Wrong triangle-edge connectivity");
@@ -992,7 +993,7 @@ void tmMesh_refineLocally(tmMesh *mesh, tmDouble xy[2])
   -----------------------------------------------------*/
   else
   {
-    List_push(edges, e1);
+    tmList_push(edges, e1);
   }
 
   /*-----------------------------------------------------
@@ -1010,23 +1011,23 @@ void tmMesh_refineLocally(tmMesh *mesh, tmDouble xy[2])
     if (e2 == t2->e1) 
     {
       if (t2->e2 != NULL)
-        List_push(edges, t2->e2);
+        tmList_push(edges, t2->e2);
       if (t2->e3 != NULL)
-        List_push(edges, t2->e3);
+        tmList_push(edges, t2->e3);
     }
     else if (e2 == t2->e2)
     {
       if (t2->e1 != NULL)
-        List_push(edges, t2->e1);
+        tmList_push(edges, t2->e1);
       if (t2->e3 != NULL)
-        List_push(edges, t2->e3);
+        tmList_push(edges, t2->e3);
     }
     else if (e2 == t2->e3)
     {
       if (t2->e1 != NULL)
-        List_push(edges, t2->e1);
+        tmList_push(edges, t2->e1);
       if (t2->e2 != NULL)
-        List_push(edges, t2->e2);
+        tmList_push(edges, t2->e2);
     }
     else
       log_err("Wrong triangle-edge connectivity");
@@ -1041,7 +1042,7 @@ void tmMesh_refineLocally(tmMesh *mesh, tmDouble xy[2])
   -----------------------------------------------------*/
   else
   {
-    List_push(edges, e2);
+    tmList_push(edges, e2);
   }
 
 
@@ -1060,23 +1061,23 @@ void tmMesh_refineLocally(tmMesh *mesh, tmDouble xy[2])
     if (e3 == t3->e1) 
     {
       if (t3->e2 != NULL)
-        List_push(edges, t3->e2);
+        tmList_push(edges, t3->e2);
       if (t3->e3 != NULL)
-        List_push(edges, t3->e3);
+        tmList_push(edges, t3->e3);
     }
     else if (e3 == t3->e2)
     {
       if (t3->e1 != NULL)
-        List_push(edges, t3->e1);
+        tmList_push(edges, t3->e1);
       if (t3->e3 != NULL)
-        List_push(edges, t3->e3);
+        tmList_push(edges, t3->e3);
     }
     else if (e3 == t3->e3)
     {
       if (t3->e1 != NULL)
-        List_push(edges, t3->e1);
+        tmList_push(edges, t3->e1);
       if (t3->e2 != NULL)
-        List_push(edges, t3->e2);
+        tmList_push(edges, t3->e2);
     }
     else
       log_err("Wrong triangle-edge connectivity");
@@ -1092,7 +1093,7 @@ void tmMesh_refineLocally(tmMesh *mesh, tmDouble xy[2])
   -----------------------------------------------------*/
   else
   {
-    List_push(edges, e3);
+    tmList_push(edges, e3);
   }
 
   /*-----------------------------------------------------
@@ -1102,7 +1103,7 @@ void tmMesh_refineLocally(tmMesh *mesh, tmDouble xy[2])
   tmTri  *first_tri, *cur_tri;
 
   tmNode *new_node = tmNode_create(mesh, xy);
-  tmEdge *base     = List_pop(edges);
+  tmEdge *base     = tmList_pop(edges);
   tmNode *first_node;
 
   if (ORIENTATION(base->n1->xy, base->n2->xy, xy) == 1) 
@@ -1127,13 +1128,13 @@ void tmMesh_refineLocally(tmMesh *mesh, tmDouble xy[2])
   first_tri = new_tri;
   cur_tri   = new_tri;
 
-  ListNode *cur;
+  tmListNode *cur;
   tmNode   *cur_node;
   tmEdge   *new_edge;
 
   while (edges->count > 0)
   {
-    base  = List_pop(edges);
+    base  = tmList_pop(edges);
 
     if (ORIENTATION(base->n1->xy, base->n2->xy, xy) == 1) 
     {
@@ -1158,7 +1159,7 @@ void tmMesh_refineLocally(tmMesh *mesh, tmDouble xy[2])
 
     cur_tri = new_tri;
     tmEdge_isDelaunay(base);
-    tmPrint("List count: %d", edges->count);
+    tmPrint("tmList count: %d", edges->count);
   }
 
   new_edge = tmMesh_edgeCreate(mesh,

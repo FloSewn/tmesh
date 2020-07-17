@@ -30,9 +30,9 @@ typedef struct tmEdge {
   tmBool    is_on_mesh;
   tmBool    is_local_delaunay;
 
-  ListNode *stack_pos;
-  ListNode *qtree_pos;
-  tmQtree  *qtree;
+  tmListNode *stack_pos;
+  tmListNode *qtree_pos;
+  tmQtree    *qtree;
 
   /*-------------------------------------------------------
   | Edge length  
@@ -58,8 +58,8 @@ typedef struct tmEdge {
   /*-------------------------------------------------------
   | Reference of edge in nodes edge lists
   -------------------------------------------------------*/
-  ListNode *n1_pos;
-  ListNode *n2_pos;
+  tmListNode *n1_pos;
+  tmListNode *n2_pos;
 
   /*-------------------------------------------------------
   | Adjacent triangles to this edge

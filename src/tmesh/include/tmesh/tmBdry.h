@@ -63,10 +63,11 @@ void tmBdry_destroy(tmBdry *bdry);
 *----------------------------------------------------------
 * 
 **********************************************************/
-tmEdge *tmBdry_edgeCreate(tmBdry *bdry, 
-                          tmNode *n1, 
-                          tmNode *n2,
-                          tmIndex marker);
+tmEdge *tmBdry_edgeCreate(tmBdry  *bdry, 
+                          tmNode  *n1, 
+                          tmNode  *n2,
+                          tmIndex  marker,
+                          tmDouble edgeSize);
 
 /**********************************************************
 * Function: tmBdry_addEdge()

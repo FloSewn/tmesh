@@ -255,7 +255,9 @@ int tmNode_compareDblBuf(tmNode *n1, tmNode *n2)
 tmList *tmNode_getNbrsFromSizeFun(tmNode *node)
 {
   tmSizeFun sizeFun = node->mesh->sizeFun;
-  tmDouble        r = TM_NODE_NBR_DIST_FAC*sizeFun(node->xy);
+  tmDouble *xy      = node->xy;
+  tmMesh   *mesh    = node->mesh;
+  tmDouble  r       = TM_NODE_NBR_DIST_FAC*sizeFun(mesh,xy);
 
   tmList *inCirc = tmQtree_getObjCirc(node->mesh->nodes_qtree,
                                     node->xy,
@@ -369,7 +371,7 @@ tmBool tmNode_isValid(tmNode *node)
 
   tmMesh   *mesh    = node->mesh;
   tmSizeFun sizeFun = mesh->sizeFun;
-  tmDouble  r       = sizeFun( node->xy );
+  tmDouble  r       = sizeFun(mesh, node->xy);
 
   tmDouble  dist    = r * fac;
   tmDouble  dist2   = dist * dist;

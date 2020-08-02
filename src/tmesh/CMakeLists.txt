@@ -26,6 +26,7 @@ set( TMESH_LIB tmesh )
 
 # add sources to library
 add_library( ${TMESH_LIB} STATIC ${TMESH_MAIN} )
+#add_library( ${TMESH_LIB} SHARED ${TMESH_MAIN} )
 
 # set public include
 target_include_directories( ${TMESH_LIB} PUBLIC

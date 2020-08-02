@@ -101,13 +101,16 @@ void tmBdry_destroy(tmBdry *bdry)
 *----------------------------------------------------------
 * 
 **********************************************************/
-tmEdge *tmBdry_edgeCreate(tmBdry *bdry, 
-                          tmNode *n1, 
-                          tmNode *n2,
-                          tmIndex marker)
+tmEdge *tmBdry_edgeCreate(tmBdry  *bdry, 
+                          tmNode  *n1, 
+                          tmNode  *n2,
+                          tmIndex  marker, 
+                          tmDouble edgeSize)
 {
-  tmEdge *edge = tmEdge_create( bdry->mesh, n1, n2, bdry, 0);
+  tmEdge *edge = tmEdge_create( bdry->mesh, n1, n2, 
+                                bdry, 0);
   edge->bdry_marker = marker;
+  edge->locSize     = edgeSize;
 
 } /*tmBdry_edgeCreate() */
 
@@ -345,8 +348,6 @@ tmBool tmBdry_isInside(tmBdry *bdry, tmDouble xy[2])
 **********************************************************/
 tmEdge *tmBdry_splitEdge(tmBdry *bdry, tmEdge *edge)
 {
-  tmSizeFun sizeFun = bdry->mesh->sizeFun;
-
   tmNode *n1 = edge->n1;
   tmNode *n2 = edge->n2;
 
@@ -359,8 +360,10 @@ tmEdge *tmBdry_splitEdge(tmBdry *bdry, tmEdge *edge)
 
   tmEdge_destroy(edge);
 
-  tmEdge *ne1 = tmBdry_edgeCreate(bdry, n1, nn, marker);
-  tmEdge *ne2 = tmBdry_edgeCreate(bdry, nn, n2, marker);
+  tmEdge *ne1 = tmBdry_edgeCreate(bdry, n1, nn, 
+                                  marker, edge->locSize);
+  tmEdge *ne2 = tmBdry_edgeCreate(bdry, nn, n2, 
+                                  marker, edge->locSize);
 
   return ne1;
 
@@ -389,8 +392,11 @@ void tmBdry_refine(tmBdry *bdry)
   {
     nxt = cur->next;
 
-    tmDouble rho_1 = sizeFun( ((tmEdge*)cur->value)->n1->xy );
-    tmDouble rho_m = sizeFun( ((tmEdge*)cur->value)->xy );
+    tmDouble *xy_1 = ((tmEdge*)cur->value)->n1->xy;
+    tmDouble *xy_m = ((tmEdge*)cur->value)->xy;
+
+    tmDouble rho_1 = sizeFun(bdry->mesh, xy_1);
+    tmDouble rho_m = sizeFun(bdry->mesh, xy_m);
     tmDouble rho   = TM_BDRY_REFINE_FAC * (rho_1 + rho_m);
     check( rho > TM_MIN_SIZE,
         "Size function return value lower than defined minimum scale.");

@@ -46,7 +46,9 @@ typedef struct tmMesh  tmMesh;
 /***********************************************************
 * Function pointers
 ***********************************************************/
-typedef tmDouble (*tmSizeFun) (tmDouble xy[2]);
+typedef tmDouble (*tmSizeFun) (tmMesh *mesh, tmDouble xy[2]);
+typedef tmDouble (*tmSizeFunUser) (tmDouble xy[2]);
+typedef tmDouble (*tmSizeFunEdge) (tmEdge *edge, tmDouble xy[2]);
 
 /***********************************************************
 * Debugging Layers
@@ -83,6 +85,7 @@ typedef tmDouble (*tmSizeFun) (tmDouble xy[2]);
 #define TM_TRI_MIN_ANGLE      ( ( 15.0*PI_D)/180.0 )
 #define TM_TRI_MAX_ANGLE      ( (165.0*PI_D)/180.0 )
 #define TM_TRI_MIN_QUALITY    ( 0.04 )
+#define TM_SIZEFUN_SLOPE      ( 1.0 ) 
 
 /***********************************************************
 * Minimum and maximum allowed coordinates

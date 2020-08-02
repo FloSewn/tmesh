@@ -18,10 +18,10 @@
 *----------------------------------------------------------
 * @return: Pointer to a new tmMesh structure
 **********************************************************/
-tmMesh *tmMesh_create(tmDouble  xy_min[2], 
-                      tmDouble  xy_max[2], 
-                      int       qtree_max_obj,
-                      tmSizeFun sizeFun)
+tmMesh *tmMesh_create(tmDouble      xy_min[2], 
+                      tmDouble      xy_max[2], 
+                      int           qtree_max_obj,
+                      tmSizeFunUser sizeFunUser)
 {
   tmMesh *mesh = (tmMesh*) calloc( 1, sizeof(tmMesh) );
   check_mem(mesh);
@@ -63,7 +63,8 @@ tmMesh *tmMesh_create(tmDouble  xy_min[2],
   /*-------------------------------------------------------
   | Mesh size function 
   -------------------------------------------------------*/
-  mesh->sizeFun           = sizeFun;
+  mesh->sizeFun            = &tmMesh_sizeFun;
+  mesh->sizeFunUser        = sizeFunUser;
 
   /*-------------------------------------------------------
   | Mesh edges 
@@ -873,7 +874,7 @@ tmTri* tmMesh_getTriFromCoords(tmMesh *mesh, tmDouble xy[2])
   tmListNode *cur;
 
   tmSizeFun sizeFun = mesh->sizeFun;
-  tmDouble        r = TM_TRI_NODE_RANGE_FAC * sizeFun(xy);
+  tmDouble  r = TM_TRI_NODE_RANGE_FAC * sizeFun(mesh, xy);
 
   tmList *inCirc = tmQtree_getObjCirc(mesh->tris_qtree, xy, r);
 
@@ -1167,3 +1168,42 @@ void tmMesh_refineLocally(tmMesh *mesh, tmDouble xy[2])
                                first_tri, cur_tri);
 
 } /* tmMesh_insertMeshNode() */
+
+
+/**********************************************************
+* Function: tmMesh_sizeFun()
+*----------------------------------------------------------
+* Define a global size function for the mesh
+*----------------------------------------------------------
+* @param mesh: the mesh structure
+* @param xy:   coordinates to evaluate the size function
+*
+**********************************************************/
+tmDouble tmMesh_sizeFun(tmMesh *mesh, tmDouble xy[2])
+{
+  tmDouble rho = mesh->sizeFunUser(xy);
+
+  /*
+  tmListNode *cur_b, *cur_e;
+  tmBdry *bdry;
+  tmEdge *edge;
+
+  for (cur_b = mesh->bdry_stack->first; 
+       cur_b != NULL; cur_b = cur_b->next)
+  {
+    bdry = (tmBdry*) cur_b->value;
+
+    for (cur_e = bdry->edges_stack->first; 
+         cur_e != NULL; cur_e = cur_e->next)
+    {
+      edge = (tmEdge*) cur_e->value;
+      tmDouble rho_e = edge->sizeFun(edge, xy);
+
+      if ( rho_e < rho) 
+        rho = rho_e;
+    }
+  }
+  */
+
+  return rho;
+} /* tmMesh_sizeFun() */

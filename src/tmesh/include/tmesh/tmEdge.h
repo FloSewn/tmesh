@@ -19,7 +19,7 @@ typedef struct tmEdge {
   | Edge centroid coordinates 
   -------------------------------------------------------*/
   tmDouble xy[2];
-  tmIndex  index; /* Only used for the mesh-output       */       
+  tmIndex  index; /* Only used for the mesh-output       */
   tmIndex  bdry_marker;
 
   /*-------------------------------------------------------
@@ -38,6 +38,12 @@ typedef struct tmEdge {
   | Edge length  
   -------------------------------------------------------*/
   tmDouble len;
+
+  /*-------------------------------------------------------
+  | Sizefunction and local mesh size 
+  -------------------------------------------------------*/
+  tmDouble      locSize;
+  tmSizeFunEdge sizeFun;
 
   /*-------------------------------------------------------
   | Vector tangential to edge
@@ -85,15 +91,20 @@ typedef struct tmEdge {
 *----------------------------------------------------------
 * @param mesh:  parent mesh of the new edge
 * @param n1,n2: Start and ending nodes of this edge
-* @param on_bdry: flag for boundary / front edge type
+* @param bdry: pointer to boundary the edge belongs to
+* @param type: flag for boundary / front / mesh edge
+*               boundary -> 0
+*               front    -> 1
+*               mesh     -> 2
+* @param locSize: local size function value
 *
 * @return: Pointer to a new tmEdge structure
 **********************************************************/
-tmEdge *tmEdge_create(tmMesh *mesh, 
-                      tmNode *n1, 
-                      tmNode *n2,
-                      tmBdry *bdry,
-                      int     edgeType);
+tmEdge *tmEdge_create(tmMesh  *mesh, 
+                      tmNode  *n1, 
+                      tmNode  *n2,
+                      tmBdry  *bdry,
+                      int      edgeType);
 
 /**********************************************************
 * Function: tmEdge_destroy()
@@ -231,5 +242,16 @@ void tmEdge_isDelaunay(tmEdge *edge);
 * 
 **********************************************************/
 tmEdge *tmEdge_flipEdge(tmEdge *e);
+
+/**********************************************************
+* Function: tmEdge_sizeFun()
+*----------------------------------------------------------
+* Local sizefunction in the vicinity of a boundary edge.
+*----------------------------------------------------------
+* @param edge: pointer to edge
+* @param xy: coordinates to evaluate the sizefunction
+* 
+**********************************************************/
+tmDouble tmEdge_sizeFun(tmEdge *edge, tmDouble xy[2]);
 
 #endif

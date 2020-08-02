@@ -242,9 +242,9 @@ static void tmTri_calcTriQuality(tmTri *tri)
   tmDouble e2 = tri->edgeLen[1];
   tmDouble e3 = tri->edgeLen[2];
 
-  tmDouble d1 = tri->mesh->sizeFun(tri->n1->xy);
-  tmDouble d2 = tri->mesh->sizeFun(tri->n2->xy);
-  tmDouble d3 = tri->mesh->sizeFun(tri->n3->xy);
+  tmDouble d1 = tri->mesh->sizeFun(tri->mesh, tri->n1->xy);
+  tmDouble d2 = tri->mesh->sizeFun(tri->mesh, tri->n2->xy);
+  tmDouble d3 = tri->mesh->sizeFun(tri->mesh, tri->n3->xy);
 
   tmDouble delta_1 = 0.5 * (d1+d2);
   tmDouble delta_2 = 0.5 * (d2+d3);
@@ -516,7 +516,7 @@ tmBool tmTri_isValid(tmTri *tri)
   tmDouble  r       = TM_TRI_RANGE_FAC * tri->circ_r;
 
   tmDouble  fac     = TM_NODE_EDGE_DIST_FAC;
-  tmDouble  dist    = sizeFun( tri->xy ) * fac;
+  tmDouble  dist    = sizeFun(mesh, tri->xy) * fac;
   tmDouble  dist2   = dist * dist;
 
   tmList     *inCirc;

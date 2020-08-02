@@ -96,7 +96,8 @@ tmEdge *tmFront_edgeCreate(tmFront *front,
                            tmNode  *n2,
                            tmTri   *t)
 {
-  tmEdge *edge = tmEdge_create(front->mesh, n1, n2, NULL, 1);
+  tmEdge *edge = tmEdge_create(front->mesh, n1, n2, 
+                               NULL, 1);
 
   /*--------------------------------------------------------
   | Set triangle that is located to the right of the new 
@@ -542,8 +543,11 @@ void tmFront_refine(tmMesh *mesh)
   {
     nxt = cur->next;
 
-    tmDouble rho_1 = sizeFun( ((tmEdge*)cur->value)->n1->xy );
-    tmDouble rho_m = sizeFun( ((tmEdge*)cur->value)->xy );
+    tmDouble *xy_1 = ((tmEdge*)cur->value)->n1->xy;
+    tmDouble *xy_m = ((tmEdge*)cur->value)->xy;
+
+    tmDouble rho_1 = sizeFun(mesh, xy_1 );
+    tmDouble rho_m = sizeFun(mesh, xy_m );
     tmDouble rho   = TM_FRONT_REFINE_FAC * (rho_1 + rho_m);
     check( rho > TM_MIN_SIZE,
         "Size function return value lower than defined minimum scale.");
@@ -579,8 +583,6 @@ error:
 **********************************************************/
 tmEdge *tmFront_splitEdge(tmFront *front, tmEdge *edge)
 {
-  tmSizeFun sizeFun = front->mesh->sizeFun;
-
   tmNode *n1 = edge->n1;
   tmNode *n2 = edge->n2;
 

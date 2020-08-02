@@ -40,7 +40,8 @@ typedef struct tmMesh {
   /*-------------------------------------------------------
   | Mesh size function
   -------------------------------------------------------*/
-  tmSizeFun sizeFun;
+  tmSizeFun     sizeFun;
+  tmSizeFunUser sizeFunUser;
 
   /*-------------------------------------------------------
   | Mesh edges
@@ -74,10 +75,10 @@ typedef struct tmMesh {
 *----------------------------------------------------------
 * @return: Pointer to a new tmMesh structure
 **********************************************************/
-tmMesh *tmMesh_create(tmDouble  xy_min[2], 
-                      tmDouble  xy_max[2],
-                      int       qtree_max_obj,
-                      tmSizeFun sizeFun);
+tmMesh *tmMesh_create(tmDouble      xy_min[2], 
+                      tmDouble      xy_max[2],
+                      int           qtree_max_obj,
+                      tmSizeFunUser sizeFunUser);
 
 /**********************************************************
 * Function: tmMesh_destroy()
@@ -265,5 +266,16 @@ tmTri* tmMesh_getTriFromCoords(tmMesh *mesh, tmDouble xy[2]);
 *
 **********************************************************/
 void tmMesh_refineLocally(tmMesh *mesh, tmDouble xy[2]);
+
+/**********************************************************
+* Function: tmMesh_sizeFun()
+*----------------------------------------------------------
+* Define a global size function for the mesh
+*----------------------------------------------------------
+* @param mesh: the mesh structure
+* @param xy:   coordinates to evaluate the size function
+*
+**********************************************************/
+tmDouble tmMesh_sizeFun(tmMesh *mesh, tmDouble xy[2]);
 
 #endif

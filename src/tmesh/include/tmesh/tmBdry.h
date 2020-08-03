@@ -194,4 +194,16 @@ void tmBdry_refine(tmBdry *bdry);
 **********************************************************/
 void tmBdry_calcArea(tmBdry *bdry);
 
+/**********************************************************
+* Function: tmBdry_initSizeFun()
+*----------------------------------------------------------
+* Initializes the size function parameters for all
+* boundary nodes, based on respective boundary edge 
+* lengths and angles.
+*----------------------------------------------------------
+* @param *bdry: pointer to bdry
+* @return: 
+**********************************************************/
+void tmBdry_initSizeFun(tmBdry *bdry);
+
 #endif

@@ -37,9 +37,9 @@ Now create the exterior boundary and add the edge segments to it.
 **IMPORTANT**: Exteriror boundary edge segments must be defined in a **counter-clockwise** manner, such that all edge normals point to the inside of the domain.
 ```sh
 tmBdry *bdry_ext = tmMesh_addBdry(mesh, FALSE, 0);
-tmEdge *e0 = tmBdry_edgeCreate(bdry_ext, n0, n1, 0);
-tmEdge *e1 = tmBdry_edgeCreate(bdry_ext, n1, n2, 0);
-tmEdge *e2 = tmBdry_edgeCreate(bdry_ext, n2, n0, 0);
+tmEdge *e0 = tmBdry_edgeCreate(bdry_ext, n0, n1, 0, 1.0);
+tmEdge *e1 = tmBdry_edgeCreate(bdry_ext, n1, n2, 0, 1.0);
+tmEdge *e2 = tmBdry_edgeCreate(bdry_ext, n2, n0, 0, 1.0);
 ```
 Interior boundaries are defined in a similar manner, but the segments must be defined in  **clockwise** direction. 
 ```sh
@@ -48,9 +48,9 @@ tmNode *n4 = tmNode_create(mesh, xy4);
 tmNode *n5 = tmNode_create(mesh, xy5);
 
 tmBdry *bdry_int = tmMesh_addBdry(mesh, TRUE, 1);
-tmEdge *e3 = tmBdry_edgeCreate(bdry_int, n3, n4, 1);
-tmEdge *e4 = tmBdry_edgeCreate(bdry_int, n4, n5, 1);
-tmEdge *e5 = tmBdry_edgeCreate(bdry_int, n5, n3, 1);
+tmEdge *e3 = tmBdry_edgeCreate(bdry_int, n3, n4, 1, 1.0);
+tmEdge *e4 = tmBdry_edgeCreate(bdry_int, n4, n5, 1, 1.0);
+tmEdge *e5 = tmBdry_edgeCreate(bdry_int, n5, n3, 1, 1.0);
 ```
 Finally, the advancing-front meshing is performed using
 ```sh
@@ -64,6 +64,12 @@ and the output of this function can be rendered with a small Python script **plo
 which is located in the directory *share/python*.
 
 <img src="doc/images/exampleMesh.png" alt="Example-Grid" width="500"/>
+
+### Custom Element Sizing
+The local element size is defined through a size function defined by the user and 
+by the boundary edges. Elements near sharp angles are automatically refined.
+
+<img src="doc/images/bdrySizeFun.png" alt="SizeFunction" width="500"/>
 
 ## Benchmarks
 <img src="doc/images/qtree.png" alt="tMesh-Grid" width="500"/>

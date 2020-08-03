@@ -59,4 +59,10 @@ char *test_tmFront_simpleMesh2();
 char *test_tmFront_innerOuterMesh();
 char *test_tmFront_tMesh();
 
+/************************************************************
+* Unit test function to handle the automatic sizeFunction
+* at boundary edges
+************************************************************/ 
+char *test_tmBdry_sizeFunction();
+
 #endif

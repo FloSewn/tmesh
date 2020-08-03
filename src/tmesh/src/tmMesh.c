@@ -21,6 +21,7 @@
 tmMesh *tmMesh_create(tmDouble      xy_min[2], 
                       tmDouble      xy_max[2], 
                       int           qtree_max_obj,
+                      tmDouble      globSize,
                       tmSizeFunUser sizeFunUser)
 {
   tmMesh *mesh = (tmMesh*) calloc( 1, sizeof(tmMesh) );
@@ -39,6 +40,8 @@ tmMesh *tmMesh_create(tmDouble      xy_min[2],
 
   mesh->areaBdry = 0.0;
   mesh->areaTris = 0.0;
+
+  mesh->globSize = globSize;
 
   /*-------------------------------------------------------
   | Mesh nodes 
@@ -666,6 +669,15 @@ void tmMesh_ADFMeshing(tmMesh *mesh)
   tmFront  *front = mesh->front;
 
   /*-------------------------------------------------------
+  | Initialize size function for boundaries
+  -------------------------------------------------------*/
+  for (cur = mesh->bdry_stack->first; 
+       cur != NULL; cur = cur->next)
+  {
+    tmBdry_initSizeFun( (tmBdry*) cur->value );
+  }
+
+  /*-------------------------------------------------------
   | Initialize the front from mesh boundaries
   -------------------------------------------------------*/
   tmFront_init(mesh);
@@ -1181,12 +1193,15 @@ void tmMesh_refineLocally(tmMesh *mesh, tmDouble xy[2])
 **********************************************************/
 tmDouble tmMesh_sizeFun(tmMesh *mesh, tmDouble xy[2])
 {
-  tmDouble rho = mesh->sizeFunUser(xy);
-
-  /*
   tmListNode *cur_b, *cur_e;
   tmBdry *bdry;
   tmEdge *edge;
+  tmDouble rho0;
+
+  if (mesh->sizeFunUser == NULL)
+    rho0 = mesh->globSize;
+  else
+    rho0 = mesh->sizeFunUser(xy);
 
   for (cur_b = mesh->bdry_stack->first; 
        cur_b != NULL; cur_b = cur_b->next)
@@ -1197,13 +1212,17 @@ tmDouble tmMesh_sizeFun(tmMesh *mesh, tmDouble xy[2])
          cur_e != NULL; cur_e = cur_e->next)
     {
       edge = (tmEdge*) cur_e->value;
-      tmDouble rho_e = edge->sizeFun(edge, xy);
+      const tmDouble dx  = 0.5*(edge->n1->xy[0]-xy[0]);
+      const tmDouble dy  = 0.5*(edge->n1->xy[1]-xy[1]);
+      const tmDouble r2  = dx*dx + dy*dy;
+      const tmDouble rho = edge->n1->rho + edge->n1->k * r2;
 
-      if ( rho_e < rho) 
-        rho = rho_e;
+      if ( rho < rho0) 
+        rho0 = rho;
     }
-  }
-  */
 
-  return rho;
+  }
+
+  return rho0;
+
 } /* tmMesh_sizeFun() */

@@ -60,6 +60,12 @@ typedef struct tmNode {
   tmDouble dblBuf;
   tmIndex  indBuf;
 
+  /*-------------------------------------------------------
+  | Size function properties if node is on boundary
+  -------------------------------------------------------*/
+  tmDouble rho;
+  tmDouble k;
+
 } tmNode;
 
 

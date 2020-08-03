@@ -132,7 +132,7 @@ def main():
 
         ax.set_xlim((nodes[:,0].min(),nodes[:,0].max()))
         ax.set_ylim((nodes[:,1].min(),nodes[:,1].max()))
-        #ax.set_axis_off()
+        ax.set_axis_off()
 
         fig_path = os.path.join( export_path, 'mesh_step_{:}'.format(len(tris)-step))
         print("Exporting {:}".format(fig_path))

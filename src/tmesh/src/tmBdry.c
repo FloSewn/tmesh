@@ -110,7 +110,7 @@ tmEdge *tmBdry_edgeCreate(tmBdry  *bdry,
   tmEdge *edge = tmEdge_create( bdry->mesh, n1, n2, 
                                 bdry, 0);
   edge->bdry_marker = marker;
-  edge->locSize     = edgeSize;
+  edge->sizeFac     = edgeSize;
 
 } /*tmBdry_edgeCreate() */
 
@@ -361,9 +361,9 @@ tmEdge *tmBdry_splitEdge(tmBdry *bdry, tmEdge *edge)
   tmEdge_destroy(edge);
 
   tmEdge *ne1 = tmBdry_edgeCreate(bdry, n1, nn, 
-                                  marker, edge->locSize);
+                                  marker, edge->sizeFac);
   tmEdge *ne2 = tmBdry_edgeCreate(bdry, nn, n2, 
-                                  marker, edge->locSize);
+                                  marker, edge->sizeFac);
 
   return ne1;
 
@@ -464,3 +464,67 @@ error:
   return;
 
 } /* tmBdry_calcArea() */
+
+/**********************************************************
+* Function: tmBdry_initSizeFun()
+*----------------------------------------------------------
+* Initializes the size function parameters for all
+* boundary nodes, based on respective boundary edge 
+* lengths and angles.
+*----------------------------------------------------------
+* @param *bdry: pointer to bdry
+* @return: 
+**********************************************************/
+void tmBdry_initSizeFun(tmBdry *bdry)
+{
+  tmListNode *cur = bdry->edges_stack->first;
+
+  tmDouble globSize = bdry->mesh->globSize;
+
+  for (cur = bdry->edges_stack->first; 
+       cur != NULL; cur = cur->next)
+  {
+    tmEdge *e1 = (tmEdge*) cur->value;
+    tmNode *n1 = e1->n1;
+    tmNode *n2 = e1->n2;
+
+    tmEdge *e2 = (tmEdge*) n1->bdry_edges->first->value;
+
+    if (e2 == e1)
+      e2 = (tmEdge*) n1->bdry_edges->first->next->value;
+
+    tmNode *n3 = e2->n1;
+    if (n3 == n1)
+      n3 = e2->n2;
+
+    tmDouble dx1 = n2->xy[0] - n1->xy[0];
+    tmDouble dy1 = n2->xy[1] - n1->xy[1];
+
+    tmDouble dx2 = n3->xy[0] - n1->xy[0];
+    tmDouble dy2 = n3->xy[1] - n1->xy[1];
+    
+    tmDouble l1 = e1->len;
+    tmDouble l2 = e2->len;
+
+    tmDouble cos_a = (dx1*dx2 + dy1*dy2) / (l1*l2);
+    tmDouble a     = acos(cos_a);
+
+    tmDouble rho0 = fabs(sin(0.5*a));
+    n1->rho = globSize * pow(rho0, e1->sizeFac);
+    n1->k   = 1. / MAX(l1,l2);
+
+    /*
+    tmPrint("---------------------------");
+    tmPrint("N%d: L1=%.3f, L2=%.3f", n1->index,
+        l1, l2);
+    tmPrint("N%d: COS_A=%.3f", n1->index,
+        cos_a);
+    tmPrint("N%d: ANGLE=%.3f", n1->index,
+        (a * 180. / PI_D));
+    tmPrint("N%d: RHO=%.3f, K=%.3f", n1->index,
+        n1->rho, n1->k);
+    */
+
+  }
+
+} /* tmBdry_initSizeFun() */

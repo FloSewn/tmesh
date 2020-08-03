@@ -64,6 +64,12 @@ tmNode *tmNode_create(tmMesh *mesh, tmDouble xy[2])
   node->indBuf = 0;
 
   /*-------------------------------------------------------
+  | Size function properties if node is on boundary
+  -------------------------------------------------------*/
+  node->rho = 0.0;
+  node->k   = 0.0;
+
+  /*-------------------------------------------------------
   | Add node to qtree
   -------------------------------------------------------*/
   node->stack_pos = tmMesh_addNode(mesh, node);

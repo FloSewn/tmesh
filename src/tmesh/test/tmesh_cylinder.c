@@ -38,8 +38,7 @@ char *test_mesh_cylinder()
 {
   tmDouble xy_min[2] = {    -1.0,   -1.0 };
   tmDouble xy_max[2] = {  2201.0,  411.0 };
-  tmMesh *mesh = tmMesh_create(xy_min, xy_max, 25, size_fun);
-  tmDouble edgeSize = 200.;
+  tmMesh *mesh = tmMesh_create(xy_min, xy_max, 25, 50., size_fun);
 
   /*--------------------------------------------------------
   | exterior boundary
@@ -56,10 +55,10 @@ char *test_mesh_cylinder()
 
   tmBdry *bdry_ext = tmMesh_addBdry(mesh, FALSE, 0);
 
-  tmEdge *e_e0 = tmBdry_edgeCreate(bdry_ext, n_e0, n_e1, 0, edgeSize);
-  tmEdge *e_e1 = tmBdry_edgeCreate(bdry_ext, n_e1, n_e2, 1, edgeSize);
-  tmEdge *e_e2 = tmBdry_edgeCreate(bdry_ext, n_e2, n_e3, 2, edgeSize);
-  tmEdge *e_e3 = tmBdry_edgeCreate(bdry_ext, n_e3, n_e0, 3, edgeSize);
+  tmEdge *e_e0 = tmBdry_edgeCreate(bdry_ext, n_e0, n_e1, 0, 1.0);
+  tmEdge *e_e1 = tmBdry_edgeCreate(bdry_ext, n_e1, n_e2, 1, 1.0);
+  tmEdge *e_e2 = tmBdry_edgeCreate(bdry_ext, n_e2, n_e3, 2, 1.0);
+  tmEdge *e_e3 = tmBdry_edgeCreate(bdry_ext, n_e3, n_e0, 3, 1.0);
 
 
   /*--------------------------------------------------------
@@ -87,7 +86,7 @@ char *test_mesh_cylinder()
 
   for (i=0; i<n_segs; i++)
   {
-    e_circ[i] = tmBdry_edgeCreate(bdry_int, n_circ[i], n_circ[(i+1)%n_segs], 4, edgeSize);
+    e_circ[i] = tmBdry_edgeCreate(bdry_int, n_circ[i], n_circ[(i+1)%n_segs], 4, 1.0);
   }
 
   /*--------------------------------------------------------

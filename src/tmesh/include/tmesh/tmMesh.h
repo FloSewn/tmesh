@@ -18,6 +18,8 @@ typedef struct tmMesh {
   tmDouble areaBdry; /* Mesh domain area defined by bdry */
   tmDouble areaTris; /* Mesh domain area defined by tris */
 
+  tmDouble globSize; /* Global mesh element size         */
+
   /*-------------------------------------------------------
   | Mesh nodes 
   -------------------------------------------------------*/
@@ -78,6 +80,7 @@ typedef struct tmMesh {
 tmMesh *tmMesh_create(tmDouble      xy_min[2], 
                       tmDouble      xy_max[2],
                       int           qtree_max_obj,
+                      tmDouble      globSize,
                       tmSizeFunUser sizeFunUser);
 
 /**********************************************************

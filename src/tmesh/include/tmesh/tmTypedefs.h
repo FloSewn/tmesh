@@ -48,7 +48,7 @@ typedef struct tmMesh  tmMesh;
 ***********************************************************/
 typedef tmDouble (*tmSizeFun) (tmMesh *mesh, tmDouble xy[2]);
 typedef tmDouble (*tmSizeFunUser) (tmDouble xy[2]);
-typedef tmDouble (*tmSizeFunEdge) (tmEdge *edge, tmDouble xy[2]);
+
 
 /***********************************************************
 * Debugging Layers

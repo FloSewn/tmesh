@@ -21,7 +21,7 @@
 *               boundary -> 0
 *               front    -> 1
 *               mesh     -> 2
-* @param locSize: local size function value
+* @param sizeFac: local size factor
 *
 * @return: Pointer to a new tmEdge structure
 **********************************************************/
@@ -88,16 +88,13 @@ tmEdge *tmEdge_create(tmMesh  *mesh,
   /*-------------------------------------------------------
   | Sizefunction and local mesh size 
   -------------------------------------------------------*/
-  edge->locSize = 0.0;
-  edge->sizeFun = NULL;
+  edge->sizeFac = 0.0;
 
   /*-------------------------------------------------------
   | Specifiy boundary edge properties
   -------------------------------------------------------*/
   if ( edgeType == 0 )
   {
-    edge->sizeFun = tmEdge_sizeFun;
-
     edge->bdry  = bdry;
     edge->is_on_bdry  = TRUE;
 
@@ -770,32 +767,3 @@ error:
   return NULL;
 
 } /* tmEdge_flipEdge() */
-
-/**********************************************************
-* Function: tmEdge_sizeFun()
-*----------------------------------------------------------
-* Local sizefunction in the vicinity of a boundary edge.
-*----------------------------------------------------------
-* @param edge: pointer to edge
-* @param xy: coordinates to evaluate the sizefunction
-* 
-**********************************************************/
-tmDouble tmEdge_sizeFun(tmEdge *edge, tmDouble xy[2])
-{
-  tmDouble dx_1  = 0.5*(edge->n1->xy[0]-xy[0]);
-  tmDouble dy_1  = 0.5*(edge->n1->xy[1]-xy[1]);
-  tmDouble r2_1  = dx_1*dx_1+dy_1*dy_1;
-
-  tmDouble dx_2  = 0.5*(edge->n2->xy[0]-xy[0]);
-  tmDouble dy_2  = 0.5*(edge->n2->xy[1]-xy[1]);
-  tmDouble r2_2  = dx_2*dx_2+dy_2*dy_2;
-
-  tmDouble a     = TM_SIZEFUN_SLOPE;
-  tmDouble l     = 0.5*edge->len;
-  tmDouble rho_1 = edge->locSize + (a/l) * r2_1;
-  tmDouble rho_2 = edge->locSize + (a/l) * r2_2;
-
-  return MIN(rho_1, rho_2); 
-
-} /* tmEdge_sizeFun() */
-

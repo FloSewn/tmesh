@@ -40,10 +40,9 @@ typedef struct tmEdge {
   tmDouble len;
 
   /*-------------------------------------------------------
-  | Sizefunction and local mesh size 
+  | Local mesh size factor
   -------------------------------------------------------*/
-  tmDouble      locSize;
-  tmSizeFunEdge sizeFun;
+  tmDouble sizeFac;
 
   /*-------------------------------------------------------
   | Vector tangential to edge
@@ -242,16 +241,5 @@ void tmEdge_isDelaunay(tmEdge *edge);
 * 
 **********************************************************/
 tmEdge *tmEdge_flipEdge(tmEdge *e);
-
-/**********************************************************
-* Function: tmEdge_sizeFun()
-*----------------------------------------------------------
-* Local sizefunction in the vicinity of a boundary edge.
-*----------------------------------------------------------
-* @param edge: pointer to edge
-* @param xy: coordinates to evaluate the sizefunction
-* 
-**********************************************************/
-tmDouble tmEdge_sizeFun(tmEdge *edge, tmDouble xy[2]);
 
 #endif

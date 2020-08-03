@@ -94,15 +94,14 @@ For profiling of a test-binary:
 
 
 ### Triangular mesh generation benchmark
-This plot shows the performance of **TMesh** for the generation of a simple mesh, 
-defined in the test function `test_tmFront_simpleMesh2()`.
+This plot shows the performance of **TMesh** for the generation of to simple meshes, 
+defined in the test function `test_tmFront_simpleMesh2()` and `test_tmBdry_sizeFun()`.
 
 <img src="doc/images/performance.png" alt="tMesh-Grid" width="500"/>
 
 ## Todos
 * Python-Interface 
 * Delaunay-refinement for generated grids
-* Automatic generation of size-functions, based on the provided boundaries
 * Better output format of generated meshes, e.g. HDF5 or netCDF.
 
 ## Sources

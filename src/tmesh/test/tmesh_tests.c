@@ -1760,8 +1760,6 @@ char *test_tmBdry_sizeFunction()
   //tmMesh_printMesh(mesh);
   tmMesh_destroy(mesh);
 
-
   return NULL;
 
 } /* test_automaticSizeFunction() */
-

@@ -17,6 +17,9 @@ make install
 ```
 
 ## Handling
+A detailed description on how to define a mesh is given in the examples under 
+*src/tmesh/test*.
+
 Every mesh is defined by an exterior boundary and several more interior boundaries.
 These boundaries consist of edge segments, which connect two nodes.
 Besides this, it is also necessary to provide a size-function `size_fun` to the mesh, which
@@ -66,7 +69,7 @@ which is located in the directory *share/python*.
 <img src="doc/images/exampleMesh.png" alt="Example-Grid" width="500"/>
 
 ### Custom Element Sizing
-The local element size is defined through a size function defined by the user and 
+The local element size can either be defined through a size function defined by the user or  
 by the boundary edges. Elements near sharp angles are automatically refined.
 
 <img src="doc/images/bdrySizeFun.png" alt="SizeFunction" width="500"/>

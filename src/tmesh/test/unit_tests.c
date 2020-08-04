@@ -5,6 +5,7 @@
 #include "tmList_tests.h"
 #include "tmesh_cylinder.h"
 #include "geom_tests.h"
+#include "tmesh_examples.h"
 
 /************************************************************
 * Run all unit test functions
@@ -44,11 +45,16 @@ char *all_tests()
   //mu_run_test(test_tmFront_innerOuterMesh);
   //mu_run_test(test_tmFront_tMesh);
     
-  mu_run_test(test_tmBdry_sizeFunction);
+  //mu_run_test(test_tmBdry_sizeFunction);
   
   //mu_run_test(test_mesh_cylinder);
   
 
+  /**********************************************************
+  * TMesh Examples
+  **********************************************************/
+  //mu_run_test(test_example_1);
+  mu_run_test(test_example_2);
 
 
   return NULL;

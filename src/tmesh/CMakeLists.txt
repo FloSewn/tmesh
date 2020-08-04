@@ -51,6 +51,7 @@ add_executable( ${TESTEXE_TMESH}
   ${TESTDIR_TMESH}/tmList_tests.c
   ${TESTDIR_TMESH}/tmesh_tests.c
   ${TESTDIR_TMESH}/tmesh_cylinder.c
+  ${TESTDIR_TMESH}/tmesh_examples.c
   ${TESTDIR_TMESH}/geom_tests.c
   ${TESTDIR_TMESH}/unit_tests.c
 )

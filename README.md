@@ -115,3 +115,5 @@ defined in the test function `test_tmFront_simpleMesh2()` and `test_tmBdry_sizeF
 * Blazek, Jiri. Computational fluid dynamics: principles and applications. Butterworth-Heinemann, 2015
 * Zed A. Shaw, Learn C the Hard Way (this is where the testing structure and the list functions are coming from)
 
+## License 
+The project is licensed under the MIT License - see the LICENSE file for details.

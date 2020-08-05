@@ -1,0 +1,89 @@
+#ifndef TMESH_TMPARAM_H
+#define TMESH_TMPARAM_H
+
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+
+#include "tmesh/tmTypedefs.h"
+#include "tmesh/bstrlib.h"
+
+#define FILIO_ERR -1
+
+/*************************************************************
+* Parameter file structure
+*************************************************************/
+struct tmParam;
+typedef struct tmParam {
+  const char      *path;    /* Path of file                 */
+  bstring          txt;     /* bstring with file data       */
+  struct bstrList *txtlist; /* file, splitted for newlines  */
+
+  long             length;  /* Number of chars in total file*/
+                            /* -> including '\0' at end     */
+  int              nlines;  /* Number of lines in total file*/
+
+} tmParam;
+
+/*************************************************************
+* Function to create a new parameter file reader structure
+*************************************************************/
+tmParam *tmParam_create(const char *file_path);
+
+/*************************************************************
+* Function to destroy a file reader structure
+*************************************************************/
+int tmParam_destroy(tmParam *file);
+
+/*************************************************************
+* Function returns a bstring list of lines, that 
+* do not contain a certain specifier
+*************************************************************/
+struct bstrList *tmParam_popLinesWith(struct bstrList *txtlist,
+                                      const char *fltr);
+
+/*************************************************************
+* Function returns a bstring list of lines, that 
+* do contain a certain specifier
+*************************************************************/
+struct bstrList *tmParam_getLinesWith(struct bstrList *txtlist,
+                                      const char *fltr);
+
+/*************************************************************
+* Function searches for a specifier <fltr> in a bstrList.
+* The parameter behind the specifier is then extracted 
+* from the file and stored into <value>.
+* The value is casted to a prescribed type
+* type = 0: integer
+* type = 1: double
+* type = 2: string
+*
+* Returns 0 if specifier was not found in the file.
+* Otherwise, it returns the number of times, the 
+* specifier was found.
+* Returns -1 on errors.
+*************************************************************/
+int tmParam_extractParam(struct bstrList *txtlist,
+                         const char *fltr, int type,
+                         void *value);
+
+/*************************************************************
+* Function searches for a specifier <fltr> in a bstrList.
+* The string behind the specifier is then extracted 
+* from the file and processed as an array of values 
+* and stored in <value>.
+* The values are casted to a prescribed type
+* type = 0: integer
+* type = 1: double
+* type = 2: string
+*
+* Returns 0 if specifier was not found in the file.
+* Otherwise, it returns the number of times, the 
+* specifier was found.
+* Returns -1 on errors.
+*************************************************************/
+int tmParam_extractArray(struct bstrList *txtlist,
+                         const char *fltr, int type,
+                         void *value);
+
+#endif

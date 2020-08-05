@@ -3,6 +3,7 @@
 #include "tmesh/dbg.h"
 #include "tmesh_tests.h"
 #include "tmList_tests.h"
+#include "tmParam_tests.h"
 #include "tmesh_cylinder.h"
 #include "geom_tests.h"
 #include "tmesh_examples.h"
@@ -25,6 +26,11 @@ char *all_tests()
   mu_run_test(test_tmList_join);
   mu_run_test(test_tmList_destroy);
   mu_run_test(test_tmList_split);
+
+  /**********************************************************
+  * Unit tests for parameter file reader
+  **********************************************************/
+  mu_run_test(test_tmParam_readfile);
 
   /**********************************************************
   * Unit tests for tmesh library
@@ -54,7 +60,7 @@ char *all_tests()
   * TMesh Examples
   **********************************************************/
   //mu_run_test(test_example_1);
-  mu_run_test(test_example_2);
+  //mu_run_test(test_example_2);
 
 
   return NULL;

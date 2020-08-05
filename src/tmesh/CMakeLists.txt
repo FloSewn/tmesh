@@ -8,6 +8,8 @@ set( TMESH_SRC    ${TMESH_DIR}/src     )
 
 # Define source files
 set( TMESH_MAIN
+  ${TMESH_SRC}/bstrlib.c
+  ${TMESH_SRC}/tmParam.c
   ${TMESH_SRC}/tmList.c
   ${TMESH_SRC}/tmNode.c
   ${TMESH_SRC}/tmEdge.c
@@ -49,6 +51,7 @@ set( TESTDIR_TMESH ${TMESH_DIR}/test )
 
 add_executable( ${TESTEXE_TMESH}
   ${TESTDIR_TMESH}/tmList_tests.c
+  ${TESTDIR_TMESH}/tmParam_tests.c
   ${TESTDIR_TMESH}/tmesh_tests.c
   ${TESTDIR_TMESH}/tmesh_cylinder.c
   ${TESTDIR_TMESH}/tmesh_examples.c

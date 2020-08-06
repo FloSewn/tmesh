@@ -499,12 +499,16 @@ error:
 * Function to extract the exterior boundary data 
 * from a parameter file
 *************************************************************/
-int tmParam_readExtBdryData(struct bstrList *txtlist,
-                            int       (**edges)[2], 
-                            int        **edgeMarker, 
-                            tmDouble   **edgeRefine,
-                            int         *nEdges,
-                            int         *bdryMarker)
+int tmParam_readBdryData(struct bstrList *txtlist,
+                         char       *startStr,
+                         char       *endStr,
+                         int         startLine,
+                         tmBool      readAll,
+                         int       (**edges)[2], 
+                         int        **edgeMarker, 
+                         tmDouble   **edgeRefine,
+                         int         *nEdges,
+                         int         *bdryMarker)
 {
   int     (*edg)[2];
   int      *mark;
@@ -517,26 +521,42 @@ int tmParam_readExtBdryData(struct bstrList *txtlist,
 
   struct bstrList *values;
   bstring *val_ptr;
-  bstring wsfnd, wsrpl, line;
+  bstring wsfnd, wsrpl, line, bextr, curLine;
 
   bstring *fl_ptr = txtlist->entry;
-  bstring  bstart  = bfromcstr( "Define exterior boundary:" );
-  bstring  bend    = bfromcstr( "End exterior boundary" );
+  bstring  bstart  = bfromcstr( startStr );
+  bstring  bend    = bfromcstr( endStr );
 
-  tmParam_extractParam(txtlist, "Define exterior boundary:", 
+  tmParam_extractParam(txtlist, startStr, 
                        0, &bdryMark);
+
+  int off;
 
   /*----------------------------------------------------------
   | Fill array of markers with line numbers, that  
   | contain the start and ending string
   ----------------------------------------------------------*/
-  for (i = 0; i < txtlist->qty; i++) 
+  for (i = startLine; i < txtlist->qty; i++) 
   {
-    if ( binstr(fl_ptr[i], 0, bstart) != BSTR_ERR )
+
+    if ( (off = binstr(fl_ptr[i], 0, bstart)) != BSTR_ERR )
+    {
       i_start = i;
 
+      curLine = fl_ptr[i];
+      int len = bstart->slen;
+
+      bextr = bmidstr( curLine, off+len, curLine->slen );
+      bdryMark = atoi(bextr->data);
+
+    }
+
     if ( binstr(fl_ptr[i], 0, bend) != BSTR_ERR )
+    {
       i_end = i;
+      if (readAll == FALSE)
+        break;
+    }
   }
 
   /*----------------------------------------------------------
@@ -549,9 +569,6 @@ int tmParam_readExtBdryData(struct bstrList *txtlist,
   edg  = calloc(nEdge, 2*sizeof(int));
   mark = calloc(nEdge, sizeof(int));
   ref  = calloc(nEdge, sizeof(tmDouble));
-
-  tmPrint(" %d EDGES, %d -> %d", 
-      nEdge, i_start, i_end);
 
   for (i = i_start+1; i < i_end; i++)
   {
@@ -586,6 +603,7 @@ int tmParam_readExtBdryData(struct bstrList *txtlist,
 
   bdestroy( bstart );
   bdestroy( bend );
+  bdestroy( bextr );
 
   return 1;
 
@@ -602,5 +620,108 @@ error:
   free(ref);
   return -1;
 
-
 } /* tmParam_readExtBdryData() */
+
+/*************************************************************
+* Function to extract the exterior boundary data 
+* from a parameter file
+*************************************************************/
+int tmParam_readIntBdryData(struct bstrList *txtlist,
+                            int       (***edges)[2],
+                            int        ***edgeMarker, 
+                            tmDouble   ***edgeRefine,
+                            int         **nEdges,
+                            int         **bdryMarkers,
+                            int          *nBdrys)
+{
+  int i, nBdry, cur;
+  int n_start = 0;
+  int n_end   = 0;
+
+  int     (**edg)[2];
+  int      **mark;
+  tmDouble **ref;
+  int       *nEdgAll;
+  int       *markAll;
+
+  bstring *fl_ptr = txtlist->entry;
+  bstring  bstart  = bfromcstr( "Define interior boundary:" );
+  bstring  bend    = bfromcstr( "End interior boundary" );
+
+  /*----------------------------------------------------------
+  | Estimate number of interior boundaries
+  ----------------------------------------------------------*/
+  for (i = 0; i < txtlist->qty; i++) 
+  {
+    if ( binstr(fl_ptr[i], 0, bstart) != BSTR_ERR )
+      n_start += 1;
+
+    if ( binstr(fl_ptr[i], 0, bend) != BSTR_ERR )
+      n_end += 1;
+  }
+
+  check( n_start == n_end, 
+      "Wrong definition of interior boundaries.");
+
+  tmPrint("%d INTERIOR BOUNDARIES FOUND.", n_start);
+
+  /*----------------------------------------------------------
+  | Allocate memory
+  ----------------------------------------------------------*/
+  nBdry   = n_start;
+  edg     = calloc(nBdry, sizeof(int**));
+  mark    = calloc(nBdry, sizeof(int*));
+  ref     = calloc(nBdry, sizeof(tmDouble*));
+  nEdgAll = calloc(nBdry, sizeof(int));
+  markAll = calloc(nBdry, sizeof(int));
+
+  /*----------------------------------------------------------
+  | Gather data
+  ----------------------------------------------------------*/
+  cur = 0;
+  for (i = 0; i < txtlist->qty; i++) 
+  {
+    if ( binstr(fl_ptr[i], 0, bstart) != BSTR_ERR )
+    {
+      tmParam_readBdryData(txtlist, 
+                           "Define interior boundary:",
+                           "End interior boundary",
+                           i,
+                           FALSE,
+                           &edg[cur], &mark[cur],
+                           &ref[cur], &nEdgAll[cur],
+                           &markAll[cur]);
+      cur++;
+    }
+  }
+
+  /*----------------------------------------------------------
+  | Handle data to argument pointers
+  ----------------------------------------------------------*/
+  *edges       = edg;
+  *edgeMarker  = mark;
+  *edgeRefine  = ref;
+  *nEdges      = nEdgAll;
+  *bdryMarkers = markAll;
+  *nBdrys      = nBdry;
+
+
+  bdestroy( bstart );
+  bdestroy( bend );
+
+  return 1;
+
+
+error:
+  bdestroy( bstart );
+  bdestroy( bend );
+  free(edg);
+  free(mark);
+  free(ref);
+  free(nEdgAll);
+  free(markAll);
+  return -1;
+
+
+} /* tmParam_readIntBdryData() */
+

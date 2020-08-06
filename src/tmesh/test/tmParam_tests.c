@@ -100,16 +100,16 @@ char *test_tmParam_readfile()
       &nodes, &nNodes);
   mu_assert( nodes[0][0] == -1.0,
       "<tmParam_readNodeCoords> failed.");
-  mu_assert( nodes[0][1] == -1.1,
+  mu_assert( nodes[0][1] == -1.0,
       "<tmParam_readNodeCoords> failed.");
-  mu_assert( nodes[5][0] == 6.0,
+  mu_assert( nodes[5][0] == 2.0,
       "<tmParam_readNodeCoords> failed.");
   mu_assert( nodes[5][1] == 4.0,
       "<tmParam_readNodeCoords> failed.");
   free(nodes);
 
   /*----------------------------------------------------------
-  | Read boundary edges
+  | Read exterior boundary edges
   ----------------------------------------------------------*/
   int (*bdryEdges)[2];
   int  *bdryEdgeMarker;
@@ -117,12 +117,15 @@ char *test_tmParam_readfile()
   int   nBdryEdges;
   int   bdryMarker;
 
-  tmParam_readExtBdryData(file->txtlist,
+  tmParam_readBdryData(file->txtlist,
+      "Define exterior boundary:",
+      "End exterior boundary",
+      0, -1,
       &bdryEdges, &bdryEdgeMarker, &bdryRefinement, 
       &nBdryEdges, &bdryMarker);
   mu_assert( bdryMarker == 1,
       "<tmParam_readExtBdryData> failed.");
-  mu_assert( nBdryEdges == 3,
+  mu_assert( nBdryEdges == 4,
       "<tmParam_readExtBdryData> failed.");
   mu_assert( bdryEdges[1][1] == 2,
       "<tmParam_readExtBdryData> failed.");
@@ -139,6 +142,48 @@ char *test_tmParam_readfile()
   free(bdryEdges);
   free(bdryEdgeMarker);
   free(bdryRefinement);
+
+
+
+  /*----------------------------------------------------------
+  | Read exterior boundary edges
+  ----------------------------------------------------------*/
+  int (**intrEdges)[2];
+  int **intrEdgeMarkers;
+  tmDouble **intrEdgeRefinements;
+  int *nIntrEdges;
+  int *intrBdryMarkers;
+  int  nIntrBdrys;
+
+  tmParam_readIntBdryData(file->txtlist,
+      &intrEdges, &intrEdgeMarkers,
+      &intrEdgeRefinements,
+      &nIntrEdges, &intrBdryMarkers,
+      &nIntrBdrys);
+
+  int j;
+  for (j = 0; j < nIntrBdrys; j++)
+  {
+    tmPrint("INTERIOR BOUNDARY %d: %d EDGES, MARKER %d",
+        j, nIntrEdges[j], intrBdryMarkers[j]);
+
+    for (i = 0; i < nIntrEdges[j]; i++)
+      tmPrint("  %d: (%d, %d), %d, %.3f",
+          i, intrEdges[j][i][0], intrEdges[j][i][1], 
+          intrEdgeMarkers[j][i], intrEdgeRefinements[j][i]);
+  }
+
+  for (i = 0; i < nIntrBdrys; i++)
+  {
+    free(intrEdges[i]);
+    free(intrEdgeMarkers[i]);
+    free(intrEdgeRefinements[i]);
+  }
+  free(intrEdges);
+  free(intrEdgeMarkers);
+  free(intrEdgeRefinements);
+  free(nIntrEdges);
+  free(intrBdryMarkers);
 
 
 

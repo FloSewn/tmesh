@@ -117,10 +117,7 @@ char *test_tmParam_readfile()
   int   nBdryEdges;
   int   bdryMarker;
 
-  tmParam_readBdryData(file->txtlist,
-      "Define exterior boundary:",
-      "End exterior boundary",
-      0, -1,
+  tmParam_readExtBdryData(file->txtlist,
       &bdryEdges, &bdryEdgeMarker, &bdryRefinement, 
       &nBdryEdges, &bdryMarker);
   mu_assert( bdryMarker == 1,

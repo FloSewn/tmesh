@@ -496,8 +496,7 @@ error:
 
 
 /*************************************************************
-* Function to extract the exterior boundary data 
-* from a parameter file
+* Function to extract  boundary data from a parameter file
 *************************************************************/
 int tmParam_readBdryData(struct bstrList *txtlist,
                          char       *startStr,
@@ -624,6 +623,30 @@ error:
 
 /*************************************************************
 * Function to extract the exterior boundary data 
+* from a parameter file
+*************************************************************/
+int tmParam_readExtBdryData(struct bstrList *txtlist,
+                            int       (**edges)[2],
+                            int        **edgeMarker, 
+                            tmDouble   **edgeRefine,
+                            int         *nEdges,
+                            int         *bdryMarkers)
+{
+  tmParam_readBdryData(txtlist, 
+                       "Define exterior boundary:",
+                       "End exterior boundary",
+                       0,
+                       TRUE,
+                       edges, edgeMarker,
+                       edgeRefine, nEdges,
+                       bdryMarkers);
+
+  return 1;
+
+} /* tmParam_readExtBdryData() */
+
+/*************************************************************
+* Function to extract the interior boundary data 
 * from a parameter file
 *************************************************************/
 int tmParam_readIntBdryData(struct bstrList *txtlist,

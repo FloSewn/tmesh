@@ -97,6 +97,11 @@ int tmParam_readNodeCoords(struct bstrList *txtlist,
 /*************************************************************
 * Function to extract the exterior boundary data 
 * from a parameter file
+*
+* @param startStr : start identifier for which to search
+* @param endStr   : end identifier when to stop searching
+* @param startLine: index of line where to start
+* @param readAll  : boolean if whole file will be read 
 *************************************************************/
 int tmParam_readBdryData(struct bstrList *txtlist,
                          char       *startStr,
@@ -109,6 +114,16 @@ int tmParam_readBdryData(struct bstrList *txtlist,
                          int         *nEdges,
                          int         *bdryMarker);
 
+/*************************************************************
+* Function to extract the exterior boundary data 
+* from a parameter file
+*************************************************************/
+int tmParam_readExtBdryData(struct bstrList *txtlist,
+                            int       (**edges)[2],
+                            int        **edgeMarker, 
+                            tmDouble   **edgeRefine,
+                            int         *nEdges,
+                            int         *bdryMarkers);
 
 /*************************************************************
 * Function to extract the exterior boundary data 

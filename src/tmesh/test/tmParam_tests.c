@@ -91,6 +91,57 @@ char *test_tmParam_readfile()
   mu_assert( str_array->qty == 4, "<tmParam_extractArray> failed.");
   bstrListDestroy(str_array); */
 
+  /*----------------------------------------------------------
+  | Read node coordinates
+  ----------------------------------------------------------*/
+  tmDouble (*nodes)[2];
+  int nNodes;
+  tmParam_readNodeCoords(file->txtlist,
+      &nodes, &nNodes);
+  mu_assert( nodes[0][0] == -1.0,
+      "<tmParam_readNodeCoords> failed.");
+  mu_assert( nodes[0][1] == -1.1,
+      "<tmParam_readNodeCoords> failed.");
+  mu_assert( nodes[5][0] == 6.0,
+      "<tmParam_readNodeCoords> failed.");
+  mu_assert( nodes[5][1] == 4.0,
+      "<tmParam_readNodeCoords> failed.");
+  free(nodes);
+
+  /*----------------------------------------------------------
+  | Read boundary edges
+  ----------------------------------------------------------*/
+  int (*bdryEdges)[2];
+  int  *bdryEdgeMarker;
+  tmDouble *bdryRefinement;
+  int   nBdryEdges;
+  int   bdryMarker;
+
+  tmParam_readExtBdryData(file->txtlist,
+      &bdryEdges, &bdryEdgeMarker, &bdryRefinement, 
+      &nBdryEdges, &bdryMarker);
+  mu_assert( bdryMarker == 1,
+      "<tmParam_readExtBdryData> failed.");
+  mu_assert( nBdryEdges == 3,
+      "<tmParam_readExtBdryData> failed.");
+  mu_assert( bdryEdges[1][1] == 2,
+      "<tmParam_readExtBdryData> failed.");
+  mu_assert( bdryEdges[2][0] == 2,
+      "<tmParam_readExtBdryData> failed.");
+  mu_assert( bdryEdges[0][0] == 0,
+      "<tmParam_readExtBdryData> failed.");
+  mu_assert( bdryEdgeMarker[0] == 0,
+      "<tmParam_readExtBdryData> failed.");
+  mu_assert( bdryEdgeMarker[2] == 0,
+      "<tmParam_readExtBdryData> failed.");
+  mu_assert( bdryRefinement[2] == 1.2,
+      "<tmParam_readExtBdryData> failed.");
+  free(bdryEdges);
+  free(bdryEdgeMarker);
+  free(bdryRefinement);
+
+
+
 
   bdestroy(bstr_param);
   tmParam_destroy( file );

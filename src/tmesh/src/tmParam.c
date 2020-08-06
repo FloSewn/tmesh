@@ -403,3 +403,204 @@ error:
   return -1;
 
 } /* tmParam_extractArray() */
+
+/*************************************************************
+* Function to extract the node coordinates from a parameter 
+* file
+*************************************************************/
+int tmParam_readNodeCoords(struct bstrList *txtlist,
+                           tmDouble       (**xy)[2], 
+                           int             *n)
+{
+  tmDouble (*coords)[2];
+
+  int nNodes, nValues, i;
+  int i_start = 0;
+  int i_end   = 0;
+  int cnt     = 0;
+
+  struct bstrList *values;
+  bstring *val_ptr;
+  bstring wsfnd, wsrpl, line;
+
+  bstring *fl_ptr = txtlist->entry;
+  bstring  bstart  = bfromcstr( "Define nodes:" );
+  bstring  bend    = bfromcstr( "End nodes" );
+
+  /*----------------------------------------------------------
+  | Fill array of markers with line numbers, that  
+  | contain the start and ending string
+  ----------------------------------------------------------*/
+  for (i = 0; i < txtlist->qty; i++) 
+  {
+    if ( binstr(fl_ptr[i], 0, bstart) != BSTR_ERR )
+      i_start = i;
+
+    if ( binstr(fl_ptr[i], 0, bend) != BSTR_ERR )
+      i_end = i;
+  }
+
+  /*----------------------------------------------------------
+  | Estimate number of nodes
+  ----------------------------------------------------------*/
+  check( i_start < i_end, 
+      "Wrong definition of node coordinates." );
+
+  nNodes = i_end - i_start - 1;
+  coords = calloc(nNodes, 2*sizeof(tmDouble));
+
+  for (i = i_start+1; i < i_end; i++)
+  {
+    line  = fl_ptr[i];
+    wsfnd = bfromcstr( " " );
+    wsrpl = bfromcstr( "" );
+    bfindreplace(line, wsfnd, wsrpl, 0);
+
+    values  = bsplit(line, ',');
+    nValues = values->qty;
+    val_ptr = values->entry;
+
+    check (nValues == 2, 
+        "Wrong definition for node coordinates.");
+
+    coords[cnt][0] = atof(val_ptr[0]->data);
+    coords[cnt][1] = atof(val_ptr[1]->data);
+    cnt++;
+
+    bdestroy( wsfnd );
+    bdestroy( wsrpl );
+    bstrListDestroy( values );
+  }
+
+  *xy = coords;
+  *n  = nNodes;
+
+  bdestroy( bstart );
+  bdestroy( bend );
+
+  return 1;
+
+
+error:
+
+  bdestroy( bstart );
+  bdestroy( bend );
+  bdestroy( wsfnd );
+  bdestroy( wsrpl );
+  bstrListDestroy( values );
+  free(coords);
+  return -1;
+
+} /* tmParam_readNodesCoords() */
+
+
+
+/*************************************************************
+* Function to extract the exterior boundary data 
+* from a parameter file
+*************************************************************/
+int tmParam_readExtBdryData(struct bstrList *txtlist,
+                            int       (**edges)[2], 
+                            int        **edgeMarker, 
+                            tmDouble   **edgeRefine,
+                            int         *nEdges,
+                            int         *bdryMarker)
+{
+  int     (*edg)[2];
+  int      *mark;
+  tmDouble *ref;
+
+  int nEdge, nValues, i, bdryMark;
+  int i_start = 0;
+  int i_end   = 0;
+  int cnt     = 0;
+
+  struct bstrList *values;
+  bstring *val_ptr;
+  bstring wsfnd, wsrpl, line;
+
+  bstring *fl_ptr = txtlist->entry;
+  bstring  bstart  = bfromcstr( "Define exterior boundary:" );
+  bstring  bend    = bfromcstr( "End exterior boundary" );
+
+  tmParam_extractParam(txtlist, "Define exterior boundary:", 
+                       0, &bdryMark);
+
+  /*----------------------------------------------------------
+  | Fill array of markers with line numbers, that  
+  | contain the start and ending string
+  ----------------------------------------------------------*/
+  for (i = 0; i < txtlist->qty; i++) 
+  {
+    if ( binstr(fl_ptr[i], 0, bstart) != BSTR_ERR )
+      i_start = i;
+
+    if ( binstr(fl_ptr[i], 0, bend) != BSTR_ERR )
+      i_end = i;
+  }
+
+  /*----------------------------------------------------------
+  | Estimate number of nodes
+  ----------------------------------------------------------*/
+  check( i_start < i_end, 
+      "Wrong definition of node coordinates." );
+
+  nEdge = i_end - i_start - 1;
+  edg  = calloc(nEdge, 2*sizeof(int));
+  mark = calloc(nEdge, sizeof(int));
+  ref  = calloc(nEdge, sizeof(tmDouble));
+
+  tmPrint(" %d EDGES, %d -> %d", 
+      nEdge, i_start, i_end);
+
+  for (i = i_start+1; i < i_end; i++)
+  {
+    line  = fl_ptr[i];
+    wsfnd = bfromcstr( " " );
+    wsrpl = bfromcstr( "" );
+    bfindreplace(line, wsfnd, wsrpl, 0);
+
+    values  = bsplit(line, ',');
+    nValues = values->qty;
+    val_ptr = values->entry;
+
+    check (nValues == 4, 
+        "Wrong definition for exterior edges.");
+
+    edg[cnt][0] = atoi(val_ptr[0]->data);
+    edg[cnt][1] = atoi(val_ptr[1]->data);
+    mark[cnt]   = atoi(val_ptr[2]->data);
+    ref[cnt]    = atof(val_ptr[3]->data);
+    cnt++;
+
+    bdestroy( wsfnd );
+    bdestroy( wsrpl );
+    bstrListDestroy( values );
+  }
+
+  *edges       = edg;
+  *edgeMarker  = mark;
+  *edgeRefine  = ref;
+  *nEdges      = nEdge;
+  *bdryMarker  = bdryMark;
+
+  bdestroy( bstart );
+  bdestroy( bend );
+
+  return 1;
+
+
+error:
+
+  bdestroy( bstart );
+  bdestroy( bend );
+  bdestroy( wsfnd );
+  bdestroy( wsrpl );
+  bstrListDestroy( values );
+  free(edg);
+  free(mark);
+  free(ref);
+  return -1;
+
+
+} /* tmParam_readExtBdryData() */

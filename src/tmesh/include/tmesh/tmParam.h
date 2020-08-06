@@ -86,4 +86,23 @@ int tmParam_extractArray(struct bstrList *txtlist,
                          const char *fltr, int type,
                          void *value);
 
+/*************************************************************
+* Function to extract the node coordinates from a parameter 
+* file
+*************************************************************/
+int tmParam_readNodeCoords(struct bstrList *txtlist,
+                           tmDouble       (**xy)[2], 
+                           int             *n);
+
+/*************************************************************
+* Function to extract the exterior boundary data 
+* from a parameter file
+*************************************************************/
+int tmParam_readExtBdryData(struct bstrList *txtlist,
+                            int       (**edges)[2], 
+                            int        **edgeMarker, 
+                            tmDouble   **edgeRefine,
+                            int         *nEdges,
+                            int         *bdryMarker);
+
 #endif

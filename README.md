@@ -23,6 +23,80 @@ Basically, one only needs to define a few global parameters and the mesh boundar
 of boundary nodes and edges. 
 There is the possibility to assign markers to the boundaries and to each boundary-edge.
 The only purpose of these markers is to identify these boundaries/edges later when the meshing is generated.
+Here is a simple example to create a mesh using **TMesh**:
+```sh
+#-----------------------------------------------------------
+#                          TMESH
+#-----------------------------------------------------------
+Global element size: 0.5
+Number of quadtree elements: 50
+Mesh bounding box: -10.0, -10.0, 20.0, 20.0
+
+
+#-----------------------------------------------------------
+#                          NODES
+#-----------------------------------------------------------
+Define nodes:
+1.0, 1.0
+10.0, 0.0
+10.0, 10.0
+0.0,  10.0
+2.0,  2.0
+2.0,  4.0
+4.0,  4.0
+4.0,  2.0
+6.0,  5.0
+7.0,  7.0
+9.0,  4.0
+End nodes
+
+#-----------------------------------------------------------
+#                          BOUNDARIES
+#-----------------------------------------------------------
+# For every boundary an integer is assigned as marker.
+# Boundary edges are defined by:
+#
+#     iStart, iEnd, edgeMarker, edgeRefinement
+#
+# > iStart and iEnd corresponds to the indices of the
+#   nodes define above
+# > edgeMarker is an integer that is assigned to the
+#   respective edge
+# > edgeRefinement is a double used to control the local
+#   refinement near share edges (>0)
+#
+# > Exterior boundaries must be defined counter-clockwise
+# > Interior boundaries must be defined clockwise
+#
+#-----------------------------------------------------------
+Define exterior boundary: 1
+0, 1, 0, 1.4
+1, 2, 0, 1.4
+2, 3, 0, 1.4
+3, 0, 0, 1.4
+End exterior boundary
+
+Define interior boundary: 1
+4, 5, 1, 1.6
+5, 6, 1, 1.6
+6, 7, 1, 1.6
+7, 4, 1, 1.6
+End interior boundary
+
+Define interior boundary: 2
+8, 9, 2, 1.5
+9, 10, 2, 1.5
+10, 8, 2, 1.5
+End interior boundary
+```
+
+The mesh is created with 
+```sh
+./bin/TMesh example.para
+```
+Here is the generated mesh:
+<img src="doc/images/TMeshExample.png" alt="Example-Grid" width="500"/>
+
 
 ## Usage of C-Functions
 A detailed description on how to define a mesh is given in the examples under 

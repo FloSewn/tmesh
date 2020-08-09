@@ -42,6 +42,27 @@ target_link_libraries( ${TMESH_LIB}
 
 install( TARGETS tmesh DESTINATION ${LIB} )
 
+##############################################################
+# MAIN: tmesh
+##############################################################
+set( MAINEXE_TMESH TMesh )
+
+add_executable( ${MAINEXE_TMESH}
+  ${TMESH_SRC}/main.c
+)
+
+target_include_directories( ${MAINEXE_TMESH} PUBLIC
+  $<BUILD_INTERFACE:${INC_TMESH}>
+)
+
+target_link_libraries( ${MAINEXE_TMESH}
+  tmesh
+  m
+)
+
+# Install executables
+install( TARGETS ${MAINEXE_TMESH} RUNTIME DESTINATION ${BIN} )
+
 
 ##############################################################
 # TESTS: tmesh

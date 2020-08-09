@@ -98,9 +98,9 @@ char *test_tmParam_readfile()
   int nNodes;
   tmParam_readNodeCoords(file->txtlist,
       &nodes, &nNodes);
-  mu_assert( nodes[0][0] == -1.0,
+  mu_assert( nodes[0][0] == 1.0,
       "<tmParam_readNodeCoords> failed.");
-  mu_assert( nodes[0][1] == -1.0,
+  mu_assert( nodes[0][1] == 1.0,
       "<tmParam_readNodeCoords> failed.");
   mu_assert( nodes[5][0] == 2.0,
       "<tmParam_readNodeCoords> failed.");
@@ -134,7 +134,7 @@ char *test_tmParam_readfile()
       "<tmParam_readExtBdryData> failed.");
   mu_assert( bdryEdgeMarker[2] == 0,
       "<tmParam_readExtBdryData> failed.");
-  mu_assert( bdryRefinement[2] == 1.2,
+  mu_assert( bdryRefinement[2] == 1.4,
       "<tmParam_readExtBdryData> failed.");
   free(bdryEdges);
   free(bdryEdgeMarker);
@@ -158,6 +158,7 @@ char *test_tmParam_readfile()
       &nIntrEdges, &intrBdryMarkers,
       &nIntrBdrys);
 
+  /*
   int j;
   for (j = 0; j < nIntrBdrys; j++)
   {
@@ -169,6 +170,7 @@ char *test_tmParam_readfile()
           i, intrEdges[j][i][0], intrEdges[j][i][1], 
           intrEdgeMarkers[j][i], intrEdgeRefinements[j][i]);
   }
+  */
 
   for (i = 0; i < nIntrBdrys; i++)
   {

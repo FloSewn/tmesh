@@ -3,20 +3,26 @@
 <img src="doc/images/tMesh.png" alt="tMesh-Grid" width="500"/>
 
 
-**TMesh** is a lightweight C library to create two-dimensional triangular grids, which can 
+**TMesh** is a small program to create two-dimensional triangular grids, which can 
 be used for Finite Element Methods or Computational Fluid Dynamics applications.
 The triangles are generated with an advancing-front method, for which the user must only provide edge segments that define the boundaries of the domain. Furthermore it is possible to refine 
 triangles locally with a user-defined size function.
 
 ## Installation
-Currently, **TMesh** is just a static library **libtmesh.a**, generated in the *lib*-directory of this repository. 
+**TMesh** is just base on the static library **libtmesh.a**, generated in the *lib*-directory of this repository. 
+It is automatically created upon compilation with cmake.
 For installation, just create a build directory and run
 ```sh
 cmake ..
 make install
 ```
 
-## Handling
+## Usage of TMesh
+**TMesh** needs a parameter-file for the mesh generation. Sample files are given in *share/files/*.
+Basically, one only needs to define a few global parameters and the mesh boundaries in terms
+of boundary nodes and edges. 
+
+## Usage of C-Functions
 A detailed description on how to define a mesh is given in the examples under 
 *src/tmesh/test*.
 

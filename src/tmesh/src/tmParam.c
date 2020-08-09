@@ -686,8 +686,6 @@ int tmParam_readIntBdryData(struct bstrList *txtlist,
   check( n_start == n_end, 
       "Wrong definition of interior boundaries.");
 
-  tmPrint("%d INTERIOR BOUNDARIES FOUND.", n_start);
-
   /*----------------------------------------------------------
   | Allocate memory
   ----------------------------------------------------------*/

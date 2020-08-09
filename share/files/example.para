@@ -26,12 +26,22 @@ End nodes
 #-----------------------------------------------------------
 #                          BOUNDARIES     
 #-----------------------------------------------------------
+# For every boundary an integer is assigned as marker. 
 # Boundary edges are defined by:
 #
-#   iStart, iEnd, EdgeMarker, EdgeRefinement
+#     iStart, iEnd, edgeMarker, edgeRefinement
 #   
-# where iStart and iEnd corresponds to the indices of the 
-# nodes define above
+# > iStart and iEnd corresponds to the indices of the 
+#   nodes define above
+# > edgeMarker is an integer that is assigned to the 
+#   respective edge
+# > edgeRefinement is a double used to control the local 
+#   refinement near share edges (>0)
+#
+# > Exterior boundaries must be defined counter-clockwise
+# > Interior boundaries must be defined clockwise
+#
+#-----------------------------------------------------------
 Define exterior boundary: 1
 0, 1, 0, 1.4
 1, 2, 0, 1.4

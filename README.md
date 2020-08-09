@@ -18,9 +18,11 @@ make install
 ```
 
 ## Usage of TMesh
-**TMesh** needs a parameter-file for the mesh generation. Sample files are given in *share/files/*.
+**TMesh** takes a parameter-file as input for the mesh generation. Sample files are given in *share/files/*.
 Basically, one only needs to define a few global parameters and the mesh boundaries in terms
 of boundary nodes and edges. 
+There is the possibility to assign markers to the boundaries and to each boundary-edge.
+The only purpose of these markers is to identify these boundaries/edges later when the meshing is generated.
 
 ## Usage of C-Functions
 A detailed description on how to define a mesh is given in the examples under 

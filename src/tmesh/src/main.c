@@ -28,23 +28,23 @@ int main(int argc, char *argv[])
   int i,j;
 
   tmDouble  globSize;
-  tmDouble *globBbox;
+  tmDouble *globBbox = NULL;
   int       qtreeSize;
 
-  tmDouble (*nodes)[2];
+  tmDouble (*nodes)[2] = NULL;
   int        nNodes;
 
-  int     (*extBdryEdges)[2];
-  int      *extBdryEdgeMarker;
-  tmDouble *extBdryRefinement;
+  int     (*extBdryEdges)[2]  = NULL;
+  int      *extBdryEdgeMarker = NULL;
+  tmDouble *extBdryRefinement = NULL;
   int       nExtBdryEdges;
   int       extBdryMarker;
 
-  int     (**intrEdges)[2];
-  int      **intrEdgeMarkers;
-  tmDouble **intrEdgeRefinements;
-  int       *nIntrEdges;
-  int       *intrBdryMarkers;
+  int     (**intrEdges)[2] = NULL;
+  int      **intrEdgeMarkers = NULL;
+  tmDouble **intrEdgeRefinements = NULL;
+  int       *nIntrEdges = NULL;
+  int       *intrBdryMarkers = NULL;
   int        nIntrBdrys = 0;
     
 
@@ -126,7 +126,7 @@ int main(int argc, char *argv[])
     newNode = tmNode_create(mesh, nodes[i]);
     nodes_ptr[i] = newNode;
   }
-  
+
   /*----------------------------------------------------------
   | Add exterior boundary to the mesh
   ----------------------------------------------------------*/
@@ -139,6 +139,10 @@ int main(int argc, char *argv[])
   {
     int i0 = extBdryEdges[i][0];
     int i1 = extBdryEdges[i][1];
+
+    check( i0 < nNodes && i1 < nNodes,
+        "Defined nodes do not fit to exterior boundary definition.");
+
     bdryEdge = tmBdry_edgeCreate(bdry_ext, 
                                  nodes_ptr[i0],
                                  nodes_ptr[i1],
@@ -161,6 +165,11 @@ int main(int argc, char *argv[])
     {
       int i0 = intrEdges[j][i][0];
       int i1 = intrEdges[j][i][1];
+
+      check( i0 < nNodes && i1 < nNodes,
+          "Defined nodes do not fit to interior boundary with marker %d.",
+          intrBdryMarkers[j]);
+
       bdryEdge = tmBdry_edgeCreate(bdry_int, 
                                    nodes_ptr[i0],
                                    nodes_ptr[i1],

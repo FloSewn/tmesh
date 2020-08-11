@@ -104,6 +104,7 @@ int main(int argc, char *argv[])
   {
     int err;
     expr = te_compile(sizeFunExpr->data, vars, 2, &err);
+    check(err == 0, "Wrong size function definition");
     tmPrint("SIZE FUNCTION: %s", sizeFunExpr->data);
     sizeFunUser = sizeFun;
   }

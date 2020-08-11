@@ -137,7 +137,7 @@ def main():
         fig_path = os.path.join( export_path, 'mesh_step_{:}'.format(len(tris)-step))
         print("Exporting {:}".format(fig_path))
         plt.tight_layout()
-        fig.savefig(fig_path + '.png', dpi=280)
+        fig.savefig(fig_path + '.png', dpi=280, transparent=True)
         plt.close(fig)
         print("Done")
 

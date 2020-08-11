@@ -30,7 +30,7 @@ char *all_tests()
   /**********************************************************
   * Unit tests for parameter file reader
   **********************************************************/
-  mu_run_test(test_tmParam_readfile);
+  //mu_run_test(test_tmParam_readfile);
 
   /**********************************************************
   * Unit tests for tmesh library
@@ -49,7 +49,7 @@ char *all_tests()
   //mu_run_test(test_tmFront_simpleMesh);
   //mu_run_test(test_tmFront_simpleMesh2);
   //mu_run_test(test_tmFront_innerOuterMesh);
-  //mu_run_test(test_tmFront_tMesh);
+  mu_run_test(test_tmFront_tMesh);
     
   //mu_run_test(test_tmBdry_sizeFunction);
   

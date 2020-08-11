@@ -24,6 +24,7 @@ of boundary nodes and edges.
 There is the possibility to assign markers to the boundaries and to each boundary-edge.
 The only purpose of these markers is to identify these boundaries/edges later when the meshing is generated.
 Here is a simple example to create a mesh using **TMesh**:
+It is even possible to provide simple size function expressions through the input file.
 ```sh
 #-----------------------------------------------------------
 #                          TMESH
@@ -31,6 +32,7 @@ Here is a simple example to create a mesh using **TMesh**:
 Global element size: 0.5
 Number of quadtree elements: 50
 Mesh bounding box: -10.0, -10.0, 20.0, 20.0
+Size function: 0.5-0.43*exp(-0.03*((1.-x)*(2.-x)+(9.-y)*(9.-y)))
 
 
 #-----------------------------------------------------------
@@ -189,6 +191,11 @@ defined in the test function `test_tmFront_simpleMesh2()` and `test_tmBdry_sizeF
 * Python-Interface 
 * Delaunay-refinement for generated grids
 * Better output format of generated meshes, e.g. HDF5 or netCDF.
+
+## Used Libraries 
+* [The Better String Library](http://bstring.sourceforge.net)
+* [TinyExpr](https://github.com/codeplea/tinyexpr)
+* Some snippets from Zed Shaw's [Learn C the hard way](https://github.com/zedshaw/learn-c-the-hard-way-lectures)
 
 ## Sources
 * o'Rourke, Joseph. Computational geometry in C. Cambridge university press, 1998.

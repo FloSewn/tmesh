@@ -9,6 +9,7 @@ set( TMESH_SRC    ${TMESH_DIR}/src     )
 # Define source files
 set( TMESH_MAIN
   ${TMESH_SRC}/bstrlib.c
+  ${TMESH_SRC}/tinyexpr.c
   ${TMESH_SRC}/tmParam.c
   ${TMESH_SRC}/tmList.c
   ${TMESH_SRC}/tmNode.c

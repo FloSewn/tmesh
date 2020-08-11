@@ -8,12 +8,30 @@
 #include "tmesh/tmFront.h"
 #include "tmesh/tmList.h"
 
+#include "tmesh/tinyexpr.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #define _USE_MATH_DEFINES
 #include <math.h>
 #include <time.h>
 
+
+tmDouble x, y;
+te_variable vars[] = {{"x", &x}, {"y", &y}};
+te_expr *expr;
+
+static inline tmDouble sizeFun( tmDouble xy[2] )
+{
+  x = xy[0];
+  y = xy[1];
+  return te_eval(expr);
+}
+
+
+/*************************************************************
+* 
+*************************************************************/
 int main(int argc, char *argv[])
 {
   if (argc < 2)
@@ -27,9 +45,12 @@ int main(int argc, char *argv[])
   
   int i,j;
 
+  tmSizeFunUser sizeFunUser;
+
   tmDouble  globSize;
   tmDouble *globBbox = NULL;
   int       qtreeSize;
+  bstring   sizeFunExpr;
 
   tmDouble (*nodes)[2] = NULL;
   int        nNodes;
@@ -78,6 +99,19 @@ int main(int argc, char *argv[])
     qtreeSize = 100;
   }
 
+  if ( tmParam_extractParam(file->txtlist,
+       "Size function:", 2, &sizeFunExpr) != 0 )
+  {
+    int err;
+    expr = te_compile(sizeFunExpr->data, vars, 2, &err);
+    tmPrint("SIZE FUNCTION: %s", sizeFunExpr->data);
+    sizeFunUser = sizeFun;
+  }
+  else {
+    sizeFunExpr = NULL;
+    sizeFunUser = NULL;
+  }
+
   /*----------------------------------------------------------
   | Extract node definitions
   ----------------------------------------------------------*/
@@ -112,7 +146,8 @@ int main(int argc, char *argv[])
 
   tmMesh *mesh = tmMesh_create(xyMin, xyMax, 
                                qtreeSize, 
-                               globSize, NULL);
+                               globSize,
+                               sizeFunUser);
 
 
   /*----------------------------------------------------------
@@ -203,7 +238,9 @@ int main(int argc, char *argv[])
 
 
 
+  te_free(expr);
   free(globBbox);
+  bdestroy(sizeFunExpr);
 
   free(nodes);
   free(nodes_ptr);
@@ -232,7 +269,9 @@ int main(int argc, char *argv[])
 
 error:
 
+  te_free(expr);
   free(globBbox);
+  bdestroy(sizeFunExpr);
 
   free(nodes);
   

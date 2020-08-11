@@ -1,3 +1,13 @@
+/*
+ * This header file is part of the tmesh library.  
+ * This code was written by Florian Setzwein in 2020, 
+ * and is covered under the MIT License
+ * Refer to the accompanying documentation for details
+ * on usage and license.
+ *
+ * Most code in this file has been used from Zed Shaws Book
+ * "Learn C the hard way"
+ */
 #ifndef TMESH_TMLIST_H
 #define TMESH_TMLIST_H
 

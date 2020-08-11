@@ -1,3 +1,10 @@
+/*
+ * This source file is part of the tmesh library.  
+ * This code was written by Florian Setzwein in 2020, 
+ * and is covered under the MIT License
+ * Refer to the accompanying documentation for details
+ * on usage and license.
+ */
 #include "tmesh/dbg.h"
 #include "tmesh/bstrlib.h"
 #include "tmesh/tmParam.h"
@@ -34,7 +41,7 @@ tmParam *tmParam_create(const char *file_path)
   /* Read total file into buffer                           */
   char *buffer = (char *) malloc(length + 1);
   buffer[length] = '\0';
-  fread(buffer, 1, length, fptr);
+  int nReturn = fread(buffer, 1, length, fptr);
 
   /* Copy relevant data to tmParam structure               */
   bstring bbuffer = bfromcstr( buffer );

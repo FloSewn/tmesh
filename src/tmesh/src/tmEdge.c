@@ -706,7 +706,7 @@ tmEdge *tmEdge_flipEdge(tmEdge *e)
       e->n1->index, e->n2->index, p1->index, p2->index);
 #endif
   tmEdge_destroy(e);
-  e = tmMesh_edgeCreate(mesh, p1, p2, t1, t2);
+  e = tmMesh_edgeCreate(mesh, p1, p2, t1, t2, -1);
 
   /*-----------------------------------------------------
   | Update adjacency of triangles t1*, t2* in 

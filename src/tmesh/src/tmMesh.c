@@ -247,12 +247,16 @@ tmListNode *tmMesh_addNode(tmMesh *mesh, tmNode *node)
 * @param mesh: mesh for which the edge is defined
 * @param n1, n2: start/ending node of edge
 * @param t1, t2: triangle to the left / right of the edge
+* @param marker: edge marker -> used for the boundary edges
 **********************************************************/
 tmEdge *tmMesh_edgeCreate(tmMesh *mesh, 
                           tmNode *n1, tmNode *n2,
-                          tmTri  *t1, tmTri  *t2)
+                          tmTri  *t1, tmTri  *t2, 
+                          tmIndex marker)
 {
   tmEdge *edge = tmEdge_create(mesh, n1, n2, NULL, 2);
+
+  edge->bdry_marker = marker;
 
   /*--------------------------------------------------------
   | t1: Triangle to the left of this edge
@@ -660,6 +664,86 @@ void tmMesh_printMesh(tmMesh *mesh)
   } 
 
 } /* tmMesh_printMesh() */
+
+
+/**********************************************************
+* Function: tmMesh_printMeshIncomflow()
+*----------------------------------------------------------
+* Fuction to print out the mesh data in the format for
+* the incomflow solver
+*----------------------------------------------------------
+* @param mesh: pointer to mesh structure
+**********************************************************/
+void tmMesh_printMeshIncomflow(tmMesh *mesh) 
+{
+  tmListNode *cur;
+
+  int node_index = 0;
+  int edge_index = 0;
+  int tri_index  = 0;
+  int bdry_edge_index = 0;
+
+  /*-------------------------------------------------------
+  | Set node indices and print node coordinates
+  -------------------------------------------------------*/
+  fprintf(stdout,"NODES %d\n", mesh->no_nodes);
+  for (cur = mesh->nodes_stack->first; 
+       cur != NULL; cur = cur->next)
+  {
+    tmDouble *xy = ((tmNode*)cur->value)->xy;
+    ((tmNode*)cur->value)->index = node_index;
+    fprintf(stdout,"%d\t%9.5f\t%9.5f\n", node_index, xy[0], xy[1]);
+    node_index += 1;
+  }
+
+  /*-------------------------------------------------------
+  | print triangles
+  -------------------------------------------------------*/
+  fprintf(stdout,"TRIANGLES %d\n", mesh->no_tris);
+  for (cur = mesh->tris_stack->first; 
+       cur != NULL; cur = cur->next)
+  {
+    tmTri *curTri = (tmTri*)cur->value;
+    ((tmTri*)cur->value)->index = tri_index;
+
+    fprintf(stdout,"%d\t%d\t%d\t%d\n", 
+        tri_index, 
+        curTri->n1->index,
+        curTri->n2->index,
+        curTri->n3->index);
+
+    tri_index += 1;
+  }
+
+  /*-------------------------------------------------------
+  | print triangles neighbors
+  -------------------------------------------------------*/
+  fprintf(stdout,"NEIGHBORS %d\n", mesh->no_tris);
+  tri_index = 0;
+  for (cur = mesh->tris_stack->first; 
+       cur != NULL; cur = cur->next)
+  {
+    tmTri *curTri = (tmTri*)cur->value;
+
+    tmTri *t1 = ((tmTri*)cur->value)->t1;
+    tmTri *t2 = ((tmTri*)cur->value)->t2;
+    tmTri *t3 = ((tmTri*)cur->value)->t3;
+
+    tmEdge *e1 = ((tmTri*)cur->value)->e1;
+    tmEdge *e2 = ((tmTri*)cur->value)->e2;
+    tmEdge *e3 = ((tmTri*)cur->value)->e3;
+
+    tmIndex i1 = t1->index != tri_index ? t1->index : -(e1->bdry_marker);
+    tmIndex i2 = t2->index != tri_index ? t2->index : -(e2->bdry_marker);
+    tmIndex i3 = t3->index != tri_index ? t3->index : -(e3->bdry_marker);
+
+    fprintf(stdout,"%d\t%d\t%d\t%d\n", 
+        tri_index, i1, i2, i3);
+    
+    tri_index += 1;
+  } 
+
+} /* tmMesh_printMeshIncomflow() */
 
 
 /**********************************************************
@@ -1181,7 +1265,7 @@ void tmMesh_refineLocally(tmMesh *mesh, tmDouble xy[2])
 
     new_edge = tmMesh_edgeCreate(mesh,
                                  new_node, cur_node,
-                                 new_tri, cur_tri);
+                                 new_tri, cur_tri, -1);
 
     cur_tri = new_tri;
     tmEdge_isDelaunay(base);
@@ -1190,7 +1274,7 @@ void tmMesh_refineLocally(tmMesh *mesh, tmDouble xy[2])
 
   new_edge = tmMesh_edgeCreate(mesh,
                                new_node, first_node,
-                               first_tri, cur_tri);
+                               first_tri, cur_tri, -1);
 
 } /* tmMesh_insertMeshNode() */
 

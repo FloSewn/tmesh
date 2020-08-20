@@ -121,7 +121,8 @@ tmListNode *tmMesh_addNode(tmMesh *mesh, tmNode *node);
 **********************************************************/
 tmEdge *tmMesh_edgeCreate(tmMesh *mesh, 
                           tmNode *n1, tmNode *n2,
-                          tmTri  *t1, tmTri  *t2);
+                          tmTri  *t1, tmTri  *t2,
+                          tmIndex marker);
 
 /**********************************************************
 * Function: tmMesh_addEdge()
@@ -208,6 +209,16 @@ tmBool tmMesh_objInside(tmMesh   *mesh, tmDouble xy[2]);
 * @param mesh: pointer to mesh structure
 **********************************************************/
 void tmMesh_printMesh(tmMesh *mesh);
+
+/**********************************************************
+* Function: tmMesh_printMeshIncomflow()
+*----------------------------------------------------------
+* Fuction to print out the mesh data in the format for
+* the incomflow solver
+*----------------------------------------------------------
+* @param mesh: pointer to mesh structure
+**********************************************************/
+void tmMesh_printMeshIncomflow(tmMesh *mesh);
 
 /**********************************************************
 * Function: tmMesh_adfMeshing()

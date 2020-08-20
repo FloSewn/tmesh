@@ -192,6 +192,8 @@ void tmFront_init(tmMesh *mesh)
 
   tmFront *front = mesh->front;
 
+  tmEdge *e;
+
   /*-------------------------------------------------------
   | Loop over all boundaries
   -------------------------------------------------------*/
@@ -202,6 +204,7 @@ void tmFront_init(tmMesh *mesh)
 
     /*-----------------------------------------------------
     | Loop over all boundary edges
+    | and keep their boundary markers
     -----------------------------------------------------*/
     for (cur = bdry->edges_stack->first; 
          cur != NULL; cur = cur->next)
@@ -209,7 +212,9 @@ void tmFront_init(tmMesh *mesh)
       tmNode *n1 = ((tmEdge*)cur->value)->n1;
       tmNode *n2 = ((tmEdge*)cur->value)->n2;
 
-      tmFront_edgeCreate(front, n1, n2, NULL);
+      e = tmFront_edgeCreate(front, n1, n2, NULL);
+
+      e->bdry_marker = ((tmEdge*)cur->value)->bdry_marker;
     }
   }
 
@@ -457,8 +462,8 @@ void tmFront_update(tmMesh *mesh,
     /*------------------------------------------------------
     | Pass edges to mesh
     ------------------------------------------------------*/
-    tmMesh_edgeCreate(mesh, e_n1->n1, e_n1->n2, t, e_n1->t2);
-    tmMesh_edgeCreate(mesh, e_n2->n1, e_n2->n2, t, e_n2->t2);
+    tmMesh_edgeCreate(mesh,e_n1->n1,e_n1->n2,t,e_n1->t2,-1);
+    tmMesh_edgeCreate(mesh,e_n2->n1,e_n2->n2,t,e_n2->t2,-1);
 
     /*------------------------------------------------------
     | Remove edges from front 
@@ -476,7 +481,7 @@ void tmFront_update(tmMesh *mesh,
     /*------------------------------------------------------
     | Pass edge to mesh
     ------------------------------------------------------*/
-    tmMesh_edgeCreate(mesh, e_n1->n1, e_n1->n2, t, e_n1->t2);
+    tmMesh_edgeCreate(mesh,e_n1->n1,e_n1->n2,t,e_n1->t2,-1);
 
     /*------------------------------------------------------
     | Remove edge from front and create new front edge
@@ -496,7 +501,7 @@ void tmFront_update(tmMesh *mesh,
     /*------------------------------------------------------
     | Pass edge to mesh
     ------------------------------------------------------*/
-    tmMesh_edgeCreate(mesh, e_n2->n1, e_n2->n2, t, e_n2->t2);
+    tmMesh_edgeCreate(mesh,e_n2->n1,e_n2->n2,t,e_n2->t2,-1);
 
     /*------------------------------------------------------
     | Remove edge from front and create new front edge
@@ -520,7 +525,7 @@ void tmFront_update(tmMesh *mesh,
   | Pass base edge to mesh 
   | then remove base edge from the front
   --------------------------------------------------------*/
-  tmMesh_edgeCreate(mesh, e->n1, e->n2, t, e->t2);
+  tmMesh_edgeCreate(mesh,e->n1,e->n2,t,e->t2,e->bdry_marker);
   tmEdge_destroy(e);
 
 } /* tmFront_update() */
@@ -590,6 +595,8 @@ error:
 **********************************************************/
 tmEdge *tmFront_splitEdge(tmFront *front, tmEdge *edge)
 {
+  int bdry_marker = edge->bdry_marker;
+
   tmNode *n1 = edge->n1;
   tmNode *n2 = edge->n2;
 
@@ -602,6 +609,12 @@ tmEdge *tmFront_splitEdge(tmFront *front, tmEdge *edge)
 
   tmEdge *ne1 = tmFront_edgeCreate(front, n1, nn, NULL);
   tmEdge *ne2 = tmFront_edgeCreate(front, nn, n2, NULL);
+
+  /*-------------------------------------------------------
+  | Pass the boundary markers, as bdry edges are refined
+  -------------------------------------------------------*/
+  ne1->bdry_marker = bdry_marker;
+  ne2->bdry_marker = bdry_marker;
 
   return ne1;
 

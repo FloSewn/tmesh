@@ -224,7 +224,8 @@ int main(int argc, char *argv[])
   /*--------------------------------------------------------
   | Print the mesh data 
   --------------------------------------------------------*/
-  tmMesh_printMesh(mesh);
+  //tmMesh_printMesh(mesh);
+  tmMesh_printMeshIncomflow(mesh);
 
 
   tmPrint("----------------------------------------------\n");

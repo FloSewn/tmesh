@@ -113,8 +113,9 @@ def main():
         #        ax.plot(nodes[e,0], nodes[e,1], c='k',
         #                lw=2.0, ls='-',marker='o')
 
-        #for i, n in enumerate(nodes):
-        #    ax.text(n[0],n[1],i, color='b')
+        for i, n in enumerate(nodes):
+            ax.plot(nodes[i,0], nodes[i,1], marker='o', c='k', ms=4)
+            ax.text(n[0],n[1],i, color='b')
 
         if step == len(tris):
             for e in front_edges:

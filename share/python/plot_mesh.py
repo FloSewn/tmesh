@@ -97,7 +97,7 @@ def read_meshdata(mesh_file, read_front=False):
 def main():
     ''' The main function '''
     if len(sys.argv) < 3:
-        print("plot_boundary.py <mesh>.dat <export_path>")
+        print("plot_boundary.py <mesh> <export_path>")
         sys.exit(1)
 
     nodes, boundaries, bdry_marker, front_edges, tris = read_meshdata(sys.argv[1])
@@ -137,7 +137,11 @@ def main():
         ax.set_ylim((nodes[:,1].min(),nodes[:,1].max()))
         ax.set_axis_off()
 
-        fig_path = os.path.join( export_path, 'mesh_step_{:}'.format(len(tris)-step))
+        if i_plts > 0:
+            fig_path = export_path + '_{:}'.format(len(tris)-step)
+        else:
+            fig_path = export_path
+
         print("Exporting {:}".format(fig_path))
         plt.tight_layout()
         fig.savefig(fig_path + '.png', dpi=280, transparent=True)

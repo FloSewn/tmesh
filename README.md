@@ -99,7 +99,19 @@ The mesh is created with
 Here is the generated mesh:
 <img src="doc/images/TMeshExample.png" alt="Example-Grid" width="500"/>
 
+## Create a plot of your mesh
+The python script `share/python/plot_mesh.py` can create simple mesh plots from TMesh's output.
+Simply write TMesh's output to a text file 
 
+```sh
+./bin/TMesh example.para > your_mesh.txt
+```
+
+and then run the Python script with
+
+```sh
+python share/python/plot_mesh.py your_mesh.txt your_meshplot.png
+```
 
 ## Usage of C-Functions
 A detailed description on how to define a mesh is given in the examples under 

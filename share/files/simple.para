@@ -1,7 +1,7 @@
 #-----------------------------------------------------------
 #                          TMESH     
 #-----------------------------------------------------------
-Global element size: 1.5
+Global element size: 0.5
 Number of quadtree elements: 50
 Mesh bounding box: -10.0, -10.0, 20.0, 20.0
 Output format: STDOUT
@@ -21,7 +21,7 @@ End nodes
 #                          BOUNDARIES     
 #-----------------------------------------------------------
 Define exterior boundary: 1
-0, 1, 0, 0.4
+0, 1, 0, 1.4
 1, 2, 0, 0.4
 2, 3, 0, 0.4
 3, 0, 0, 0.4

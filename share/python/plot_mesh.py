@@ -18,7 +18,7 @@ TRI_PATCH = {'edgecolors' : ['k'],
              'alpha'      : 1.0,
              'cmap'       : 'coolwarm'}
 
-def read_meshdata(mesh_file):
+def read_meshdata(mesh_file, read_front=False):
     '''
     Function to read the raw mesh data
     '''
@@ -71,16 +71,18 @@ def read_meshdata(mesh_file):
 
         # Get advancing front data
         #----------------------------------------------------
-        n_front_edges = int(lines[0].split(' ')[1])
+        if read_front:
+            n_front_edges = int(lines[0].split(' ')[1])
 
-        for i in range(1, n_front_edges+1):
-            line = lines[i].replace('\n','').split('\t')
-            edge = (int(line[1]), int(line[2]))
-            front_edges.append(edge)
+            for i in range(1, n_front_edges+1):
+                line = lines[i].replace('\n','').split('\t')
+                edge = (int(line[1]), int(line[2]))
+                front_edges.append(edge)
+
+            lines  = lines[n_front_edges+1:]
 
         # Get triangle data
         #----------------------------------------------------
-        lines  = lines[n_front_edges+1:]
         n_tris = int(lines[0].split(' ')[1])
 
         for i in range(1, n_tris+1):
@@ -113,9 +115,9 @@ def main():
         #        ax.plot(nodes[e,0], nodes[e,1], c='k',
         #                lw=2.0, ls='-',marker='o')
 
-        for i, n in enumerate(nodes):
-            ax.plot(nodes[i,0], nodes[i,1], marker='o', c='k', ms=4)
-            ax.text(n[0],n[1],i, color='b')
+        #for i, n in enumerate(nodes):
+            #ax.plot(nodes[i,0], nodes[i,1], marker='o', c='k', ms=4)
+            #ax.text(n[0],n[1],i, color='b')
 
         if step == len(tris):
             for e in front_edges:

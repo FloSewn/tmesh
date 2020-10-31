@@ -3,7 +3,8 @@
 #include <tmesh/tmParam.h>
 #include "tmParam_tests.h"
 
-const char *testfile = "/datadisk/Code/C-Code/tmesh/share/files/example.para";
+//const char *testfile = "/datadisk/Code/C-Code/tmesh/share/files/example.para";
+const char *testfile = "/datadisk/Code/C-Code/tmesh/share/files/comment_test.para";
 
 /*************************************************************
 * Unit test function to handle creation and 
@@ -196,3 +197,38 @@ char *test_tmParam_readfile()
 
   return NULL;
 }
+
+
+/*************************************************************
+* Read a file and clear all strings behind a comment 
+* identifier
+*************************************************************/
+char *test_tmParam_comments()
+{
+  int i;
+
+  tmParam *file = tmParam_create( testfile );
+
+  /*----------------------------------------------------------
+  | Remove all comments from the file
+  ----------------------------------------------------------*/
+  bstring comment_fltr = bfromcstr("#");
+  struct bstrList *test_1 = tmParam_removeComments(file->txtlist,
+                                                   comment_fltr->data);
+  bstring *fl_ptr = test_1->entry;
+
+  for (i = 0; i < test_1->qty; i++) 
+  {
+    mu_assert( binstr(fl_ptr[i], 0, comment_fltr) == BSTR_ERR,
+        "<tmParam_removeComments> failed.");
+  }
+
+  /*----------------------------------------------------------
+  | Free memory
+  ----------------------------------------------------------*/
+  bstrListDestroy( test_1 );
+  bdestroy( comment_fltr );
+  tmParam_destroy( file );
+
+  return NULL;
+} 

@@ -216,6 +216,93 @@ error:
 }
 
 /*************************************************************
+* This function removes all strings in the file that are 
+* located behind a "comment" identifiert and the next 
+* new line character
+*************************************************************/
+struct bstrList *tmParam_removeComments(struct bstrList *txtlist, 
+                                        const char *fltr)
+{
+  bstring *fl_ptr = txtlist->entry;
+  bstring  bfltr  = bfromcstr(fltr); 
+
+  bstring *bl_ptr     = NULL;
+  struct bstrList *bl = NULL;
+
+  int i;
+  int hits = 0;
+  int cnt  = 0;
+  int *marker = (int*) calloc(txtlist->qty, sizeof(int));
+  check_mem(marker);
+
+
+  /*----------------------------------------------------------
+  | Fill array of markers with line numbers, that do not 
+  | contain the filter string
+  ----------------------------------------------------------*/
+  for (i = 0; i < txtlist->qty; i++) 
+  {
+    const int fnd = binstr(fl_ptr[i], 0, bfltr);
+
+    if ( fnd == BSTR_ERR )
+    {
+      hits += 1;
+      marker[i] = i;
+    }
+    else
+    {
+      /* Truncate line if filter string is within it */
+      if ( fnd > 0)
+      {
+        btrunc(fl_ptr[i], fnd);
+        marker[i] = i;
+      }
+      else
+      {
+        marker[i] = -1;
+      }
+    }
+  }
+
+  /*----------------------------------------------------------
+  | Create new bstrList that will contained all filtered lines
+  ----------------------------------------------------------*/
+  bl = bstrListCreate();
+  bstrListAlloc(bl, hits);
+
+  /*----------------------------------------------------------
+  | Copy marked lines into new bstrList
+  ----------------------------------------------------------*/
+  bl_ptr = bl->entry;
+
+  for (i = 0; i < txtlist->qty; i++) 
+  {
+    if (marker[i] >= 0)
+    {
+      const int curline = marker[i];
+      bl_ptr[cnt] = bstrcpy(fl_ptr[curline]);
+      bl->qty += 1;
+      cnt += 1;
+    }
+  }
+
+  /*----------------------------------------------------------
+  | Cleanup
+  ----------------------------------------------------------*/
+  bdestroy(bfltr);
+  free(marker);
+
+  return bl;
+
+error:
+
+  bdestroy(bfltr);
+  free(marker);
+  return NULL;
+
+} /* tmParam_removeComments() */
+
+/*************************************************************
 * Function searches for a specifier <fltr> in a bstrList.
 * The parameter behind the specifier is then extracted 
 * from the file and stored into <value>.

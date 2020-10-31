@@ -142,9 +142,12 @@ def main():
         else:
             fig_path = export_path
 
+        if ( fig_path[-4:] != '.png' ):
+            fig_path += '.png'
+
         print("Exporting {:}".format(fig_path))
         plt.tight_layout()
-        fig.savefig(fig_path + '.png', dpi=280, transparent=True)
+        fig.savefig(fig_path, dpi=280, transparent=True)
         plt.close(fig)
         print("Done")
 

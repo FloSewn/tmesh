@@ -57,6 +57,14 @@ struct bstrList *tmParam_getLinesWith(struct bstrList *txtlist,
                                       const char *fltr);
 
 /*************************************************************
+* This function removes all strings in the file that are 
+* located behind a "comment" identifiert and the next 
+* new line character
+*************************************************************/
+struct bstrList *tmParam_removeComments(struct bstrList *txtlist, 
+                                        const char *fltr);
+
+/*************************************************************
 * Function searches for a specifier <fltr> in a bstrList.
 * The parameter behind the specifier is then extracted 
 * from the file and stored into <value>.

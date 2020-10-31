@@ -75,7 +75,7 @@ int main(int argc, char *argv[])
   struct bstrList *buf;
 
   file = tmParam_create( input );
-  buf  = tmParam_popLinesWith(file->txtlist, "#");
+  buf  = tmParam_removeComments(file->txtlist, "#");
   bstrListDestroy(file->txtlist);
   file->txtlist = buf;
 

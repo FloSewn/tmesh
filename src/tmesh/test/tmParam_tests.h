@@ -3,4 +3,6 @@
 
 char *test_tmParam_readfile();
 
+char *test_tmParam_comments();
+
 #endif

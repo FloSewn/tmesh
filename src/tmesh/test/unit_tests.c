@@ -17,7 +17,7 @@ char *all_tests()
 
   /**********************************************************
   * Unit tests for list structure
-  **********************************************************/
+  **********************************************************
   mu_run_test(test_tmList_create);
   mu_run_test(test_tmList_push_pop);
   mu_run_test(test_tmList_unshift);
@@ -25,12 +25,13 @@ char *all_tests()
   mu_run_test(test_tmList_shift);
   mu_run_test(test_tmList_join);
   mu_run_test(test_tmList_destroy);
-  mu_run_test(test_tmList_split);
+  mu_run_test(test_tmList_split);*/
 
   /**********************************************************
   * Unit tests for parameter file reader
   **********************************************************/
   //mu_run_test(test_tmParam_readfile);
+  mu_run_test(test_tmParam_comments);
 
   /**********************************************************
   * Unit tests for tmesh library
@@ -49,7 +50,8 @@ char *all_tests()
   //mu_run_test(test_tmFront_simpleMesh);
   //mu_run_test(test_tmFront_simpleMesh2);
   //mu_run_test(test_tmFront_innerOuterMesh);
-  mu_run_test(test_tmFront_tMesh);
+  //mu_run_test(test_tmFront_tMesh);
+  //mu_run_test(test_tmQuad_transformation);
     
   //mu_run_test(test_tmBdry_sizeFunction);
   

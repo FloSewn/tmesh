@@ -65,4 +65,9 @@ char *test_tmFront_tMesh();
 ************************************************************/ 
 char *test_tmBdry_sizeFunction();
 
+/************************************************************
+* Test function to turn a triangular mesh into quads
+************************************************************/
+char *test_tmQuad_transformation();
+
 #endif

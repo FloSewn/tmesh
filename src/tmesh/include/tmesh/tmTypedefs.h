@@ -45,6 +45,7 @@
 typedef struct tmNode  tmNode;
 typedef struct tmEdge  tmEdge;
 typedef struct tmTri   tmTri;
+typedef struct tmQuad  tmQuad;
 typedef struct tmBdry  tmBdry;
 typedef struct tmFront tmFront;
 typedef struct tmQtree tmQtree;

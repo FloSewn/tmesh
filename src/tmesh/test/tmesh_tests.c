@@ -1763,3 +1763,71 @@ char *test_tmBdry_sizeFunction()
   return NULL;
 
 } /* test_automaticSizeFunction() */
+
+
+/************************************************************
+* Test function to turn a triangular mesh into quads
+************************************************************/
+char *test_tmQuad_transformation()
+{
+  tmDouble xy_min[2] = {-10.0,-10.0 };
+  tmDouble xy_max[2] = { 20.0, 20.0 };
+  tmMesh *mesh = tmMesh_create(xy_min, xy_max, 100, 
+                               0.5, size_fun_5);
+
+  /*--------------------------------------------------------
+  | exterior boundary
+  --------------------------------------------------------*/
+  tmDouble xy0[2] = { -1.0, -1.0 };
+  tmDouble xy1[2] = { 16.0,  7.0 };
+  tmDouble xy2[2] = { -1.0, 10.0 };
+
+  tmNode *n0 = tmNode_create(mesh, xy0);
+  tmNode *n1 = tmNode_create(mesh, xy1);
+  tmNode *n2 = tmNode_create(mesh, xy2);
+
+  tmBdry *bdry_ext = tmMesh_addBdry(mesh, FALSE, 0);
+  tmEdge *e0 = tmBdry_edgeCreate(bdry_ext, n0, n1, 0, 1.0);
+  tmEdge *e1 = tmBdry_edgeCreate(bdry_ext, n1, n2, 0, 1.0);
+  tmEdge *e2 = tmBdry_edgeCreate(bdry_ext, n2, n0, 0, 1.0);
+
+  /*--------------------------------------------------------
+  | interior boundary
+  --------------------------------------------------------*/
+  tmDouble xy3[2] = {  1.0,  4.0 };
+  tmDouble xy4[2] = {  6.0,  8.0 };
+  tmDouble xy5[2] = {  6.0,  4.0 };
+
+  tmNode *n3 = tmNode_create(mesh, xy3);
+  tmNode *n4 = tmNode_create(mesh, xy4);
+  tmNode *n5 = tmNode_create(mesh, xy5);
+
+  tmBdry *bdry_int = tmMesh_addBdry(mesh, TRUE, 1);
+  tmEdge *e3 = tmBdry_edgeCreate(bdry_int, n3, n4, 1, 1.0);
+  tmEdge *e4 = tmBdry_edgeCreate(bdry_int, n4, n5, 1, 1.0);
+  tmEdge *e5 = tmBdry_edgeCreate(bdry_int, n5, n3, 1, 1.0);
+
+  /*--------------------------------------------------------
+  | Create mesh
+  --------------------------------------------------------*/
+  clock_t tic_1 = clock();
+  tmMesh_ADFMeshing(mesh);
+  clock_t tic_2 = clock();
+
+  /*--------------------------------------------------------
+  | Print the mesh data 
+  --------------------------------------------------------*/
+  tmMesh_printMeshIncomflow(mesh);
+
+  printf("> ----------------------------------------------\n");
+  printf("> simple mesh 1 performance test                \n");
+  printf("> ----------------------------------------------\n");
+  printf("> Number of elements: %d\n", mesh->no_tris);
+  printf("> Meshing time      : %e sec\n", (double) (tic_2 - tic_1) / CLOCKS_PER_SEC );
+  printf("> ----------------------------------------------\n");
+
+  tmMesh_destroy(mesh);
+
+  return NULL;
+
+} /* test_tmQuad_transformation() */

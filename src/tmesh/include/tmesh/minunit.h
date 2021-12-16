@@ -7,7 +7,7 @@
 
 #include "tmesh/dbg.h"
 
-int tests_run;
+static int tests_run;
 
 #define mu_suite_start() char *message = NULL
 
